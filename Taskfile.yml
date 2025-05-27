@@ -1,0 +1,87 @@
+version: '3'
+
+tasks:
+  default:
+    desc: Display available commands
+    cmds:
+      - task --list-all
+    silent: true
+
+  # Database commands
+  db:migrate:
+    desc: Run database migrations
+    cmds:
+      - docker compose exec app node ace migration:run
+
+  db:rollback:
+    desc: Rollback the last migration
+    cmds:
+      - docker compose exec app node ace migration:rollback
+
+  db:migration:
+    desc: Create a new migration
+    cmds:
+      - docker compose exec app node ace make:migration {{.CLI_ARGS}}
+    requires:
+      vars: [CLI_ARGS]
+
+  db:seed:
+    desc: Run database seeders
+    cmds:
+      - docker compose exec app node ace db:seed
+
+  # Application commands
+  start:
+    desc: Start all services
+    cmds:
+      - docker compose up -d
+
+  stop:
+    desc: Stop all services
+    cmds:
+      - docker compose down {{.CLI_ARGS}}
+
+  restart:
+    desc: Restart all services
+    cmds:
+      - task: stop
+      - task: start
+
+  build:
+    desc: Build the application
+    cmds:
+      - docker compose build {{.CLI_ARGS}}
+
+  rebuild:
+    desc: Rebuild and restart
+    cmds:
+      - task: stop
+      - task: build
+      - task: start
+      - task: logs
+
+  logs:
+    desc: Show application logs
+    cmds:
+      - docker compose logs -f app
+
+  shell:
+    desc: Open a shell in the app container
+    cmds:
+      - docker compose exec app /bin/sh
+
+  # Development commands
+  test:
+    desc: Run tests
+    cmds:
+      - docker compose exec app npm test
+
+  lint:
+    desc: Run linting
+    cmds:
+      - docker compose exec app npm run lint
+
+  format:
+    desc: Format code
+    cmds:
+      - docker compose exec app npm run format
