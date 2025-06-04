@@ -14,7 +14,8 @@ export default class HealthCheckController {
         status: 'healthy',
         database: 'connected',
         timestamp: new Date().toISOString(),
-        version: '1.0.0',
+        version: 'v1',
+        environment: process.env.NODE_ENV,
       })
     } catch (error) {
       return response.status(503).json({

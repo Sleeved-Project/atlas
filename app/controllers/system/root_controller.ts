@@ -6,14 +6,19 @@ export default class RootController {
    */
   async handle({ response }: HttpContext) {
     return response.status(200).json({
-      name: 'api boilerplate',
-      description: 'Basic AdonisJS v6 API boilerplate with TypeScript',
+      name: 'Sleeved Atlas API',
+      description: 'Core REST API service for the Sleeved trading card platform',
       versions: [
-        { version: 'v1', url: '/api/v1', status: 'current' },
+        {
+          version: 'v1',
+          url: '/api/v1',
+          status: 'current',
+        },
         // Future versions can be added here
       ],
       status: 'WIP',
-      documentation: 'https://sleeved.atlassian.net/wiki/x/DOC',
+      documentation:
+        'https://sleeved.atlassian.net/wiki/spaces/SleevedConception/pages/18382849/Fiche+technique+Atlas+-+API+g+n+rale',
     })
   }
 }
