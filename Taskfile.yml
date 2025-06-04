@@ -11,24 +11,24 @@ tasks:
   db:migrate:
     desc: Run database migrations
     cmds:
-      - docker compose exec app node ace migration:run
+      - docker compose exec api node ace migration:run
 
   db:rollback:
     desc: Rollback the last migration
     cmds:
-      - docker compose exec app node ace migration:rollback
+      - docker compose exec api node ace migration:rollback
 
   db:migration:
     desc: Create a new migration
     cmds:
-      - docker compose exec app node ace make:migration {{.CLI_ARGS}}
+      - docker compose exec api node ace make:migration {{.CLI_ARGS}}
     requires:
       vars: [CLI_ARGS]
 
   db:seed:
     desc: Run database seeders
     cmds:
-      - docker compose exec app node ace db:seed
+      - docker compose exec api node ace db:seed
 
   # Application commands
   start:
@@ -63,25 +63,25 @@ tasks:
   logs:
     desc: Show application logs
     cmds:
-      - docker compose logs -f app
+      - docker compose logs -f api
 
   shell:
-    desc: Open a shell in the app container
+    desc: Open a shell in the atlas container
     cmds:
-      - docker compose exec app /bin/sh
+      - docker compose exec api /bin/sh
 
   # Development commands
   test:
     desc: Run tests
     cmds:
-      - docker compose exec app npm test
+      - docker compose exec api npm test
 
   lint:
     desc: Run linting
     cmds:
-      - docker compose exec app npm run lint
+      - docker compose exec api npm run lint
 
   format:
     desc: Format code
     cmds:
-      - docker compose exec app npm run format
+      - docker compose exec api npm run format

@@ -5,6 +5,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-EXPOSE 3333
+EXPOSE 8082
 
 CMD ["node", "ace", "serve", "--watch"]

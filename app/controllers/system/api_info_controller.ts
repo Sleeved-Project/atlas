@@ -6,11 +6,18 @@ export default class ApiInfoController {
    */
   async handle({ response }: HttpContext) {
     return response.status(200).json({
-      name: 'api boilerplate',
-      description: 'V1 of basic AdonisJS v6 API boilerplate with TypeScript',
-      version: '1.0.0',
-      timestamp: new Date().toISOString(),
+      name: 'Atlas API',
+      description: 'Atlas is an API that connects Sleeved microservices to each other',
+      versions: [
+        {
+          version: 'v1',
+          url: '/api/v1',
+          status: 'current',
+        },
+      ],
       status: 'WIP',
+      documentation:
+        'https://sleeved.atlassian.net/wiki/spaces/SleevedConception/pages/18382849/Fiche+technique+Atlas+-+API+g+n+rale',
     })
   }
 }

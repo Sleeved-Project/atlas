@@ -1,11 +1,21 @@
 import { test } from '@japa/runner'
 
-test('API v1 root endpoint returns correct information', async ({ client }) => {
+test('API Root V1 Atlas', async ({ client }) => {
   const response = await client.get('/api/v1')
 
   response.assertStatus(200)
   response.assertBodyContains({
-    name: 'api boilerplate',
-    description: 'V1 of basic AdonisJS v6 API boilerplate with TypeScript',
+    name: 'Atlas API',
+    description: 'Atlas is an API that connects Sleeved microservices to each other',
+    versions: [
+      {
+        version: 'v1',
+        url: '/api/v1',
+        status: 'current',
+      },
+    ],
+    status: 'WIP',
+    documentation:
+      'https://sleeved.atlassian.net/wiki/spaces/SleevedConception/pages/18382849/Fiche+technique+Atlas+-+API+g+n+rale',
   })
 })

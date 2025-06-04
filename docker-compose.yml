@@ -1,10 +1,8 @@
-version: '3'
-
 services:
-  app:
+  api:
     build: .
     ports:
-      - '3333:3333'
+      - '8082:8082'
     depends_on:
       - mysql
     env_file:
@@ -17,12 +15,11 @@ services:
   mysql:
     image: mysql:8
     ports:
-      - '3306:3306'
-    environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=db-name
+      - '3307:3306'
+    env_file:
+      - .env
     volumes:
-      - mysql-data:/var/lib/mysql
+      - sleeved_db-data:/var/lib/mysql
 
 volumes:
-  mysql-data:
+  sleeved_db-data:

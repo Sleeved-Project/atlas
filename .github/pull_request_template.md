@@ -2,7 +2,15 @@
 
 <!-- Briefly explain the changes included in this PR and their purpose -->
 
-Related task : [ID-XXX](https://sleeved.atlassian.net/browse/ID-XXX)
+Related task : [ATL-XXX](https://sleeved.atlassian.net/browse/ATL-XXX)
+
+## 🔄 Type of Change
+
+- [ ] Bug fix (non-breaking change fixing an issue)
+- [ ] New feature (non-breaking change adding functionality)
+- [ ] Breaking change (fix or feature causing existing functionality to change)
+- [ ] Documentation update
+- [ ] Refactoring (no functional changes)
 
 ## 📸 Screenshots / Demo
 
@@ -11,8 +19,11 @@ Related task : [ID-XXX](https://sleeved.atlassian.net/browse/ID-XXX)
 ## ✅ Checklist
 
 - [ ] Code follows project standards (lint, format)
-- [ ] Performance optimization verified (if applicable)
+- [ ] Unit tests added/updated
+- [ ] Integration tests passing
+- [ ] Performance considerations addressed
 - [ ] Documentation updated (if applicable)
+- [ ] Database migrations added (if applicable)
 
 ## 📋 Notes for reviewers
 
