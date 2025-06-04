@@ -79,7 +79,7 @@ docker compose build
 docker compose up -d
 
 # Run migrations
-docker compose exec atlas node ace migration:run
+docker compose exec api node ace migration:run
 ```
 
 ## Access the API
@@ -113,7 +113,7 @@ Example: GET /cards/:id
 Run all tests (via Docker):
 
 ```bash
-docker compose exec atlas node ace test
+docker compose exec api node ace test
 ```
 
 Or locally (with Node installed):
@@ -138,7 +138,7 @@ Without Task:
 
 ```bash
 docker compose up -d
-docker compose exec atlas node ace migration:run
+docker compose exec api node ace migration:run
 ```
 
 ### Authentication Flow

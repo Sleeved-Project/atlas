@@ -55,10 +55,10 @@ jobs:
         run: sleep 10
 
       - name: Run migrations
-        run: docker compose exec -T atlas node ace migration:run
+        run: docker compose exec -T api node ace migration:run
 
       - name: Run tests
-        run: docker compose exec -T atlas npm test
+        run: docker compose exec -T api npm test
 
       - name: Show logs in case of failure
         if: failure()
