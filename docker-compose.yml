@@ -4,7 +4,8 @@ services:
     ports:
       - '8082:8082'
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     env_file:
       - .env
     volumes:
@@ -22,10 +23,11 @@ services:
       - sleeved_db-data:/var/lib/mysql
       - ./sleeved_db_v4.sql:/docker-entrypoint-initdb.d/sleeved_db_v4.sql
     healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
-      interval: 5s
-      timeout: 5s
+      test: ['CMD-SHELL', "mysql -h localhost -u root -p${MYSQL_ROOT_PASSWORD} -e 'SELECT 1;'"]
+      interval: 10s
+      timeout: 10s
       retries: 5
+      start_period: 60s
 
 volumes:
   sleeved_db-data:
