@@ -23,11 +23,9 @@ services:
       - sleeved_db-data:/var/lib/mysql
       - ./sleeved_db_v4.sql:/docker-entrypoint-initdb.d/sleeved_db_v4.sql
     healthcheck:
-      test: ['CMD-SHELL', "mysql -h localhost -u root -p${MYSQL_ROOT_PASSWORD} -e 'SELECT 1;'"]
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      timeout: 20s
+      retries: 10
 
 volumes:
   sleeved_db-data:
