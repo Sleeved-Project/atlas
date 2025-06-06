@@ -3,11 +3,10 @@ import vine from '@vinejs/vine'
 /**
  * Validates the cards fetch action
  */
-export const getAllCardsValidator = vine.compile(
+export const getAllCardsFiltersValidator = vine.compile(
   vine.object({
-    queries: vine.object({
-      page: vine.number().positive(),
-      limit: vine.number().positive().max(30),
-    }),
+    page: vine.number().positive(),
+    limit: vine.number().positive().max(300),
+    name: vine.string().optional(),
   })
 )

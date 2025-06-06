@@ -4,7 +4,7 @@ import CardService from '#services/card_service'
 import { errors as lucidErrors } from '@adonisjs/lucid'
 import { errors as vineErrors } from '@vinejs/vine'
 import NotFoundException from '#exceptions/not_found_exception'
-import { getAllCardsValidator } from '#validators/card_validator'
+import { getAllCardsFiltersValidator } from '#validators/card_validator'
 import ValidationException from '#exceptions/validation_exception'
 
 @inject()
@@ -13,8 +13,8 @@ export default class CardController {
 
   async index({ request, response }: HttpContext) {
     try {
-      const { queries } = await getAllCardsValidator.validate({ queries: request.qs() })
-      const cards = await this.cardService.getAllCards(queries.page, queries.limit)
+      const filters = await getAllCardsFiltersValidator.validate(request.qs())
+      const cards = await this.cardService.getAllCards(filters)
       return response.ok(cards)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
