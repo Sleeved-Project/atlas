@@ -1,0 +1,70 @@
+import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
+
+test.group('Card controller', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('index - it should return paginated cards', async ({ client, assert }) => {
+    const response = await client.get('/api/v1/cards').qs({ page: 1, limit: 10 })
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.properties(body, ['meta', 'data'])
+
+    assert.properties(body.meta, [
+      'total',
+      'perPage',
+      'currentPage',
+      'lastPage',
+      'firstPage',
+      'firstPageUrl',
+      'lastPageUrl',
+      'nextPageUrl',
+      'previousPageUrl',
+    ])
+
+    assert.equal(body.data.length, 10)
+
+    const firstCard = body.data[0]
+    assert.properties(firstCard, ['id', 'imageSmall'])
+  })
+
+  test('index - it should apply pagination correctly', async ({ client, assert }) => {
+    const response1 = await client.get('/api/v1/cards').qs({ page: 1, limit: 5 })
+    response1.assertStatus(200)
+    const page1Data = response1.body().data
+
+    const response2 = await client.get('/api/v1/cards').qs({ page: 2, limit: 5 })
+    response2.assertStatus(200)
+    const page2Data = response2.body().data
+
+    assert.notEqual(page1Data[0].id, page2Data[0].id)
+
+    assert.equal(page1Data.length, 5)
+    assert.equal(page2Data.length, 5)
+  })
+
+  test('index - it should handle invalid pagination parameters', async ({ client }) => {
+    const responseNegativePage = await client.get('/api/v1/cards').qs({ page: -1, limit: 10 })
+    responseNegativePage.assertStatus(422)
+
+    const responseNegativeLimit = await client.get('/api/v1/cards').qs({ page: 1, limit: -5 })
+    responseNegativeLimit.assertStatus(422)
+
+    const responseInvalidParams = await client
+      .get('/api/v1/cards')
+      .qs({ page: 'abc', limit: 'xyz' })
+    responseInvalidParams.assertStatus(422)
+  })
+
+  test('index - it should return 200 and empty page for non-existent page', async ({
+    client,
+    assert,
+  }) => {
+    const response = await client.get('/api/v1/cards').qs({ page: 99999, limit: 10 })
+
+    response.assertStatus(200)
+    assert.isEmpty(response.body().data)
+  })
+})

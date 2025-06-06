@@ -51,9 +51,6 @@ jobs:
       - name: Build and start containers
         run: docker compose up -d
 
-      - name: Wait for database to be ready
-        run: sleep 10
-
       - name: Run migrations
         run: docker compose exec -T api node ace migration:run
 
