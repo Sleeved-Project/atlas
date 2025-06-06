@@ -8,7 +8,7 @@ import { getAllCardsValidator } from '#validators/card_validator'
 import ValidationException from '#exceptions/validation_exception'
 
 @inject()
-export default class CardController {
+export default class CardsController {
   constructor(private cardService: CardService) {}
 
   async index({ request, response }: HttpContext) {
