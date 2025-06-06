@@ -58,6 +58,26 @@ test.group('Card controller', (group) => {
     responseInvalidParams.assertStatus(422)
   })
 
+  test('index - it should handle invalid filters params', async ({ client, assert }) => {
+    const responseNotExistingFilter = await client
+      .get('/api/v1/cards')
+      .qs({ page: 1, limit: 10, names: 'Pikachu' })
+    responseNotExistingFilter.assertStatus(200)
+    assert.isAtLeast(responseNotExistingFilter.body().data.length, 1)
+
+    const responseEmptyFilter = await client
+      .get('/api/v1/cards')
+      .qs({ page: 1, limit: 10, name: '' })
+    responseEmptyFilter.assertStatus(200)
+    assert.equal(responseEmptyFilter.body().data.length, 10)
+
+    const responseNotExistingName = await client
+      .get('/api/v1/cards')
+      .qs({ page: 1, limit: 10, name: '123QS' })
+    responseNotExistingName.assertStatus(200)
+    assert.isEmpty(responseNotExistingName.body().data)
+  })
+
   test('index - it should return 200 and empty page for non-existent page', async ({
     client,
     assert,
