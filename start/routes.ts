@@ -13,6 +13,7 @@ router
       .group(() => {
         router.get('/', [ApiInfoController])
         router.get('/cards', [CardsController, 'index'])
+        router.get('/cards/:id', [CardsController, 'show'])
       })
       .prefix('v1')
   })

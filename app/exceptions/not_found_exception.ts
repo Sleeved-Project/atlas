@@ -4,7 +4,7 @@ import { errors as lucidErrors } from '@adonisjs/lucid'
 
 export default class NotFoundException extends Exception {
   static status = 404
-  static code = 'E_UNAUTHORIZED'
+  static code = 'E_ROW_NOT_FOUND'
 
   constructor(error: InstanceType<typeof lucidErrors.E_ROW_NOT_FOUND>) {
     const message = `${error.model?.name || 'Row'} not found`
