@@ -20,10 +20,20 @@ export default class CardService {
       .paginate(filters.page, filters.limit)
   }
 
+  public async getCardBaseById(id: string): Promise<Card> {
+    return await Card.query()
+      .preload('set', (setQuery) => {
+        setQuery.select('id', 'name', 'image_symbol')
+      })
+      .select('id', 'image_large', 'number', 'set_id')
+      .where('id', id)
+      .firstOrFail()
+  }
+
   public async getCardDetailById(id: string): Promise<Card> {
     return await Card.query()
       .preload('set', (setQuery) => {
-        setQuery.select('id', 'name', 'release_date', 'image_symbol')
+        setQuery.select('id', 'release_date')
       })
       .preload('rarity', (setQuery) => {
         setQuery.select('id', 'label')
@@ -34,16 +44,7 @@ export default class CardService {
       .preload('subtypes', (setQuery) => {
         setQuery.select('id', 'label')
       })
-      .select(
-        'id',
-        'name',
-        'image_large',
-        'flavor_text',
-        'number',
-        'set_id',
-        'rarity_id',
-        'artist_id'
-      )
+      .select('id', 'flavor_text', 'set_id', 'rarity_id', 'artist_id')
       .where('id', id)
       .firstOrFail()
   }

@@ -6,6 +6,7 @@ import { errors as vineErrors } from '@vinejs/vine'
 import NotFoundException from '#exceptions/not_found_exception'
 import {
   getAllCardsFiltersValidator,
+  getCardBaseParamsValidator,
   getCardDetailParamsValidator,
 } from '#validators/card_validator'
 import ValidationException from '#exceptions/validation_exception'
@@ -31,6 +32,22 @@ export default class CardsController {
   }
 
   async show({ response, request }: HttpContext) {
+    try {
+      const params = await getCardBaseParamsValidator.validate(request.params())
+      const card = await this.cardService.getCardBaseById(params.id)
+      return response.ok(card)
+    } catch (error) {
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async details({ response, request }: HttpContext) {
     try {
       const params = await getCardDetailParamsValidator.validate(request.params())
       const card = await this.cardService.getCardDetailById(params.id)
