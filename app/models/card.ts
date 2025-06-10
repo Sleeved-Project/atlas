@@ -1,9 +1,10 @@
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { BaseModel, belongsTo, column, manyToMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, ManyToMany } from '@adonisjs/lucid/types/relations'
 import Artist from '#models/artist'
 import Rarity from '#models/rarity'
 import Legality from '#models/legality'
 import Set from '#models/set'
+import Subtype from './subtypes.js'
 
 export default class Card extends BaseModel {
   /**
@@ -50,16 +51,16 @@ export default class Card extends BaseModel {
   @column()
   declare nationalPokedexNumbers: string | null
 
-  @column()
+  @column({ serializeAs: null })
   declare artistId: number
 
-  @column()
+  @column({ serializeAs: null })
   declare rarityId: number
 
-  @column()
+  @column({ serializeAs: null })
   declare setId: string
 
-  @column()
+  @column({ serializeAs: null })
   declare legalityId: number
 
   @belongsTo(() => Artist)
@@ -73,4 +74,9 @@ export default class Card extends BaseModel {
 
   @belongsTo(() => Set)
   declare set: BelongsTo<typeof Set>
+
+  @manyToMany(() => Subtype, {
+    pivotTable: 'Card_Subtype',
+  })
+  declare subtypes: ManyToMany<typeof Subtype>
 }

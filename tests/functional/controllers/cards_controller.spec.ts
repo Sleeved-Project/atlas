@@ -87,4 +87,41 @@ test.group('Card controller', (group) => {
     response.assertStatus(200)
     assert.isEmpty(response.body().data)
   })
+
+  test('show - it should return a single card by id', async ({ client, assert }) => {
+    const response = await client.get('/api/v1/cards/base1-23')
+
+    response.assertStatus(200)
+
+    const card = response.body()
+
+    assert.equal(card.id, 'base1-23')
+    assert.properties(card, [
+      'id',
+      'name',
+      'imageLarge',
+      'flavorText',
+      'number',
+      'set',
+      'rarity',
+      'artist',
+      'subtypes',
+    ])
+    assert.properties(card.set, ['id', 'name', 'releaseDate', 'imageSymbol'])
+    assert.properties(card.rarity, ['id', 'label'])
+    assert.properties(card.artist, ['id', 'name'])
+    assert.isArray(card.subtypes)
+    assert.properties(card.subtypes[0], ['id', 'label'])
+  })
+
+  test('show - it should return 404 for non-existent card', async ({ client }) => {
+    const response = await client.get('/api/v1/cards/non-existent-id')
+
+    response.assertStatus(404)
+
+    response.assertBodyContains({
+      message: 'Card not found',
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
 })
