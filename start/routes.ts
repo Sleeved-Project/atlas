@@ -14,6 +14,7 @@ router
         router.get('/', [ApiInfoController])
         router.get('/cards', [CardsController, 'index'])
         router.get('/cards/:id', [CardsController, 'show'])
+        router.get('/cards/:id/details', [CardsController, 'details'])
       })
       .prefix('v1')
   })
