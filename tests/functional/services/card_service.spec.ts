@@ -5,6 +5,10 @@ import Set from '#models/set'
 import Subtype from '#models/subtypes'
 import Artist from '#models/artist'
 import Rarity from '#models/rarity'
+import CardMarketPrice from '#models/card_market_price'
+import TcgPlayerReporting from '#models/tcg_player_reporting'
+import TcgPlayerPrice from '#models/tcg_player_price'
+import { CardFactory } from '#database/factories/card'
 
 test.group('CardService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -144,5 +148,68 @@ test.group('CardService', (group) => {
     assert.notProperty(card.$attributes, 'supertype')
     assert.notProperty(card.$attributes, 'hp')
     assert.notProperty(card.$attributes, 'convertedRetreatCost')
+  })
+
+  test('getTodayCardPricesById - should return a card with price data', async ({ assert }) => {
+    const cardMock = await CardFactory.merge({ id: 'base1-0' })
+      .with('cardMarketPrices', 1, (cardMarketPrices) =>
+        cardMarketPrices.merge({
+          id: 1234567890,
+          url: 'https://cardmarket.com/base1-0',
+          trendPrice: 10.5,
+          reverseHoloTrend: 15.75,
+          cardId: 'base1-0',
+        })
+      )
+      .with('tcgPlayerReportings', 1, (tcgPlayerReportings) =>
+        tcgPlayerReportings
+          .merge({
+            id: 1234567890,
+            url: 'https://tcgplayer.com/base1-0',
+            cardId: 'base1-0',
+          })
+          .with('tcgPlayerPrices', 2, (tcgPlayerPrices) =>
+            tcgPlayerPrices.merge([
+              { id: 1234567890, type: 'normal', market: 10.5 },
+              { id: 1234567891, type: 'holofoil', market: 15.75 },
+            ])
+          )
+      )
+      .create()
+
+    const card = await cardService.getTodayCardPricesById(cardMock.id)
+
+    assert.property(card.$attributes, 'id')
+    assert.equal(card.$attributes.id, 'base1-0')
+
+    assert.property(card.$preloaded, 'cardMarketPrices')
+    const cardMarketPrices = card.$preloaded.cardMarketPrices as CardMarketPrice[]
+    assert.isArray(cardMarketPrices)
+    assert.properties(cardMarketPrices[0].$attributes, [
+      'id',
+      'trendPrice',
+      'reverseHoloTrend',
+      'url',
+    ])
+
+    assert.property(card.$preloaded, 'tcgPlayerReportings')
+    const tcgPlayerReportings = card.$preloaded.tcgPlayerReportings as TcgPlayerReporting[]
+    assert.isArray(tcgPlayerReportings)
+    const firstReporting = tcgPlayerReportings[0]
+    assert.properties(firstReporting.$attributes, ['id', 'url'])
+
+    assert.property(firstReporting.$preloaded, 'tcgPlayerPrices')
+    const tcgPlayerPrices = firstReporting.$preloaded.tcgPlayerPrices as TcgPlayerPrice[]
+    assert.isArray(tcgPlayerPrices)
+    assert.properties(tcgPlayerPrices[0].$attributes, ['id', 'type', 'market'])
+  })
+
+  test('getTodayCardPricesById - should throw NotFoundException for non-existent card', async ({
+    assert,
+  }) => {
+    await assert.rejects(
+      () => cardService.getTodayCardPricesById('non-existent-id'),
+      'Row not found'
+    )
   })
 })
