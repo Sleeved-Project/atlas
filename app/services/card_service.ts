@@ -48,4 +48,24 @@ export default class CardService {
       .where('id', id)
       .firstOrFail()
   }
+
+  public async getTodayCardPricesById(id: string): Promise<Card> {
+    return await Card.query()
+      .preload('cardMarketPrices', (cardMarketPricesQuery) => {
+        cardMarketPricesQuery
+          .select('id', 'trendPrice', 'reverseHoloTrend', 'url')
+          .where('updated_at', '>', db.raw('NOW() - INTERVAL 1 DAY'))
+      })
+      .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
+        tcgPlayerReportings
+          .select('id', 'url')
+          .where('updated_at', '>', db.raw('NOW() - INTERVAL 1 DAY'))
+          .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
+            tcgPlayerPricesQuery.select('id', 'type', 'market')
+          })
+      })
+      .select('id')
+      .where('id', id)
+      .firstOrFail()
+  }
 }

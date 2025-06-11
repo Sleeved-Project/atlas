@@ -1,5 +1,6 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
+import { CardFactory } from '#database/factories/card'
 
 test.group('Card controller', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -102,7 +103,6 @@ test.group('Card controller', (group) => {
 
   test('show - it should return 404 for non-existent card', async ({ client }) => {
     const response = await client.get('/api/v1/cards/non-existent-id')
-
     response.assertStatus(404)
 
     response.assertBodyContains({
@@ -129,6 +129,70 @@ test.group('Card controller', (group) => {
 
   test('details - it should return 404 for non-existent card', async ({ client }) => {
     const response = await client.get('/api/v1/cards/non-existent-/details')
+
+    response.assertStatus(404)
+
+    response.assertBodyContains({
+      message: 'Card not found',
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
+
+  test('prices - it should return card prices with correct market data structure', async ({
+    client,
+    assert,
+  }) => {
+    await CardFactory.merge({ id: 'base1-0' })
+      .with('cardMarketPrices', 1, (cardMarketPrices) =>
+        cardMarketPrices.merge({
+          id: 1234567890,
+          url: 'https://cardmarket.com/base1-0',
+          trendPrice: 10.5,
+          reverseHoloTrend: 15.75,
+          cardId: 'base1-0',
+        })
+      )
+      .with('tcgPlayerReportings', 1, (tcgPlayerReportings) =>
+        tcgPlayerReportings
+          .merge({
+            id: 1234567890,
+            url: 'https://tcgplayer.com/base1-0',
+            cardId: 'base1-0',
+          })
+          .with('tcgPlayerPrices', 2, (tcgPlayerPrices) =>
+            tcgPlayerPrices.merge([
+              { id: 1234567890, type: 'normal', market: 10.5 },
+              { id: 1234567891, type: 'holofoil', market: 15.75 },
+            ])
+          )
+      )
+      .create()
+
+    const response = await client.get('/api/v1/cards/base1-0/prices')
+
+    response.assertStatus(200)
+
+    const cardPrices = response.body()
+
+    assert.equal(cardPrices.id, 'base1-0')
+
+    assert.properties(cardPrices, ['cardMarketReporting'])
+    assert.properties(cardPrices.cardMarketReporting, ['id', 'url', 'cardMarketPrices'])
+    assert.isArray(cardPrices.cardMarketReporting.cardMarketPrices)
+    assert.isNotEmpty(cardPrices.cardMarketReporting.cardMarketPrices)
+    const cardMarketfirstPrice = cardPrices.cardMarketReporting.cardMarketPrices[0]
+    assert.properties(cardMarketfirstPrice, ['id', 'type', 'market'])
+
+    assert.properties(cardPrices, ['tcgPlayerReporting'])
+    assert.properties(cardPrices.tcgPlayerReporting, ['id', 'url', 'tcgPlayerPrices'])
+    assert.isArray(cardPrices.tcgPlayerReporting.tcgPlayerPrices)
+    assert.isNotEmpty(cardPrices.tcgPlayerReporting.tcgPlayerPrices)
+    const tcgPlayerFirstPrice = cardPrices.tcgPlayerReporting.tcgPlayerPrices[0]
+    assert.properties(tcgPlayerFirstPrice, ['id', 'type', 'market'])
+  })
+
+  test('prices - it should return 404 for non-existent card', async ({ client }) => {
+    const response = await client.get('/api/v1/cards/non-existent-id/prices')
 
     response.assertStatus(404)
 

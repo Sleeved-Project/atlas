@@ -22,3 +22,9 @@ export const getCardBaseParamsValidator = vine.compile(
     id: vine.string(),
   })
 )
+
+export const getCardPriceParamsValidator = vine.compile(
+  vine.object({
+    id: vine.string(),
+  })
+)
