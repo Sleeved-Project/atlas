@@ -59,6 +59,20 @@ Atlas is the main API service for the Sleeved platform. It handles core business
 - Docker & Docker Compose
 - Taskfile (optional): [https://taskfile.dev](https://taskfile.dev)
 
+### Import database
+
+The sleeved_db dump file is accessible here
+
+🔗 Download databse dump
+
+- [sleeved_db_v5.sql](https://drive.google.com/file/d/17u2341VBun9Xw0L8S6N3ScwGbSXi5fid/view?usp=drive_link)
+
+💡 Copy-past and rename this dump into `sleeved_db.sql` in the root folder of your atlas project. The dataset wil be mount with the docker configuration build.
+
+‼️ Dont send the `sleeved_db.sql` on github without reason like feature database alterations.
+
+---
+
 ### Setup Instructions
 
 ```bash
