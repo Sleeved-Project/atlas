@@ -62,7 +62,7 @@ test.group('CardMapper', (group) => {
           id: 1234567890,
           url: 'https://cardmarket.com/base1-0',
           trendPrice: null,
-          reverseHoloTrend: null,
+          reverseHoloTrend: 0.0,
           cardId: 'base1-0',
         })
       )
@@ -73,10 +73,11 @@ test.group('CardMapper', (group) => {
             url: 'https://tcgplayer.com/base1-0',
             cardId: 'base1-0',
           })
-          .with('tcgPlayerPrices', 2, (tcgPlayerPrices) =>
+          .with('tcgPlayerPrices', 3, (tcgPlayerPrices) =>
             tcgPlayerPrices.merge([
               { id: 1234567890, type: 'normal', market: 10.5 },
               { id: 1234567891, type: 'holofoil', market: 15.75 },
+              { id: 1234567892, type: 'reverseHolofoil', market: 0.0 },
             ])
           )
       )
@@ -89,16 +90,18 @@ test.group('CardMapper', (group) => {
 
     assert.equal(result.cardMarketReporting?.cardMarketPrices[0].id, 1234567890)
     assert.equal(result.cardMarketReporting?.cardMarketPrices[0].type, 'normal')
-    assert.isNull(result.cardMarketReporting?.cardMarketPrices[0].market)
+    assert.equal(result.cardMarketReporting?.cardMarketPrices[0].market, 'unknown')
 
     assert.equal(result.cardMarketReporting?.cardMarketPrices[1].id, 1234567890)
     assert.equal(result.cardMarketReporting?.cardMarketPrices[1].type, 'reverseHolo')
-    assert.isNull(result.cardMarketReporting?.cardMarketPrices[1].market)
+    assert.equal(result.cardMarketReporting?.cardMarketPrices[1].market, 'unknown')
 
     assert.equal(result.tcgPlayerReporting?.id, 1234567890)
     assert.equal(result.tcgPlayerReporting?.url, 'https://tcgplayer.com/base1-0')
     assert.isArray(result.tcgPlayerReporting?.tcgPlayerPrices)
-    assert.equal(result.tcgPlayerReporting?.tcgPlayerPrices.length, 2)
+    assert.equal(result.tcgPlayerReporting?.tcgPlayerPrices.length, 3)
+
+    assert.equal(result.tcgPlayerReporting?.tcgPlayerPrices[2]?.market, 'unknown')
   })
 
   test('toCardPricesOutputDTO - should handle empty card price data', async ({ assert }) => {
