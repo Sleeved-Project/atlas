@@ -3,6 +3,7 @@ const HealthCheckController = () => import('#controllers/system/health_check_con
 const RootController = () => import('#controllers/system/root_controller')
 const ApiInfoController = () => import('#controllers/system/api_info_controller')
 const CardsController = () => import('#controllers/product/cards_controller')
+const ScanController = () => import('#controllers/product/scan_controller')
 
 router.get('/', [RootController])
 router.get('/health', [HealthCheckController])
@@ -16,6 +17,7 @@ router
         router.get('/cards/:id', [CardsController, 'show'])
         router.get('/cards/:id/details', [CardsController, 'details'])
         router.get('/cards/:id/prices', [CardsController, 'prices'])
+        router.post('/scan/analyze', [ScanController, 'analyze'])
       })
       .prefix('v1')
   })

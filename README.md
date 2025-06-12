@@ -75,6 +75,8 @@ The sleeved_db dump file is accessible here
 
 ### Setup Instructions
 
+Complete setup (build containers, start services, run migrations) :
+
 ```bash
 # Clone repository
 git clone https://github.com/Sleeved-Project/atlas.git
@@ -86,35 +88,39 @@ cp .env.example .env
 # Generate application key
 node ace generate:key
 
-# Build containers
-docker compose build
+# Setup application envrionnement
+task setup
+```
 
-# Start services
-docker compose up -d
+Individual steps for setup:
 
-# Run migrations
-docker compose exec api node ace migration:run
+```bash
+task: network:create # Create network
+task: build # Build containers
+task: start # Start containers
 ```
 
 ## Access the API
 
-Default URL: http://localhost:8082
+🔗 Default URL: http://localhost:8082
 
-Health check: GET /health
-
-Example: GET /cards/:id
+[Collection postman](https://sleeved.atlassian.net/wiki/x/CQBcAQ)
 
 📂 Project Structure
 
 ```bash
 ├── app/
 │   ├── controllers/     # HTTP request handlers
+│   ├── exceptions/      # Exception handlers
+│   ├── mappers/         # Mapper used in api
 │   ├── models/          # Lucid ORM models
+│   ├── services/        # Business logic layers
 │   ├── middleware/      # Request lifecycle hooks
-│   ├── validators/      # Input validation
-│   └── services/        # Business logic layers
+│   ├── types/           # Type used in api
+│   └── validators/      # Input validation
 ├── config/              # App config (database, app, etc.)
 ├── start/               # Routes and kernel boot files
+├── storage/             # Directories for file storage
 ├── tests/               # Unit and integration tests
 ├── database/            # Migrations and seeders
 ├── .env.example         # Example environment config
@@ -127,7 +133,7 @@ Example: GET /cards/:id
 Run all tests (via Docker):
 
 ```bash
-docker compose exec api node ace test
+task test
 ```
 
 Or locally (with Node installed):
@@ -141,18 +147,12 @@ node ace test
 With Taskfile (if installed):
 
 ```bash
+task network:create # Create network
 task start # Start services
 task stop # Stop containers
 task rebuild # Full rebuild
 task db:migrate # Run migrations
 task test # Run tests
-```
-
-Without Task:
-
-```bash
-docker compose up -d
-docker compose exec api node ace migration:run
 ```
 
 ### Authentication Flow

@@ -12,6 +12,9 @@ services:
       - ./:/app
       - /app/node_modules
       - /app/build
+    networks:
+      - default
+      - sleeved-network
 
   mysql:
     image: mysql:8
@@ -26,6 +29,13 @@ services:
       test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
       timeout: 20s
       retries: 10
+    networks:
+      - default
+
+networks:
+  default:
+  sleeved-network:
+    external: true
 
 volumes:
   sleeved_db-data:
