@@ -74,12 +74,12 @@ export default class CardService {
       .preload('cardMarketPrices', (cardMarketPricesQuery) => {
         cardMarketPricesQuery
           .select('id', 'trendPrice', 'reverseHoloTrend', 'url')
-          .where('updated_at', '>', db.raw('NOW() - INTERVAL 2 DAY'))
+          .where('updated_at', '>', db.raw('NOW() - INTERVAL 1 DAY'))
       })
       .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
         tcgPlayerReportings
           .select('id', 'url')
-          .where('updated_at', '>', db.raw('NOW() - INTERVAL 2 DAY'))
+          .where('updated_at', '>', db.raw('NOW() - INTERVAL 1 DAY'))
           .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
             tcgPlayerPricesQuery.select('id', 'type', 'market').orderBy('market', 'desc')
           })
