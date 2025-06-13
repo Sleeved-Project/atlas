@@ -29,8 +29,6 @@ export default class ScanService {
       return IrisMapper.scanAnalyseIrisResponseToScanCardInfoDTO(scanAnalyseResponse)
     } catch (error) {
       throw error
-    } finally {
-      fs.rmSync(filePath)
     }
   }
 }

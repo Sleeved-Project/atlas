@@ -7,11 +7,13 @@ import ScanService from '#services/scan_service'
 import { CardScanResultOutputDTO } from '#types/card_dto_type'
 import { scanAnalyzeValidator } from '#validators/scan_validator'
 import { inject } from '@adonisjs/core'
+import { MultipartFile } from '@adonisjs/core/bodyparser'
 import { cuid } from '@adonisjs/core/helpers'
 import type { HttpContext } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
 import { errors as lucidErrors } from '@adonisjs/lucid'
 import { errors as vineErrors } from '@vinejs/vine'
+import fs from 'node:fs'
 
 @inject()
 export default class ScanController {
@@ -21,8 +23,9 @@ export default class ScanController {
   ) {}
 
   async analyze({ response, request }: HttpContext) {
+    let file: MultipartFile | undefined
     try {
-      const { file } = await request.validateUsing(scanAnalyzeValidator)
+      ;({ file } = await request.validateUsing(scanAnalyzeValidator))
 
       await file.move(app.makePath('storage/uploads'), {
         name: `${cuid()}.${file.extname}`,
@@ -31,6 +34,8 @@ export default class ScanController {
       if (!file.filePath) {
         throw new FileUploadException()
       }
+
+      console.log(file.headers['content-type'])
 
       const result = await this.scanService.getAnalyseResults(
         file.filePath,
@@ -56,6 +61,10 @@ export default class ScanController {
         throw new NotFoundException(error)
       }
       throw error
+    } finally {
+      if (file && file.filePath) {
+        fs.rmSync(file.filePath)
+      }
     }
   }
 }
