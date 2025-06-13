@@ -1,8 +1,8 @@
-import { symbols, errors } from '@adonisjs/auth'
-import type { HttpContext } from '@adonisjs/core/http'
-import { AuthClientResponse, GuardContract } from '@adonisjs/auth/types'
-import jwt from 'jsonwebtoken'
 import WardenApiService from '#services/apis/warden_api_service'
+import { errors, symbols } from '@adonisjs/auth'
+import { AuthClientResponse, GuardContract } from '@adonisjs/auth/types'
+import type { HttpContext } from '@adonisjs/core/http'
+import jwt from 'jsonwebtoken'
 
 export type JwtGuardOptions = {
   secret: string
@@ -166,7 +166,7 @@ export class JwtGuard<UserProvider extends JwtUserProviderContract<unknown>>
     // }
 
     // return user mapped using payload instead of database
-    this.user = { id: authUser.id }
+    this.user = authUser
     console.log('authUser', this.user)
     return this.getUserOrFail()
   }

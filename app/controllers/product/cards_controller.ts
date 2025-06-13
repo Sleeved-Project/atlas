@@ -17,8 +17,9 @@ import CardMapper from '#mappers/card_mapper'
 export default class CardsController {
   constructor(private cardService: CardService) {}
 
-  async index({ request, response }: HttpContext) {
+  async index({ request, response, auth }: HttpContext) {
     try {
+      await auth.authenticate()
       const filters = await getAllCardsFiltersValidator.validate(request.qs())
       const cards = await this.cardService.getAllCards(filters)
       return response.ok(cards)
@@ -33,8 +34,9 @@ export default class CardsController {
     }
   }
 
-  async show({ response, request }: HttpContext) {
+  async show({ response, request, auth }: HttpContext) {
     try {
+      await auth.authenticate()
       const params = await getCardBaseParamsValidator.validate(request.params())
       const card = await this.cardService.getCardBaseById(params.id)
       return response.ok(card)
