@@ -48,6 +48,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Create network
+        run: docker network create sleeved-network
+
       - name: Build and start containers
         run: docker compose up -d
 

@@ -10,3 +10,10 @@ export type CardPricesOutputDTO = {
   } | null
   tcgPlayerReporting: TcgPlayerReportingDTO | null
 }
+export type CardScanResultOutputDTO = {
+  id: string
+  imageSmall: string
+  imageLarge: string
+  bestTrendPrice: string
+  similarity: number
+}
