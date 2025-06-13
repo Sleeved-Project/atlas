@@ -20,20 +20,10 @@ export default class CardService {
       .paginate(filters.page, filters.limit)
   }
 
-  public async getCardBaseById(id: string): Promise<Card> {
-    return await Card.query()
-      .preload('set', (setQuery) => {
-        setQuery.select('id', 'name', 'image_symbol')
-      })
-      .select('id', 'image_large', 'number', 'set_id')
-      .where('id', id)
-      .firstOrFail()
-  }
-
   public async getCardDetailById(id: string): Promise<Card> {
     return await Card.query()
       .preload('set', (setQuery) => {
-        setQuery.select('id', 'release_date')
+        setQuery.select('id', 'name', 'release_date', 'image_symbol')
       })
       .preload('rarity', (setQuery) => {
         setQuery.select('id', 'label')
@@ -44,47 +34,16 @@ export default class CardService {
       .preload('subtypes', (setQuery) => {
         setQuery.select('id', 'label')
       })
-      .select('id', 'flavor_text', 'set_id', 'rarity_id', 'artist_id')
-      .where('id', id)
-      .firstOrFail()
-  }
-
-  public async getTodayCardPricesById(id: string): Promise<Card> {
-    return await Card.query()
-      .preload('cardMarketPrices', (cardMarketPricesQuery) => {
-        cardMarketPricesQuery
-          .select('id', 'trendPrice', 'reverseHoloTrend', 'url')
-          .where('updated_at', '>', db.raw('NOW() - INTERVAL 1 DAY'))
-      })
-      .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
-        tcgPlayerReportings
-          .select('id', 'url')
-          .where('updated_at', '>', db.raw('NOW() - INTERVAL 1 DAY'))
-          .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
-            tcgPlayerPricesQuery.select('id', 'type', 'market')
-          })
-      })
-      .select('id')
-      .where('id', id)
-      .firstOrFail()
-  }
-
-  public async getCardScanResulInfosById(id: string): Promise<Card> {
-    return await Card.query()
-      .preload('cardMarketPrices', (cardMarketPricesQuery) => {
-        cardMarketPricesQuery
-          .select('id', 'trendPrice', 'reverseHoloTrend', 'url')
-          .where('updated_at', '>', db.raw('NOW() - INTERVAL 1 DAY'))
-      })
-      .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
-        tcgPlayerReportings
-          .select('id', 'url')
-          .where('updated_at', '>', db.raw('NOW() - INTERVAL 1 DAY'))
-          .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
-            tcgPlayerPricesQuery.select('id', 'type', 'market').orderBy('market', 'desc')
-          })
-      })
-      .select('id', 'image_large', 'image_small')
+      .select(
+        'id',
+        'name',
+        'image_large',
+        'flavor_text',
+        'number',
+        'set_id',
+        'rarity_id',
+        'artist_id'
+      )
       .where('id', id)
       .firstOrFail()
   }

@@ -12,9 +12,6 @@ services:
       - ./:/app
       - /app/node_modules
       - /app/build
-    networks:
-      - default
-      - sleeved-network
 
   mysql:
     image: mysql:8
@@ -24,18 +21,11 @@ services:
       - .env
     volumes:
       - sleeved_db-data:/var/lib/mysql
-      - ./sleeved_db.sql:/docker-entrypoint-initdb.d/sleeved_db.sql
+      - ./sleeved_db_v4.sql:/docker-entrypoint-initdb.d/sleeved_db_v4.sql
     healthcheck:
       test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
-      timeout: 30s
+      timeout: 20s
       retries: 10
-    networks:
-      - default
-
-networks:
-  default:
-  sleeved-network:
-    external: true
 
 volumes:
   sleeved_db-data:

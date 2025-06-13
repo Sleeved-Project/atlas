@@ -1,12 +1,10 @@
-import { BaseModel, belongsTo, column, hasMany, manyToMany } from '@adonisjs/lucid/orm'
-import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
+import { BaseModel, belongsTo, column, manyToMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, ManyToMany } from '@adonisjs/lucid/types/relations'
 import Artist from '#models/artist'
 import Rarity from '#models/rarity'
 import Legality from '#models/legality'
 import Set from '#models/set'
 import Subtype from './subtypes.js'
-import CardMarketPrice from './card_market_price.js'
-import TcgPlayerReporting from './tcg_player_reporting.js'
 
 export default class Card extends BaseModel {
   /**
@@ -81,14 +79,4 @@ export default class Card extends BaseModel {
     pivotTable: 'Card_Subtype',
   })
   declare subtypes: ManyToMany<typeof Subtype>
-
-  @hasMany(() => CardMarketPrice, {
-    foreignKey: 'cardId',
-  })
-  declare cardMarketPrices: HasMany<typeof CardMarketPrice>
-
-  @hasMany(() => TcgPlayerReporting, {
-    foreignKey: 'cardId',
-  })
-  declare tcgPlayerReportings: HasMany<typeof TcgPlayerReporting>
 }

@@ -30,38 +30,8 @@ tasks:
     cmds:
       - docker compose exec api node ace db:seed
 
-  # Setup commands
-  setup:
-    desc: Setup the application environment
-    cmds:
-      - task: network:create
-      - task: build
-      - task: start
-
-  # Network commands
-  network:create:
-    desc: Create the external network if it does not exist
-    cmds:
-      - docker network inspect sleeved-network || docker network create sleeved-network
-
-  network:info:
-    desc: Display network information
-    cmds:
-      - docker network ls
-      - docker network inspect sleeved-network
-
-  network:remove:
-    desc: Remove the external network
-    cmds:
-      - docker network rm sleeved-network
-
   # Application commands
   start:
-    desc: Start all services
-    cmds:
-      - docker compose up
-
-  start:standalone:
     desc: Start all services
     cmds:
       - docker compose up -d
@@ -69,7 +39,7 @@ tasks:
   stop:
     desc: Stop all services
     cmds:
-      - docker compose down
+      - docker compose down {{.CLI_ARGS}}
 
   restart:
     desc: Restart all services
@@ -80,7 +50,7 @@ tasks:
   build:
     desc: Build the application
     cmds:
-      - docker compose build
+      - docker compose build {{.CLI_ARGS}}
 
   rebuild:
     desc: Rebuild and restart
