@@ -23,7 +23,7 @@ services:
     env_file:
       - .env
     volumes:
-      - sleeved_db-data:/var/lib/mysql
+      - db_data:/var/lib/mysql
       - ./sleeved_db_dump.sql:/docker-entrypoint-initdb.d/sleeved_db_dump.sql
     healthcheck:
       test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
@@ -38,4 +38,4 @@ networks:
     external: true
 
 volumes:
-  sleeved_db-data:
+  db_data:
