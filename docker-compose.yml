@@ -24,7 +24,7 @@ services:
       - .env
     volumes:
       - sleeved_db-data:/var/lib/mysql
-      - ./sleeved_db.sql:/docker-entrypoint-initdb.d/sleeved_db.sql
+      - ./sleeved_db_dump.sql:/docker-entrypoint-initdb.d/sleeved_db_dump.sql
     healthcheck:
       test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
       timeout: 30s
