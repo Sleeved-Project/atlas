@@ -10,7 +10,20 @@ export const getAllCardsFiltersValidator = vine.compile(
     name: vine.string().optional(),
   })
 )
+
 export const getCardDetailParamsValidator = vine.compile(
+  vine.object({
+    id: vine.string(),
+  })
+)
+
+export const getCardBaseParamsValidator = vine.compile(
+  vine.object({
+    id: vine.string(),
+  })
+)
+
+export const getCardPriceParamsValidator = vine.compile(
   vine.object({
     id: vine.string(),
   })
