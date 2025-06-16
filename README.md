@@ -58,6 +58,17 @@ Atlas is the main API service for the Sleeved platform. It handles core business
 - Node.js `>= 22`
 - Docker & Docker Compose
 - Taskfile (optional): [https://taskfile.dev](https://taskfile.dev)
+- Git LFS
+
+### Git LFS
+
+Large data files are send on github with Git LFS. Git Large File Storage (LFS) replaces large files such as audio samples, videos, datasets, and graphics with text pointers inside Git, while storing the file contents on a remote server like GitHub.com or GitHub Enterprise.
+
+If you want push large file data run **before push**
+
+```bash
+git lfs push --all origin
+```
 
 ### Import database
 
@@ -67,9 +78,9 @@ The sleeved_db dump file is accessible here
 
 - [sleeved_db_v5.sql](https://drive.google.com/file/d/17u2341VBun9Xw0L8S6N3ScwGbSXi5fid/view?usp=drive_link)
 
-💡 Copy-past and rename this dump into `sleeved_db.sql` in the root folder of your atlas project. The dataset wil be mount with the docker configuration build.
+💡 Copy-past and rename this dump into `sleeved_db_dump.sql` in the root folder of your atlas project. The dataset wil be mount with the docker configuration build.
 
-‼️ Dont send the `sleeved_db.sql` on github without reason like feature database alterations.
+‼️ Dont send the `sleeved_db_dump.sql` on github without reason like feature database alterations.
 
 ---
 
