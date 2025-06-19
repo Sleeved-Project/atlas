@@ -56,7 +56,7 @@ jobs:
           docker network create looter-network
 
       - name: Build and start containers
-        run: docker compose up -d
+        run: docker compose up -d --build
 
       - name: Run migrations
         run: docker compose exec -T api node ace migration:run
