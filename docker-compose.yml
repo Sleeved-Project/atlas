@@ -31,10 +31,14 @@ services:
       retries: 10
     networks:
       - default
+      - looter-network
+    container_name: sleeved-db
 
 networks:
   default:
   sleeved-network:
+    external: true
+  looter-network:
     external: true
 
 volumes:
