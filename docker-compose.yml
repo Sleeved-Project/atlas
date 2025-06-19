@@ -27,7 +27,7 @@ services:
       - ./sleeved_db_dump.sql:/docker-entrypoint-initdb.d/sleeved_db_dump.sql
     healthcheck:
       test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
-      timeout: 30s
+      timeout: 35s
       retries: 10
     networks:
       - default
