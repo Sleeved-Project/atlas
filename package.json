@@ -61,10 +61,13 @@
     "typescript": "~5.7"
   },
   "dependencies": {
+    "@adonisjs/auth": "^9.4.0",
     "@adonisjs/core": "^6.17.2",
     "@adonisjs/cors": "^2.2.1",
     "@adonisjs/lucid": "^21.6.0",
+    "@types/jsonwebtoken": "^9.0.9",
     "@vinejs/vine": "^3.0.0",
+    "jsonwebtoken": "^9.0.2",
     "luxon": "^3.6.1",
     "mysql2": "^3.14.1",
     "reflect-metadata": "^0.2.2"
