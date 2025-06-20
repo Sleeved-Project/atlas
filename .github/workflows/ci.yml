@@ -65,6 +65,15 @@ jobs:
           docker compose exec -T mysql mysql -uroot -ppassword -e "SELECT 1;"
           docker compose exec -T api ping -c 3 mysql
 
+      - name: Check API environment variables
+        run: docker compose exec -T api printenv | grep DB_
+
+      - name: Check MySQL users and permissions
+        run: docker compose exec -T mysql mysql -uroot -ppassword -e "SELECT user, host FROM mysql.user; SHOW GRANTS FOR 'root'@'%';"
+
+      - name: Wait before migrations
+        run: sleep 10
+
       - name: Run migrations
         run: docker compose exec -T api node ace migration:run
 
