@@ -25,7 +25,7 @@ tasks:
       - |
         source .env && \
         echo "🔄 Starting export... " && \
-        (docker compose exec -T mysql mysqldump --databases $DB_DATABASE -uroot -p"$MYSQL_ROOT_PASSWORD" > ./sleeved_db_dump.sql 2>&1) && \
+        (docker compose exec -T mysql mysqldump --databases $DB_DATABASE -uroot -p"$MYSQL_ROOT_PASSWORD" > ./sleeved_db_dump.sql 2>/dev/null) && \
         echo "✅ Export completed with success into ./sleeved_db_dump.sql !"
 
   db:migrate:
