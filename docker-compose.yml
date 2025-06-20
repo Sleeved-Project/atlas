@@ -17,14 +17,15 @@ services:
       - sleeved-network
 
   mysql:
-    image: mysql:8
+    image: mysql:8.0
+    restart: always
     ports:
       - '3307:3306'
     env_file:
       - .env
     volumes:
       - db_data:/var/lib/mysql
-      - ./sleeved_db_dump.sql:/docker-entrypoint-initdb.d/sleeved_db_dump.sql
+      # - ./sleeved_db_dump.sql:/docker-entrypoint-initdb.d/sleeved_db_dump.sql
     healthcheck:
       test:
         [
@@ -40,8 +41,8 @@ services:
         ]
       interval: 10s
       timeout: 5s
-      retries: 6
-      start_period: 30s
+      retries: 10
+      start_period: 60s
     networks:
       - default
       - looter-network

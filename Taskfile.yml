@@ -7,7 +7,17 @@ tasks:
       - task --list-all
     silent: true
 
-  # Database commands
+    # Database commands
+  db:import:
+    desc: Import database from dump file
+    cmds:
+      - echo "Importing database from dump file..."
+      - |
+        source .env && \
+        echo "🔄 Démarrage de l'importation..." && \
+        (docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $DB_DATABASE < ./sleeved_db_dump.sql 2>&1) && \
+        echo "✅ Importation terminée avec succès !"
+
   db:migrate:
     desc: Run database migrations
     cmds:

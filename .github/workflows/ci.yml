@@ -58,18 +58,12 @@ jobs:
       - name: Build and start containers
         run: docker compose up -d --build
 
-      - name: Debug network
+      - name: Import database from dump file
         run: |
-          docker network ls
-          docker compose ps
-          docker compose exec -T mysql mysql -uroot -ppassword -e "SELECT 1;"
-          docker compose exec -T api ping -c 3 mysql
-
-      - name: Check API environment variables
-        run: docker compose exec -T api printenv | grep DB_
-
-      - name: Check MySQL users and permissions
-        run: docker compose exec -T mysql mysql -uroot -ppassword -e "SELECT user, host FROM mysql.user; SHOW GRANTS FOR 'root'@'%';"
+          source .env && \
+          echo "🔄 Démarrage de l'importation..." && \
+          docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $DB_DATABASE < ./sleeved_db_dump.sql && \
+          echo "✅ Importation terminée avec succès !"
 
       - name: Wait before migrations
         run: sleep 10
