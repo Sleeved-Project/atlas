@@ -26,9 +26,22 @@ services:
       - db_data:/var/lib/mysql
       - ./sleeved_db_dump.sql:/docker-entrypoint-initdb.d/sleeved_db_dump.sql
     healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
-      timeout: 35s
-      retries: 10
+      test:
+        [
+          'CMD',
+          'mysqladmin',
+          'ping',
+          '-h',
+          'localhost',
+          '-u',
+          'root',
+          '-p${MYSQL_ROOT_PASSWORD}',
+          '--silent',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
     networks:
       - default
       - looter-network
