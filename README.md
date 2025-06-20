@@ -70,20 +70,6 @@ If you want push large file data run **before push**
 git lfs push --all origin
 ```
 
-### Import database
-
-The sleeved_db dump file is accessible here
-
-🔗 Download databse dump
-
-- [sleeved_db_v5.sql](https://drive.google.com/file/d/17u2341VBun9Xw0L8S6N3ScwGbSXi5fid/view?usp=drive_link)
-
-💡 Copy-past and rename this dump into `sleeved_db_dump.sql` in the root folder of your atlas project. The dataset wil be mount with the docker configuration build.
-
-‼️ Dont send the `sleeved_db_dump.sql` on github without reason like feature database alterations.
-
----
-
 ### Setup Instructions
 
 Complete setup (build containers, start services, run migrations) :
@@ -109,6 +95,22 @@ Individual steps for setup:
 task: network:create # Create network
 task: build # Build containers
 task: start # Start containers
+```
+
+### Import database
+
+For using api you need to import the database dump
+
+🔗 Download databse dump
+
+- [sleeved_db_v5.sql](https://drive.google.com/file/d/17u2341VBun9Xw0L8S6N3ScwGbSXi5fid/view?usp=drive_link)
+
+💡 Copy-past and rename this dump into `sleeved_db_dump.sql` in the root folder of your atlas project.
+
+📥 Import the dataset with this command
+
+```bash
+task: db:import
 ```
 
 ## Access the API
@@ -153,16 +155,31 @@ Or locally (with Node installed):
 node ace test
 ```
 
+### Export database
+
+📤 Export the dataset with this command
+
+```bash
+task: db:export
+```
+
+💡 The dump export will be extract into `./sleeved_db_dump.sql`.
+
+‼️ If you run **looter scraping on atlas** don't forget to send the `sleeved_db_dump.sql` on github with git lfs.
+
 ### Useful Dev Commands
 
 With Taskfile (if installed):
 
 ```bash
+task setup # Setup project
 task network:create # Create network
 task start # Start services
 task stop # Stop containers
 task rebuild # Full rebuild
 task db:migrate # Run migrations
+task db:import # Import dump
+task db:export # Export dump
 task test # Run tests
 ```
 

@@ -58,6 +58,14 @@ jobs:
       - name: Build and start containers
         run: docker compose up -d --build
 
+      - name: Wait before dump
+        run: sleep 30
+
+      - name: Import database from dump file
+        run: |
+          source .env && \
+          docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $DB_DATABASE < ./sleeved_db_dump.sql
+
       - name: Run migrations
         run: docker compose exec -T api node ace migration:run
 
