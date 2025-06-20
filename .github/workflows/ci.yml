@@ -68,9 +68,6 @@ jobs:
           docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $DB_DATABASE < ./sleeved_db_dump.sql && \
           echo "✅ Importation terminée avec succès !"
 
-      - name: Wait before migrations
-        run: sleep 10
-
       - name: Run migrations
         run: docker compose exec -T api node ace migration:run
 
