@@ -59,7 +59,7 @@ jobs:
         run: docker compose up -d --build
 
       - name: Waiting for database to be ready
-        run: sleep 20
+        run: sleep 30
 
       - name: Run migrations
         run: docker compose exec -T api node ace migration:run
