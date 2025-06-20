@@ -58,11 +58,14 @@ jobs:
       - name: Build and start containers
         run: docker compose up -d --build
 
+      - name: Wait before dump
+        run: sleep 30
+
       - name: Import database from dump file
         run: |
           source .env && \
           echo "🔄 Démarrage de l'importation..." && \
-          docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -h 0.0.0.0 $DB_DATABASE < ./sleeved_db_dump.sql && \
+          docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $DB_DATABASE < ./sleeved_db_dump.sql && \
           echo "✅ Importation terminée avec succès !"
 
       - name: Wait before migrations
