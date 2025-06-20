@@ -14,9 +14,19 @@ tasks:
       - echo "Importing database from dump file..."
       - |
         source .env && \
-        echo "🔄 Démarrage de l'importation..." && \
+        echo "🔄 Starting import... " && \
         (docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $DB_DATABASE < ./sleeved_db_dump.sql 2>&1) && \
-        echo "✅ Importation terminée avec succès !"
+        echo "✅ Import completed with success !"
+
+  db:export:
+    desc: Export database into dump file
+    cmds:
+      - echo "Exporting database into sleeved_db_dump.sql..."
+      - |
+        source .env && \
+        echo "🔄 Starting export... " && \
+        (docker compose exec -T mysql mysqldump --databases $DB_DATABASE -uroot -p"$MYSQL_ROOT_PASSWORD" > ./sleeved_db_dump.sql 2>&1) && \
+        echo "✅ Export completed with success into ./sleeved_db_dump.sql !"
 
   db:migrate:
     desc: Run database migrations
