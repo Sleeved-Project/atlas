@@ -64,9 +64,7 @@ jobs:
       - name: Import database from dump file
         run: |
           source .env && \
-          echo "🔄 Starting import... " && \
-          docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $DB_DATABASE < ./sleeved_db_dump.sql && \
-          echo "✅ Import completed with success !"
+          cat ./sleeved_db_dump.sql | docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $DB_DATABASE
 
       - name: Run migrations
         run: docker compose exec -T api node ace migration:run
