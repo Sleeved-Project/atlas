@@ -71,6 +71,9 @@ jobs:
       - name: Check MySQL users and permissions
         run: docker compose exec -T mysql mysql -uroot -ppassword -e "SELECT user, host FROM mysql.user; SHOW GRANTS FOR 'root'@'%';"
 
+      - name: Wait before migrations
+        run: sleep 10
+
       - name: Run migrations
         run: docker compose exec -T api node ace migration:run
 
