@@ -58,6 +58,13 @@ jobs:
       - name: Build and start containers
         run: docker compose up -d --build
 
+      - name: Debug network
+        run: |
+          docker network ls
+          docker compose ps
+          docker compose exec -T mysql mysql -uroot -ppassword -e "SELECT 1;"
+          docker compose exec -T api ping -c 3 mysql
+
       - name: Run migrations
         run: docker compose exec -T api node ace migration:run
 
