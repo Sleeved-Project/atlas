@@ -82,4 +82,16 @@ export default class CardsController {
       throw error
     }
   }
+
+  async artist({ response }: HttpContext) {
+    try {
+      const artists = await this.cardService.getAllArtists()
+      return response.ok(artists)
+    } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
 }

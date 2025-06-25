@@ -15,6 +15,7 @@ router
       .group(() => {
         router.get('/', [ApiInfoController])
         router.get('/cards', [CardsController, 'index']).use(middleware.auth())
+        router.get('/cards/artist', [CardsController, 'artist'])
         router.get('/cards/:id', [CardsController, 'show'])
         router.get('/cards/:id/details', [CardsController, 'details'])
         router.get('/cards/:id/prices', [CardsController, 'prices'])
