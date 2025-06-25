@@ -3,9 +3,6 @@ import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 import db from '@adonisjs/lucid/services/db'
 import { getAllCardsFiltersValidator } from '#validators/card_validator'
 import { Infer } from '@vinejs/vine/types'
-import Rarity from '#models/rarity'
-import Subtype from '#models/subtypes'
-import Artist from '#models/artist'
 
 export default class CardService {
   public async getAllCards(
@@ -90,17 +87,5 @@ export default class CardService {
       .select('id', 'image_large', 'image_small')
       .where('id', id)
       .firstOrFail()
-  }
-
-  public async getAllRarities() {
-    return await Rarity.query().orderBy('label', 'asc')
-  }
-
-  public async getAllSubtypes() {
-    return await Subtype.query().orderBy('label', 'asc')
-  }
-
-  public async getAllArtists() {
-    return await Artist.query().orderBy('name', 'asc')
   }
 }

@@ -1,5 +1,6 @@
 import router from '@adonisjs/core/services/router'
 import { middleware } from './kernel.js'
+const FiltersController = () => import('#controllers/product/filters_controller')
 const HealthCheckController = () => import('#controllers/system/health_check_controller')
 const RootController = () => import('#controllers/system/root_controller')
 const ApiInfoController = () => import('#controllers/system/api_info_controller')
@@ -16,14 +17,18 @@ router
       .group(() => {
         router.get('/', [ApiInfoController])
         router.get('/cards', [CardsController, 'index']).use(middleware.auth())
-        router.get('/cards/rarity', [CardsController, 'rarity'])
-        router.get('/cards/subtype', [CardsController, 'subtype'])
-        router.get('/cards/artist', [CardsController, 'artist'])
         router.get('/cards/:id', [CardsController, 'show'])
         router.get('/cards/:id/details', [CardsController, 'details'])
         router.get('/cards/:id/prices', [CardsController, 'prices'])
         router.post('/scan/analyze', [ScanController, 'analyze'])
         router.post('/folios/init', [FoliosController, 'init']).use(middleware.auth())
+
+        // Filters API
+        router
+          .group(() => {
+            router.get('/cards', [FiltersController, 'cards'])
+          })
+          .prefix('filters')
       })
       .prefix('v1')
   })
