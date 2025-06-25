@@ -256,4 +256,19 @@ test.group('Card controller', (group) => {
       code: 'E_ROW_NOT_FOUND',
     })
   })
+
+  test('artist - it should return all artists', async ({ client, assert }) => {
+    const response = await client
+      .get('/api/v1/cards/artist')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const artists = response.body()
+    assert.isArray(artists)
+
+    if (artists.length > 0) {
+      assert.properties(artists[0], ['id', 'name'])
+    }
+  })
 })
