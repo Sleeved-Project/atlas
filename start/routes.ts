@@ -1,4 +1,5 @@
 import router from '@adonisjs/core/services/router'
+import { middleware } from './kernel.js'
 const HealthCheckController = () => import('#controllers/system/health_check_controller')
 const RootController = () => import('#controllers/system/root_controller')
 const ApiInfoController = () => import('#controllers/system/api_info_controller')
@@ -13,7 +14,7 @@ router
     router
       .group(() => {
         router.get('/', [ApiInfoController])
-        router.get('/cards', [CardsController, 'index'])
+        router.get('/cards', [CardsController, 'index']).use(middleware.auth())
         router.get('/cards/:id', [CardsController, 'show'])
         router.get('/cards/:id/details', [CardsController, 'details'])
         router.get('/cards/:id/prices', [CardsController, 'prices'])

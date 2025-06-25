@@ -1,12 +1,29 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
+import sinon from 'sinon'
 import { CardFactory } from '#database/factories/card'
+import AuthServiceMock from '#tests/mocks/auth_service_mock'
 
 test.group('Card controller', (group) => {
-  group.each.setup(() => testUtils.db().withGlobalTransaction())
+  let wardenApiClientStub: sinon.SinonStub
+
+  group.setup(async () => {
+    wardenApiClientStub = AuthServiceMock.setupWardenApiClientStub()
+  })
+
+  group.each.setup(async () => {
+    testUtils.db().withGlobalTransaction()
+  })
+
+  group.teardown(async () => {
+    wardenApiClientStub.restore()
+  })
 
   test('index - it should return paginated cards', async ({ client, assert }) => {
-    const response = await client.get('/api/v1/cards').qs({ page: 1, limit: 10 })
+    const response = await client
+      .get('/api/v1/cards')
+      .qs({ page: 1, limit: 10 })
+      .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
 
@@ -32,11 +49,18 @@ test.group('Card controller', (group) => {
   })
 
   test('index - it should apply pagination correctly', async ({ client, assert }) => {
-    const response1 = await client.get('/api/v1/cards').qs({ page: 1, limit: 5 })
+    const response1 = await client
+      .get('/api/v1/cards')
+      .qs({ page: 1, limit: 5 })
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
     response1.assertStatus(200)
     const page1Data = response1.body().data
 
-    const response2 = await client.get('/api/v1/cards').qs({ page: 2, limit: 5 })
+    const response2 = await client
+      .get('/api/v1/cards')
+      .qs({ page: 2, limit: 5 })
+      .header('Authorization', 'Bearer fake-token-for-testing')
     response2.assertStatus(200)
     const page2Data = response2.body().data
 
@@ -47,15 +71,24 @@ test.group('Card controller', (group) => {
   })
 
   test('index - it should handle invalid pagination parameters', async ({ client }) => {
-    const responseNegativePage = await client.get('/api/v1/cards').qs({ page: -1, limit: 10 })
+    const responseNegativePage = await client
+      .get('/api/v1/cards')
+      .qs({ page: -1, limit: 10 })
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
     responseNegativePage.assertStatus(422)
 
-    const responseNegativeLimit = await client.get('/api/v1/cards').qs({ page: 1, limit: -5 })
+    const responseNegativeLimit = await client
+      .get('/api/v1/cards')
+      .qs({ page: 1, limit: -5 })
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
     responseNegativeLimit.assertStatus(422)
 
     const responseInvalidParams = await client
       .get('/api/v1/cards')
       .qs({ page: 'abc', limit: 'xyz' })
+      .header('Authorization', 'Bearer fake-token-for-testing')
     responseInvalidParams.assertStatus(422)
   })
 
@@ -63,18 +96,24 @@ test.group('Card controller', (group) => {
     const responseNotExistingFilter = await client
       .get('/api/v1/cards')
       .qs({ page: 1, limit: 10, names: 'Pikachu' })
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
     responseNotExistingFilter.assertStatus(200)
     assert.isAtLeast(responseNotExistingFilter.body().data.length, 1)
 
     const responseEmptyFilter = await client
       .get('/api/v1/cards')
       .qs({ page: 1, limit: 10, name: '' })
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
     responseEmptyFilter.assertStatus(200)
     assert.equal(responseEmptyFilter.body().data.length, 10)
 
     const responseNotExistingName = await client
       .get('/api/v1/cards')
       .qs({ page: 1, limit: 10, name: '123QS' })
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
     responseNotExistingName.assertStatus(200)
     assert.isEmpty(responseNotExistingName.body().data)
   })
@@ -83,14 +122,19 @@ test.group('Card controller', (group) => {
     client,
     assert,
   }) => {
-    const response = await client.get('/api/v1/cards').qs({ page: 99999, limit: 10 })
+    const response = await client
+      .get('/api/v1/cards')
+      .qs({ page: 99999, limit: 10 })
+      .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
     assert.isEmpty(response.body().data)
   })
 
   test('show - it should return a single base card infos by id', async ({ client, assert }) => {
-    const response = await client.get('/api/v1/cards/base1-23')
+    const response = await client
+      .get('/api/v1/cards/base1-23')
+      .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
 
@@ -102,7 +146,10 @@ test.group('Card controller', (group) => {
   })
 
   test('show - it should return 404 for non-existent card', async ({ client }) => {
-    const response = await client.get('/api/v1/cards/non-existent-id')
+    const response = await client
+      .get('/api/v1/cards/non-existent-id')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
     response.assertStatus(404)
 
     response.assertBodyContains({
@@ -112,7 +159,9 @@ test.group('Card controller', (group) => {
   })
 
   test('details - it should return a single card details by id', async ({ client, assert }) => {
-    const response = await client.get('/api/v1/cards/base1-23/details')
+    const response = await client
+      .get('/api/v1/cards/base1-23/details')
+      .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
 
@@ -128,7 +177,9 @@ test.group('Card controller', (group) => {
   })
 
   test('details - it should return 404 for non-existent card', async ({ client }) => {
-    const response = await client.get('/api/v1/cards/non-existent-/details')
+    const response = await client
+      .get('/api/v1/cards/non-existent-/details')
+      .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(404)
 
@@ -168,7 +219,9 @@ test.group('Card controller', (group) => {
       )
       .create()
 
-    const response = await client.get('/api/v1/cards/base1-0/prices')
+    const response = await client
+      .get('/api/v1/cards/base1-0/prices')
+      .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
 
@@ -192,7 +245,9 @@ test.group('Card controller', (group) => {
   })
 
   test('prices - it should return 404 for non-existent card', async ({ client }) => {
-    const response = await client.get('/api/v1/cards/non-existent-id/prices')
+    const response = await client
+      .get('/api/v1/cards/non-existent-id/prices')
+      .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(404)
 

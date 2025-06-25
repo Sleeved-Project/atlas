@@ -3,10 +3,11 @@ import {
   IrisException,
   IrisNoMatchException,
 } from '#exceptions/iris_exception'
+import env from '#start/env'
 import { ScanAnalyseIrisResponse } from '#types/iris_type'
 
 export default class IrisApiClient {
-  baseUrl = 'http://iris-api:8083/api/v1'
+  private readonly baseUrl = env.get('IRIS_API_BASE_URL')
 
   public async scanCard(formData: FormData): Promise<ScanAnalyseIrisResponse> {
     try {
