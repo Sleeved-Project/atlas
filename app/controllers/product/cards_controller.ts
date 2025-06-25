@@ -17,8 +17,9 @@ import CardMapper from '#mappers/card_mapper'
 export default class CardsController {
   constructor(private cardService: CardService) {}
 
-  async index({ request, response }: HttpContext) {
+  async index({ request, response, authUser }: HttpContext) {
     try {
+      console.log('User authenticated:', authUser)
       const filters = await getAllCardsFiltersValidator.validate(request.qs())
       const cards = await this.cardService.getAllCards(filters)
       return response.ok(cards)
