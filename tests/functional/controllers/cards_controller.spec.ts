@@ -256,4 +256,20 @@ test.group('Card controller', (group) => {
       code: 'E_ROW_NOT_FOUND',
     })
   })
+
+  test('subtype - it should return all subtypes', async ({ client, assert }) => {
+    const response = await client
+      .get('/api/v1/cards/subtype')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const subtypes = response.body()
+    assert.isArray(subtypes)
+
+    if (subtypes.length > 0) {
+      // Verify structure of each subtype
+      assert.properties(subtypes[0], ['id', 'label'])
+    }
+  })
 })
