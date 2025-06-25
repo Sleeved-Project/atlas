@@ -257,6 +257,32 @@ test.group('Card controller', (group) => {
     })
   })
 
+  test('rarity - it should return all rarities', async ({ client, assert }) => {
+    const response = await client
+      .get('/api/v1/cards/rarity')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const rarities = response.body()
+    assert.isArray(rarities)
+    assert.isAbove(rarities.length, 0, 'Expected at least one rarity to be returned')
+    assert.properties(rarities[0], ['id', 'label'])
+  })
+
+  test('subtype - it should return all subtypes', async ({ client, assert }) => {
+    const response = await client
+      .get('/api/v1/cards/subtype')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const subtypes = response.body()
+    assert.isArray(subtypes)
+    assert.isAtLeast(subtypes.length, 0, 'Expected at least one subtype to be returned')
+    assert.properties(subtypes[0], ['id', 'label'])
+  })
+
   test('artist - it should return all artists', async ({ client, assert }) => {
     const response = await client
       .get('/api/v1/cards/artist')
