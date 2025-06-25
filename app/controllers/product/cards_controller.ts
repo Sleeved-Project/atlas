@@ -82,4 +82,16 @@ export default class CardsController {
       throw error
     }
   }
+
+  async rarity({ response }: HttpContext) {
+    try {
+      const rarities = await this.cardService.getAllRarities()
+      return response.ok(rarities)
+    } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
 }
