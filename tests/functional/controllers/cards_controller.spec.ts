@@ -266,9 +266,7 @@ test.group('Card controller', (group) => {
 
     const rarities = response.body()
     assert.isArray(rarities)
-
-    if (rarities.length > 0) {
-      assert.properties(rarities[0], ['id', 'label'])
-    }
+    assert.isAbove(rarities.length, 0, 'Expected at least one rarity to be returned')
+    assert.properties(rarities[0], ['id', 'label'])
   })
 })
