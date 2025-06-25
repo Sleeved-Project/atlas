@@ -282,4 +282,17 @@ test.group('Card controller', (group) => {
     assert.isAtLeast(subtypes.length, 0, 'Expected at least one subtype to be returned')
     assert.properties(subtypes[0], ['id', 'label'])
   })
+
+  test('artist - it should return all artists', async ({ client, assert }) => {
+    const response = await client
+      .get('/api/v1/cards/artist')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const artists = response.body()
+    assert.isArray(artists)
+    assert.isAtLeast(artists.length, 0, 'Expected at least one artist to be returned')
+    assert.properties(artists[0], ['id', 'name'])
+  })
 })

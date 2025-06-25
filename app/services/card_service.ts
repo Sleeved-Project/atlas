@@ -5,6 +5,7 @@ import { getAllCardsFiltersValidator } from '#validators/card_validator'
 import { Infer } from '@vinejs/vine/types'
 import Rarity from '#models/rarity'
 import Subtype from '#models/subtypes'
+import Artist from '#models/artist'
 
 export default class CardService {
   public async getAllCards(
@@ -97,5 +98,9 @@ export default class CardService {
 
   public async getAllSubtypes() {
     return await Subtype.query().orderBy('label', 'asc')
+  }
+
+  public async getAllArtists() {
+    return await Artist.query().orderBy('name', 'asc')
   }
 }
