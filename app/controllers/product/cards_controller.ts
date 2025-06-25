@@ -93,7 +93,7 @@ export default class CardsController {
       }
       throw error
     }
-  }      
+  }
 
   async subtype({ response }: HttpContext) {
     try {

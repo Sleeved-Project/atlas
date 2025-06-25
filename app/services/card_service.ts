@@ -91,7 +91,6 @@ export default class CardService {
       .firstOrFail()
   }
 
-
   public async getAllRarities() {
     return await Rarity.query().orderBy('label', 'asc')
   }
