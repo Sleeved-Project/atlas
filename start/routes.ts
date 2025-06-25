@@ -16,6 +16,7 @@ router
         router.get('/', [ApiInfoController])
         router.get('/cards', [CardsController, 'index']).use(middleware.auth())
         router.get('/cards/rarity', [CardsController, 'rarity'])
+        router.get('/cards/subtype', [CardsController, 'subtype'])
         router.get('/cards/:id', [CardsController, 'show'])
         router.get('/cards/:id/details', [CardsController, 'details'])
         router.get('/cards/:id/prices', [CardsController, 'prices'])

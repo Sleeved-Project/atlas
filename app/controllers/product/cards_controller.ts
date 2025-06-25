@@ -93,5 +93,17 @@ export default class CardsController {
       }
       throw error
     }
+  }      
+
+  async subtype({ response }: HttpContext) {
+    try {
+      const subtypes = await this.cardService.getAllSubtypes()
+      return response.ok(subtypes)
+    } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
   }
 }
