@@ -266,9 +266,7 @@ test.group('Card controller', (group) => {
 
     const artists = response.body()
     assert.isArray(artists)
-
-    if (artists.length > 0) {
-      assert.properties(artists[0], ['id', 'name'])
-    }
+    assert.isAtLeast(artists.length, 0, 'Expected at least one artist to be returned')
+    assert.properties(artists[0], ['id', 'name'])
   })
 })
