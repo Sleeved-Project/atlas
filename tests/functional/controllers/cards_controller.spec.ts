@@ -256,4 +256,19 @@ test.group('Card controller', (group) => {
       code: 'E_ROW_NOT_FOUND',
     })
   })
+
+  test('rarity - it should return all rarities', async ({ client, assert }) => {
+    const response = await client
+      .get('/api/v1/cards/rarity')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const rarities = response.body()
+    assert.isArray(rarities)
+
+    if (rarities.length > 0) {
+      assert.properties(rarities[0], ['id', 'label'])
+    }
+  })
 })
