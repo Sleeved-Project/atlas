@@ -268,7 +268,6 @@ test.group('Card controller', (group) => {
     assert.isArray(subtypes)
 
     if (subtypes.length > 0) {
-      // Verify structure of each subtype
       assert.properties(subtypes[0], ['id', 'label'])
     }
   })
