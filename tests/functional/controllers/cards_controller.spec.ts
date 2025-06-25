@@ -266,9 +266,7 @@ test.group('Card controller', (group) => {
 
     const subtypes = response.body()
     assert.isArray(subtypes)
-
-    if (subtypes.length > 0) {
-      assert.properties(subtypes[0], ['id', 'label'])
-    }
+    assert.isAtLeast(subtypes.length, 0, 'Expected at least one subtype to be returned')
+    assert.properties(subtypes[0], ['id', 'label'])
   })
 })
