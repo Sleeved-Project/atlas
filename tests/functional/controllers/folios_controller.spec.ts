@@ -7,15 +7,13 @@ import AuthServiceMock from '#tests/mocks/auth_service_mock'
 test.group('Folio controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
 
-  group.setup(async () => {
+  group.setup(() => {
     wardenApiClientStub = AuthServiceMock.setupWardenApiClientStub()
   })
 
-  group.each.setup(async () => {
-    testUtils.db().withGlobalTransaction()
-  })
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  group.teardown(async () => {
+  group.teardown(() => {
     wardenApiClientStub.restore()
   })
 
