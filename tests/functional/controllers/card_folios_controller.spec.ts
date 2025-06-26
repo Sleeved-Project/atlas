@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import sinon from 'sinon'
+import { CardFactory } from '#database/factories/card'
 import { FolioFactory } from '#database/factories/folio'
 import AuthServiceMock, { TEST_AUTH_USER_ID } from '#tests/mocks/auth_service_mock'
 import CardFolio from '#models/card_folio'
@@ -28,12 +29,12 @@ test.group('CardFolios controller', (group) => {
       isRoot: true,
     }).create()
 
-    const response = await client
-      .post('/api/v1/card-folios/collect')
-      .header('Authorization', 'Bearer fake-token-for-testing')
-      .json({ cardId: 'base1-1' })
+    const card = await CardFactory.merge({ id: 'id0-0' }).create()
 
-    console.log('Response:', response.body())
+    const response = await client
+      .post('/api/v1/cardfolios/collect')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({ cardId: card.id })
 
     response.assertStatus(200)
     response.assertBodyContains({
@@ -42,78 +43,76 @@ test.group('CardFolios controller', (group) => {
 
     const cardFolio = await CardFolio.query()
       .where('folio_id', rootFolio.id)
-      .where('card_id', 'base1-1')
+      .where('card_id', card.id)
       .first()
 
     assert.exists(cardFolio)
     assert.equal(cardFolio?.folioId, rootFolio.id)
-    assert.equal(cardFolio?.cardId, 'base1-1')
+    assert.equal(cardFolio?.cardId, card.id)
     assert.equal(cardFolio?.occurence, 1)
-  }).pin()
+  })
 
-  // test('collect - it should return conflict same card again', async ({ client, assert }) => {
-  //   const userId = TEST_AUTH_USER_ID
+  test('collect - it should return conflict same card again', async ({ client, assert }) => {
+    const userId = TEST_AUTH_USER_ID
 
-  //   const rootFolio = await FolioFactory.merge({
-  //     userId,
-  //     name: 'root',
-  //     isRoot: true,
-  //   }).create()
+    const rootFolio = await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
 
-  //   await CardFolioFactory.merge({
-  //     cardId: 'base1-1',
-  //     folioId: rootFolio.id,
-  //     occurence: 1,
-  //   }).create()
+    const card = await CardFactory.merge({ id: 'id0-0' }).create()
 
-  //   const response = await client
-  //     .post('/api/v1/card-folios/collect')
-  //     .header('Authorization', 'Bearer fake-token-for-testing')
-  //     .json({ cardId: 'base1-1' })
+    await CardFolioFactory.merge({ cardId: card.id, folioId: rootFolio.id, occurence: 1 }).create()
 
-  //   response.assertStatus(409)
+    const response = await client
+      .post('/api/v1/cardfolios/collect')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({ cardId: card.id })
 
-  //   const cardFolio = await CardFolio.query()
-  //     .where('folio_id', rootFolio.id)
-  //     .where('card_id', 'base1-1')
-  //     .first()
+    response.assertStatus(409)
 
-  //   assert.exists(cardFolio)
-  //   assert.equal(cardFolio?.occurence, 1)
-  // })
+    const cardFolio = await CardFolio.query()
+      .where('folio_id', rootFolio.id)
+      .where('card_id', card.id)
+      .first()
 
-  // test('collect - it should return 404 for non-existent card', async ({ client }) => {
-  //   const userId = TEST_AUTH_USER_ID
+    assert.exists(cardFolio)
+    assert.equal(cardFolio?.occurence, 1)
+  })
 
-  //   await FolioFactory.merge({
-  //     userId,
-  //     name: 'root',
-  //     isRoot: true,
-  //   }).create()
+  test('collect - it should return 404 for non-existent card', async ({ client }) => {
+    const userId = TEST_AUTH_USER_ID
 
-  //   const response = await client
-  //     .post('/api/v1/card-folios/collect')
-  //     .header('Authorization', 'Bearer fake-token-for-testing')
-  //     .json({ cardId: 'non-existent-card-id' })
+    await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
 
-  //   response.assertStatus(404)
-  //   response.assertBodyContains({
-  //     message: 'Card not found',
-  //     code: 'E_ROW_NOT_FOUND',
-  //   })
-  // })
+    const response = await client
+      .post('/api/v1/cardfolios/collect')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({ cardId: 'non-existent-card-id' })
 
-  // test('collect - it should validate the request payload', async ({ client }) => {
-  //   const response = await client
-  //     .post('/api/v1/card-folios/collect')
-  //     .header('Authorization', 'Bearer fake-token-for-testing')
-  //     .json({})
+    response.assertStatus(404)
+    response.assertBodyContains({
+      message: 'Card not found',
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
 
-  //   response.assertStatus(422)
-  // })
+  test('collect - it should validate the request payload', async ({ client }) => {
+    const response = await client
+      .post('/api/v1/cardfolios/collect')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({})
 
-  // test('collect - it should require authentication', async ({ client }) => {
-  //   const response = await client.post('/api/v1/card-folios/collect').json({ cardId: 'base1-1' })
-  //   response.assertStatus(401)
-  // })
+    response.assertStatus(422)
+  })
+
+  test('collect - it should require authentication', async ({ client }) => {
+    const response = await client.post('/api/v1/cardfolios/collect').json({ cardId: 'base1-1' })
+    response.assertStatus(401)
+  })
 })
