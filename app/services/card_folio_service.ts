@@ -3,7 +3,7 @@ import CardFolio from '#models/card_folio'
 export default class CardFolioService {
   public async createCardFolio(cardId: string, folioId: string): Promise<CardFolio> {
     return await CardFolio.create({
-      occurence: 1,
+      occurrence: 1,
       cardId,
       folioId,
     })

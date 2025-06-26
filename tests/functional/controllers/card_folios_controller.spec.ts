@@ -49,7 +49,7 @@ test.group('CardFolios controller', (group) => {
     assert.exists(cardFolio)
     assert.equal(cardFolio?.folioId, rootFolio.id)
     assert.equal(cardFolio?.cardId, card.id)
-    assert.equal(cardFolio?.occurence, 1)
+    assert.equal(cardFolio?.occurrence, 1)
   })
 
   test('collect - it should return conflict same card again', async ({ client, assert }) => {
@@ -63,7 +63,7 @@ test.group('CardFolios controller', (group) => {
 
     const card = await CardFactory.merge({ id: 'id0-0' }).create()
 
-    await CardFolioFactory.merge({ cardId: card.id, folioId: rootFolio.id, occurence: 1 }).create()
+    await CardFolioFactory.merge({ cardId: card.id, folioId: rootFolio.id, occurrence: 1 }).create()
 
     const response = await client
       .post('/api/v1/cardfolios/collect')
@@ -78,7 +78,7 @@ test.group('CardFolios controller', (group) => {
       .first()
 
     assert.exists(cardFolio)
-    assert.equal(cardFolio?.occurence, 1)
+    assert.equal(cardFolio?.occurrence, 1)
   })
 
   test('collect - it should return 404 for non-existent card', async ({ client }) => {

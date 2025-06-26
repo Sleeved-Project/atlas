@@ -16,7 +16,7 @@ export default class CardFolio extends BaseModel {
   declare id: string
 
   @column()
-  declare occurence: number
+  declare occurrence: number
 
   @column.dateTime({ columnName: 'created_at', autoCreate: true })
   declare createdAt: DateTime

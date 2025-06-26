@@ -8,7 +8,7 @@ export default class extends BaseSchema {
       table.uuid('id').primary().notNullable()
       table.uuid('folio_id').notNullable()
       table.string('card_id').notNullable()
-      table.integer('occurence').notNullable()
+      table.integer('occurrence').notNullable()
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').notNullable()
 

@@ -27,7 +27,7 @@ test.group('CardFolioService', (group) => {
     assert.isNotNull(cardFolio.id)
     assert.equal(cardFolio.cardId, card.id)
     assert.equal(cardFolio.folioId, folio.id)
-    assert.equal(cardFolio.occurence, 1)
+    assert.equal(cardFolio.occurrence, 1)
 
     const savedCardFolio = await CardFolio.query()
       .where('card_id', card.id)
