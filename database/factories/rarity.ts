@@ -1,8 +1,9 @@
 import Rarity from '#models/rarity'
 import Factory from '@adonisjs/lucid/factories'
 
-export const RarityFactory = Factory.define(Rarity, ({ faker }) => {
+export const RarityFactory = Factory.define(Rarity, () => {
   return {
-    label: faker.helpers.arrayElement(['Common', 'Uncommon', 'Rare', 'Ultra Rare', 'Secret Rare']),
+    id: 1,
+    label: `Common`,
   }
 }).build()

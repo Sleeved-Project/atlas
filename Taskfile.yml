@@ -15,7 +15,7 @@ tasks:
       - |
         source .env && \
         echo "🔄 Starting import... " && \
-        (docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $DB_DATABASE < ./sleeved_db_dump.sql 2>&1) && \
+        (docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $DB_DATABASE < ./sleeved_db_data_dump.sql 2>&1) && \
         echo "✅ Import completed with success !"
 
   db:export:
@@ -25,8 +25,14 @@ tasks:
       - |
         source .env && \
         echo "🔄 Starting export... " && \
-        (docker compose exec -T mysql mysqldump --databases $DB_DATABASE -uroot -p"$MYSQL_ROOT_PASSWORD" > ./sleeved_db_dump.sql 2>/dev/null) && \
-        echo "✅ Export completed with success into ./sleeved_db_dump.sql !"
+        (docker compose exec -T mysql mysqldump --databases $DB_DATABASE \
+        --ignore-table=$DB_DATABASE.Folio \
+        --ignore-table=$DB_DATABASE.Card_Folio \
+        --ignore-table=$DB_DATABASE.adonis_schema_versions \
+        --ignore-table=$DB_DATABASE.adonis_schema \
+        -uroot -p"$MYSQL_ROOT_PASSWORD" \
+        > ./sleeved_db_data_dump.sql 2>/dev/null) && \
+        echo "✅ Export completed with success into ./sleeved_db_data_dump.sql !"
 
   db:migrate:
     desc: Run database migrations
@@ -128,6 +134,11 @@ tasks:
     desc: Run tests
     cmds:
       - docker compose exec api npm test
+
+  test:failed:
+    desc: Run tests failed
+    cmds:
+      - docker compose exec api npm run test:failed
 
   lint:
     desc: Run linting

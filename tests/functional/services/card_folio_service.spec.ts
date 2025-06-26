@@ -5,6 +5,10 @@ import CardFolio from '#models/card_folio'
 import { CardFactory } from '#database/factories/card'
 import { FolioFactory } from '#database/factories/folio'
 import { v4 as uuidv4 } from 'uuid'
+import { ArtistFactory } from '#database/factories/artist'
+import { RarityFactory } from '#database/factories/rarity'
+import { LegalityFactory } from '#database/factories/legality'
+import { SetFactory } from '#database/factories/set'
 
 test.group('CardFolioService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -18,7 +22,11 @@ test.group('CardFolioService', (group) => {
   test('createCardFolio - should create a card folio relationship with occurrence 1', async ({
     assert,
   }) => {
-    const card = await CardFactory.merge({ id: 'id0-0' }).create()
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    const card = await CardFactory.create()
     const folio = await FolioFactory.create()
 
     const cardFolio = await cardFolioService.createCardFolio(card.id, folio.id)
@@ -48,7 +56,11 @@ test.group('CardFolioService', (group) => {
   })
 
   test('createCardFolio - should throw error when folio does not exist', async ({ assert }) => {
-    const card = await CardFactory.merge({ id: 'id0-0' }).create()
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    const card = await CardFactory.create()
     const nonExistentFolioId = uuidv4()
 
     await assert.rejects(
@@ -59,7 +71,11 @@ test.group('CardFolioService', (group) => {
   test('createCardFolio - should throw unique constraint error for duplicate entry', async ({
     assert,
   }) => {
-    const card = await CardFactory.merge({ id: 'id0-0' }).create()
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    const card = await CardFactory.create()
     const folio = await FolioFactory.create()
 
     await cardFolioService.createCardFolio(card.id, folio.id)

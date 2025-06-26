@@ -41,8 +41,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          lfs: true
 
       - name: Copy .env
         run: cp .env.test .env
@@ -60,11 +58,6 @@ jobs:
 
       - name: Wait before dump
         run: sleep 30
-
-      - name: Import database from dump file
-        run: |
-          source .env && \
-          docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $DB_DATABASE < ./sleeved_db_dump.sql
 
       - name: Run migrations
         run: docker compose exec -T api node ace migration:run

@@ -9,7 +9,7 @@ export const CardFolioFactory = Factory.define(CardFolio, ({ faker }) => {
     id: uuidv4(),
     cardId: `base1-1`,
     folioId: uuidv4(),
-    occurence: faker.number.int({ min: 1, max: 10 }),
+    occurrence: faker.number.int({ min: 1, max: 10 }),
   }
 })
   .relation('card', () => CardFactory)

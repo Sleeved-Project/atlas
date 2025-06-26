@@ -25,6 +25,7 @@ services:
       - .env
     volumes:
       - db_data:/var/lib/mysql
+      - ./sleeved_db_structure_dump.sql:/docker-entrypoint-initdb.d/sleeved_db_structure_dump.sql
     healthcheck:
       test:
         [
