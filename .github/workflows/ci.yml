@@ -57,7 +57,7 @@ jobs:
         run: docker compose up -d --build
 
       - name: Wait before dump
-        run: sleep 30
+        run: sleep 20
 
       - name: Run migrations
         run: docker compose exec -T api node ace migration:run
