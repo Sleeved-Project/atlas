@@ -6,7 +6,6 @@ const ApiInfoController = () => import('#controllers/system/api_info_controller'
 const CardsController = () => import('#controllers/product/cards_controller')
 const ScanController = () => import('#controllers/product/scan_controller')
 const FoliosController = () => import('#controllers/product/folios_controller')
-const CardFoliosController = () => import('#controllers/product/card_folios_controller')
 
 router.get('/', [RootController])
 router.get('/health', [HealthCheckController])
@@ -25,7 +24,7 @@ router
         router.get('/cards/:id/prices', [CardsController, 'prices'])
         router.post('/scan/analyze', [ScanController, 'analyze'])
         router.post('/folios/init', [FoliosController, 'init']).use(middleware.auth())
-        router.post('/cardfolios/collect', [CardFoliosController, 'collect']).use(middleware.auth())
+        router.post('/folios/collect', [FoliosController, 'collect']).use(middleware.auth())
       })
       .prefix('v1')
   })

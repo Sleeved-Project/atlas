@@ -1,7 +1,7 @@
 import vine from '@vinejs/vine'
 
 /**
- * Validates the card folio collect action
+ * Validates the folio collect action
  */
 export const collectValidator = vine.compile(
   vine.object({
