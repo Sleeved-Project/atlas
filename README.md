@@ -149,16 +149,24 @@ task: db:import
 
 ### Testing
 
+There are fonctional and unit test in the project. The functionnal test need to be plugged in with a test database.
+For setu this environement run this command.
+
+```bash
+task test:setup
+```
+
+This command will, build test environment and migrate database. Now you can run test with this command.
 Run all tests (via Docker):
 
 ```bash
 task test
 ```
 
-Or locally (with Node installed):
+‼️ Don't forget to down you environement where your done with test.
 
 ```bash
-node ace test
+task test:teardown
 ```
 
 ### Export database

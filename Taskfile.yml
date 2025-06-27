@@ -130,16 +130,6 @@ tasks:
       - docker compose exec api /bin/sh
 
   # Development commands
-  test:
-    desc: Run tests
-    cmds:
-      - docker compose exec api npm test
-
-  test:failed:
-    desc: Run tests failed
-    cmds:
-      - docker compose exec api npm run test:failed
-
   lint:
     desc: Run linting
     cmds:
@@ -149,3 +139,26 @@ tasks:
     desc: Format code
     cmds:
       - docker compose exec api npm run format
+
+  # Test commands
+  test:setup:
+    desc: Setup test environment
+    cmds:
+      - docker-compose -f docker-compose.test.yml up -d --build
+      - sleep 10
+      - docker-compose -f docker-compose.test.yml exec api-test node ace migration:run --force
+
+  test:
+    desc: Run tests
+    cmds:
+      - docker-compose -f docker-compose.test.yml exec api-test npm test
+
+  test:migrate:
+    desc: Run migrations on test database
+    cmds:
+      - docker-compose -f docker-compose.test.yml exec api-test node ace migration:run --force
+
+  test:teardown:
+    desc: Stop test environment
+    cmds:
+      - docker-compose -f docker-compose.test.yml down -v
