@@ -11,7 +11,6 @@ import CardFolioService from '#services/card_folio_service'
 import ValidationException from '#exceptions/validation_exception'
 import DuplicateEntryException from '#exceptions/duplicate_entry_exception'
 import { getAllMainFolioCardsFiltersValidator } from '#validators/card_validator'
-import CardMapper from '#mappers/card_mapper'
 
 @inject()
 export default class FoliosController {
@@ -64,17 +63,8 @@ export default class FoliosController {
     try {
       const filters = await getAllMainFolioCardsFiltersValidator.validate(request.qs())
       const mainFolio = await this.folioService.getMainFolioByUserId(authUser.id) // Get the user's main folio of fail
-      const paginatedCards = await this.cardService.getAllMainFolioCards(filters, mainFolio.id)
-
-      if (paginatedCards.total === 0) {
-        return response.ok(paginatedCards)
-      }
-
-      console.log('Paginated Cards:', paginatedCards)
-
-      const mainFolioPaginatedCards = CardMapper.toCardsWithFolioOccurenceOutputDTO(paginatedCards)
-
-      return response.ok(mainFolioPaginatedCards)
+      const paginatedCards = await this.cardFolioService.getAllMainFolioCards(filters, mainFolio.id)
+      return response.ok(paginatedCards)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)

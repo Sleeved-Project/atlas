@@ -10,7 +10,6 @@ import { ArtistFactory } from '#database/factories/artist'
 import { RarityFactory } from '#database/factories/rarity'
 import { LegalityFactory } from '#database/factories/legality'
 import { SetFactory } from '#database/factories/set'
-import Card from '#models/card'
 
 test.group('Folio controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
@@ -206,14 +205,25 @@ test.group('Folio controller', (group) => {
     assert.isArray(body.data)
     assert.equal(body.data.length, 3)
 
-    const firstCard = body.data[0]
-    assert.properties(firstCard, ['id', 'imageSmall', 'occurrence'])
-    assert.isString(firstCard.id)
-    assert.isString(firstCard.imageSmall)
-    assert.isNumber(firstCard.occurrence)
+    const firstCardFolio = body.data[0]
+    assert.properties(firstCardFolio, ['id', 'occurrence', 'card'])
+    assert.isString(firstCardFolio.id)
+    assert.isNumber(firstCardFolio.occurrence)
 
-    const cardIds = body.data.map((card: Card) => card.id)
+    assert.properties(firstCardFolio.card, ['id', 'imageSmall'])
+    assert.isString(firstCardFolio.card.id)
+    assert.isString(firstCardFolio.card.imageSmall)
+
+    const cardIds = body.data.map((cardFolio: any) => cardFolio.card.id)
     assert.includeMembers(cardIds, [cards[0].id, cards[1].id, cards[2].id])
+
+    const cardFolioWithOccurrence2 = body.data.find((cf: any) => cf.card.id === cards[0].id)
+    const cardFolioWithOccurrence1 = body.data.find((cf: any) => cf.card.id === cards[1].id)
+    const cardFolioWithOccurrence3 = body.data.find((cf: any) => cf.card.id === cards[2].id)
+
+    assert.equal(cardFolioWithOccurrence2.occurrence, 2)
+    assert.equal(cardFolioWithOccurrence1.occurrence, 1)
+    assert.equal(cardFolioWithOccurrence3.occurrence, 3)
   })
 
   test('cards - should return empty result when user has no cards in main folio', async ({
@@ -260,15 +270,14 @@ test.group('Folio controller', (group) => {
       isRoot: true,
     }).create()
 
-    const cards = await CardFactory.createMany(15)
-
-    for (const card of cards) {
-      await CardFolioFactory.merge({
-        cardId: card.id,
-        folioId: mainFolio.id,
-        occurrence: 1,
-      }).create()
-    }
+    await CardFactory.with('cardFolios', 1, (cardFolios) =>
+      cardFolios.merge([
+        {
+          folioId: mainFolio.id,
+          occurrence: 1,
+        },
+      ])
+    ).createMany(15)
 
     const page1Response = await client
       .get('/api/v1/folios/cards')
@@ -279,6 +288,10 @@ test.group('Folio controller', (group) => {
     const page1Body = page1Response.body()
     assert.equal(page1Body.data.length, 10)
     assert.equal(page1Body.meta.currentPage, 1)
+
+    const firstCardFolio = page1Body.data[0]
+    assert.properties(firstCardFolio, ['id', 'occurrence', 'card'])
+    assert.properties(firstCardFolio.card, ['id', 'imageSmall'])
 
     const page2Response = await client
       .get('/api/v1/folios/cards')
@@ -343,7 +356,11 @@ test.group('Folio controller', (group) => {
     const body = response.body()
     assert.equal(body.meta.total, 1)
     assert.equal(body.data.length, 1)
-    assert.equal(body.data[0].id, cards[0].id)
+
+    const returnedCardFolio = body.data[0]
+    assert.properties(returnedCardFolio, ['id', 'occurrence', 'card'])
+    assert.equal(returnedCardFolio.card.id, cards[0].id)
+    assert.equal(returnedCardFolio.occurrence, 1)
   })
 
   test('cards - should validate query parameters', async ({ client }) => {
