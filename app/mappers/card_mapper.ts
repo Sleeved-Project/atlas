@@ -3,6 +3,7 @@ import CardMarketPrice from '#models/card_market_price'
 import TcgPlayerReporting from '#models/tcg_player_reporting'
 import { CardPricesOutputDTO, CardScanResultOutputDTO } from '#types/card_dto_type'
 import { ScanCardInfoDTO } from '#types/iris_type'
+import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 
 export default class CardMapper {
   private static readonly UNKNOWN_PRICE = 'unknown'
@@ -155,5 +156,22 @@ export default class CardMapper {
     const trendPrice = price.trendPrice || this.DEFAULT_PRICE
 
     return Math.max(trendPrice, reverseHoloTrend)
+  }
+
+  /**
+   * Converts a paginated list of Card models to a DTO for the main folio.
+   */
+  static toCardsWithFolioOccurenceOutputDTO(paginatedCards: ModelPaginatorContract<Card>) {
+    return {
+      meta: paginatedCards.getMeta(),
+      data: paginatedCards.all().map((card) => {
+        return {
+          id: card.id,
+          imageSmall: card.imageSmall,
+          occurrence:
+            card.cardFolios && card.cardFolios.length > 0 ? card.cardFolios[0].occurrence : 0,
+        }
+      }),
+    }
   }
 }
