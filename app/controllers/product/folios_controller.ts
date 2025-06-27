@@ -10,6 +10,7 @@ import CardService from '#services/card_service'
 import CardFolioService from '#services/card_folio_service'
 import ValidationException from '#exceptions/validation_exception'
 import DuplicateEntryException from '#exceptions/duplicate_entry_exception'
+import { getAllMainFolioCardsFiltersValidator } from '#validators/card_validator'
 
 @inject()
 export default class FoliosController {
@@ -50,6 +51,23 @@ export default class FoliosController {
       }
       if (error.code === 'ER_DUP_ENTRY') {
         throw new DuplicateEntryException('Card already exists in the folio')
+      }
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async cards({ request, response, authUser }: HttpContext) {
+    try {
+      const filters = await getAllMainFolioCardsFiltersValidator.validate(request.qs())
+      const mainFolio = await this.folioService.getMainFolioByUserId(authUser.id) // Get the user's main folio of fail
+      const paginatedCards = await this.cardFolioService.getAllMainFolioCards(filters, mainFolio.id)
+      return response.ok(paginatedCards)
+    } catch (error) {
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
       }
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)

@@ -11,6 +11,13 @@ export const getAllCardsFiltersValidator = vine.compile(
   })
 )
 
+export const getAllMainFolioCardsFiltersValidator = vine.compile(
+  vine.object({
+    page: vine.number().positive(),
+    limit: vine.number().positive().max(300),
+  })
+)
+
 export const getCardDetailParamsValidator = vine.compile(
   vine.object({
     id: vine.string(),
