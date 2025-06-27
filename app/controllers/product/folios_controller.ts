@@ -84,10 +84,20 @@ export default class FoliosController {
   async statistics({ response, authUser }: HttpContext) {
     try {
       const mainFolio = await this.folioService.getMainFolioByUserId(authUser.id) // Get the user's main folio of fail
-      const cardFolios = await this.cardFolioService.getAllMainFolioCardPricesAndOccurrence(
-        mainFolio.id
+      const todayCardFolios =
+        await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
+          mainFolio.id,
+          1
+        )
+      const yesterdayCardFolios =
+        await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
+          mainFolio.id,
+          2
+        )
+      const folioStatistics: FolioStatistics = CardFolioMapper.toFolioStatistics(
+        todayCardFolios,
+        yesterdayCardFolios
       )
-      const folioStatistics: FolioStatistics = CardFolioMapper.toFolioStatistics(cardFolios)
       return response.ok(folioStatistics)
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
