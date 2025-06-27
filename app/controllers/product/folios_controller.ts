@@ -63,11 +63,14 @@ export default class FoliosController {
   async cards({ request, response, authUser }: HttpContext) {
     try {
       const filters = await getAllMainFolioCardsFiltersValidator.validate(request.qs())
-      const paginatedCards = await this.cardService.getAllMainFolioCards(filters, authUser.id)
+      const mainFolio = await this.folioService.getMainFolioByUserId(authUser.id) // Get the user's main folio of fail
+      const paginatedCards = await this.cardService.getAllMainFolioCards(filters, mainFolio.id)
 
       if (paginatedCards.total === 0) {
         return response.ok(paginatedCards)
       }
+
+      console.log('Paginated Cards:', paginatedCards)
 
       const mainFolioPaginatedCards = CardMapper.toCardsWithFolioOccurenceOutputDTO(paginatedCards)
 

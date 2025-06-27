@@ -23,29 +23,6 @@ export default class CardService {
       .paginate(filters.page, filters.limit)
   }
 
-  public async getAllMainFolioCards(
-    filters: Infer<typeof getAllCardsFiltersValidator>,
-    userId: string
-  ): Promise<ModelPaginatorContract<Card>> {
-    return await Card.query()
-      .whereHas('cardFolios', (query) => {
-        query.whereHas('folio', (folioQuery) => {
-          folioQuery.where({ isRoot: true, userId })
-        })
-      })
-      .preload('cardFolios', (cardFoliosQuery) => {
-        cardFoliosQuery.select('Card_Folio.occurrence', 'Card_Folio.card_id')
-      })
-      .join('Set', 'Card.set_id', 'Set.id')
-      .select('Card.id', 'Card.image_small')
-      .orderBy('Set.release_date', 'asc')
-      .orderBy(
-        db.raw('CAST(NULLIF(REGEXP_REPLACE(Card.number, "[^0-9]", ""), "") AS UNSIGNED)'),
-        'asc'
-      )
-      .paginate(filters.page, filters.limit)
-  }
-
   public async getCardBaseById(id: string): Promise<Card> {
     return await Card.query()
       .preload('set', (setQuery) => {
@@ -125,5 +102,28 @@ export default class CardService {
 
   public async getAllArtists() {
     return await Artist.query().orderBy('name', 'asc')
+  }
+
+  public async getAllMainFolioCards(
+    filters: Infer<typeof getAllCardsFiltersValidator>,
+    mainFolioId: string
+  ): Promise<ModelPaginatorContract<Card>> {
+    return await Card.query()
+      .whereHas('cardFolios', (query) => {
+        query.whereHas('folio', (folioQuery) => {
+          folioQuery.where({ id: mainFolioId })
+        })
+      })
+      .preload('cardFolios', (cardFoliosQuery) => {
+        cardFoliosQuery.select('Card_Folio.occurrence', 'Card_Folio.card_id')
+      })
+      .join('Set', 'Card.set_id', 'Set.id')
+      .select('Card.id', 'Card.image_small')
+      .orderBy('Set.release_date', 'asc')
+      .orderBy(
+        db.raw('CAST(NULLIF(REGEXP_REPLACE(Card.number, "[^0-9]", ""), "") AS UNSIGNED)'),
+        'asc'
+      )
+      .paginate(filters.page, filters.limit)
   }
 }
