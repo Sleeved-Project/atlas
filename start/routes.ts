@@ -24,6 +24,7 @@ router
         router.get('/cards/:id/prices', [CardsController, 'prices'])
         router.post('/scan/analyze', [ScanController, 'analyze'])
         router.post('/folios/init', [FoliosController, 'init']).use(middleware.auth())
+        router.post('/folios/collect', [FoliosController, 'collect']).use(middleware.auth())
       })
       .prefix('v1')
   })

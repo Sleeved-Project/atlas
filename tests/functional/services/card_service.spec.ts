@@ -9,6 +9,10 @@ import CardMarketPrice from '#models/card_market_price'
 import TcgPlayerReporting from '#models/tcg_player_reporting'
 import TcgPlayerPrice from '#models/tcg_player_price'
 import { CardFactory } from '#database/factories/card'
+import { ArtistFactory } from '#database/factories/artist'
+import { RarityFactory } from '#database/factories/rarity'
+import { LegalityFactory } from '#database/factories/legality'
+import { SetFactory } from '#database/factories/set'
 
 test.group('CardService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -20,6 +24,12 @@ test.group('CardService', (group) => {
   })
 
   test('getAllCards - should return paginated results with correct fields', async ({ assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.createMany(15)
+
     const result = await cardService.getAllCards({ page: 1, limit: 10 })
 
     assert.equal(result.length, 10)
@@ -32,6 +42,16 @@ test.group('CardService', (group) => {
   })
 
   test('getAllCards - should sort by set release date and card number', async ({ assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.merge([
+      { id: 'base1-1', number: '1' },
+      { id: 'base1-2', number: '2' },
+      { id: 'base1-3', number: '3' },
+    ]).createMany(3)
+
     const result = await cardService.getAllCards({ page: 1, limit: 10 })
 
     const cardIds = result.map((card) => card.id)
@@ -42,6 +62,12 @@ test.group('CardService', (group) => {
   })
 
   test('getAllCards - should filter by name correctly', async ({ assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.merge({ name: 'Pikachu' }).create()
+
     const exactResult = await cardService.getAllCards({
       page: 1,
       limit: 10,
@@ -56,7 +82,7 @@ test.group('CardService', (group) => {
       name: 'Pika',
     })
 
-    assert.isAtLeast(partialResult.length, 2)
+    assert.isAtLeast(partialResult.length, 1)
 
     const caseInsensitiveResult = await cardService.getAllCards({
       page: 1,
@@ -78,11 +104,23 @@ test.group('CardService', (group) => {
   test('getCardBaseById - should return a card base infos with all required fields', async ({
     assert,
   }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.merge({ id: 'base1-3' }).create()
+
     const card = await cardService.getCardBaseById('base1-3')
     assert.properties(card.$attributes, ['id', 'imageLarge', 'number'])
   })
 
   test('getCardBaseById - should load related data correctly', async ({ assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.merge({ id: 'base1-5' }).create()
+
     const card = await cardService.getCardBaseById('base1-5')
     assert.property(card.$preloaded, 'set')
     const set = card.$preloaded.set as Set
@@ -96,7 +134,13 @@ test.group('CardService', (group) => {
   })
 
   test('getCardBaseById - should respect the selected fields only', async ({ assert }) => {
-    const card = await cardService.getCardBaseById('base1-6')
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.merge({ id: 'base1-1' }).create()
+
+    const card = await cardService.getCardBaseById('base1-1')
     assert.property(card.$attributes, 'id')
     assert.property(card.$attributes, 'imageLarge')
     assert.property(card.$attributes, 'number')
@@ -110,12 +154,24 @@ test.group('CardService', (group) => {
   test('getCardDetailById - should return a card details with all required fields', async ({
     assert,
   }) => {
-    const card = await cardService.getCardDetailById('base1-3')
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.merge({ id: 'base1-1' }).create()
+
+    const card = await cardService.getCardDetailById('base1-1')
     assert.properties(card.$attributes, ['id', 'flavorText'])
   })
 
   test('getCardDetailById - should load related data correctly', async ({ assert }) => {
-    const card = await cardService.getCardDetailById('base1-3')
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.merge({ id: 'base1-1' }).with('subtypes').create()
+
+    const card = await cardService.getCardDetailById('base1-1')
     assert.property(card.$preloaded, 'set')
     assert.property(card.$preloaded, 'rarity')
     assert.property(card.$preloaded, 'artist')
@@ -138,7 +194,13 @@ test.group('CardService', (group) => {
   })
 
   test('getCardDetailById - should respect the selected fields only', async ({ assert }) => {
-    const card = await cardService.getCardDetailById('base1-3')
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.merge({ id: 'base1-1' }).create()
+
+    const card = await cardService.getCardDetailById('base1-1')
     assert.property(card.$attributes, 'id')
     assert.property(card.$attributes, 'flavorText')
     assert.notProperty(card.$attributes, 'imageSmall')
@@ -151,14 +213,18 @@ test.group('CardService', (group) => {
   })
 
   test('getTodayCardPricesById - should return a card with price data', async ({ assert }) => {
-    const cardMock = await CardFactory.merge({ id: 'base1-0' })
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    const cardMock = await CardFactory.merge({ id: 'base1-1' })
       .with('cardMarketPrices', 1, (cardMarketPrices) =>
         cardMarketPrices.merge({
           id: 1234567890,
           url: 'https://cardmarket.com/base1-0',
           trendPrice: 10.5,
           reverseHoloTrend: 15.75,
-          cardId: 'base1-0',
+          cardId: 'base1-1',
         })
       )
       .with('tcgPlayerReportings', 1, (tcgPlayerReportings) =>
@@ -166,7 +232,7 @@ test.group('CardService', (group) => {
           .merge({
             id: 1234567890,
             url: 'https://tcgplayer.com/base1-0',
-            cardId: 'base1-0',
+            cardId: 'base1-1',
           })
           .with('tcgPlayerPrices', 2, (tcgPlayerPrices) =>
             tcgPlayerPrices.merge([
@@ -180,7 +246,7 @@ test.group('CardService', (group) => {
     const card = await cardService.getTodayCardPricesById(cardMock.id)
 
     assert.property(card.$attributes, 'id')
-    assert.equal(card.$attributes.id, 'base1-0')
+    assert.equal(card.$attributes.id, 'base1-1')
 
     assert.property(card.$preloaded, 'cardMarketPrices')
     const cardMarketPrices = card.$preloaded.cardMarketPrices as CardMarketPrice[]

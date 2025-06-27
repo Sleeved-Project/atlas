@@ -3,12 +3,8 @@ import Factory from '@adonisjs/lucid/factories'
 import { DateTime } from 'luxon'
 
 export const CardMarketPriceFactory = Factory.define(CardMarketPrice, ({ faker }) => {
-  const setPrefix = faker.helpers.arrayElement(['base', 'ex', 'sm', 'swsh', 'sv'])
-  const setNumber = faker.number.int({ min: 1, max: 10 })
-  const cardNumber = faker.number.int({ min: 1, max: 200 })
-
   return {
-    url: `https://cardmarket.com/${setPrefix}${setNumber}-${cardNumber}`,
+    url: `https://cardmarket.com/base1-1`,
     averageSellPrice:
       Math.random() > 0.1 ? faker.number.float({ min: 0.5, max: 100, fractionDigits: 2 }) : null,
     lowPrice:

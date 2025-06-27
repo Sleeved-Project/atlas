@@ -99,13 +99,19 @@ task: start # Start containers
 
 ### Import database
 
-For using api you need to import the database dump
+The database structure is mount with the docker build. After building database run the migration.
 
-🔗 Download databse dump
+```bash
+task: db:migrate
+```
+
+Now you should have the database structure completed. For using api you need to import the data dump.
+
+🔗 Download data dump
 
 - [sleeved_db_v5.sql](https://drive.google.com/file/d/17u2341VBun9Xw0L8S6N3ScwGbSXi5fid/view?usp=drive_link)
 
-💡 Copy-past and rename this dump into `sleeved_db_dump.sql` in the root folder of your atlas project.
+💡 Copy-past and rename this dump into `sleeved_db_data_dump.sql` in the root folder of your atlas project.
 
 📥 Import the dataset with this command
 
@@ -163,9 +169,9 @@ node ace test
 task: db:export
 ```
 
-💡 The dump export will be extract into `./sleeved_db_dump.sql`.
+💡 The dump export will be extract into `./sleeved_db_data_dump.sql`.
 
-‼️ If you run **looter scraping on atlas** don't forget to send the `sleeved_db_dump.sql` on github with git lfs.
+‼️ If you run **looter scraping on atlas** don't forget to send the `sleeved_db_data_dump.sql` on github with git lfs.
 
 ### Useful Dev Commands
 

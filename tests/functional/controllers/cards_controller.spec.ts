@@ -3,23 +3,32 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import sinon from 'sinon'
 import { CardFactory } from '#database/factories/card'
 import AuthServiceMock from '#tests/mocks/auth_service_mock'
+import { ArtistFactory } from '#database/factories/artist'
+import { RarityFactory } from '#database/factories/rarity'
+import { LegalityFactory } from '#database/factories/legality'
+import { SetFactory } from '#database/factories/set'
+import { SubtypeFactory } from '#database/factories/subtype'
 
 test.group('Card controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
 
-  group.setup(async () => {
+  group.setup(() => {
     wardenApiClientStub = AuthServiceMock.setupWardenApiClientStub()
   })
 
-  group.each.setup(async () => {
-    testUtils.db().withGlobalTransaction()
-  })
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  group.teardown(async () => {
+  group.teardown(() => {
     wardenApiClientStub.restore()
   })
 
   test('index - it should return paginated cards', async ({ client, assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.createMany(15)
+
     const response = await client
       .get('/api/v1/cards')
       .qs({ page: 1, limit: 10 })
@@ -49,6 +58,12 @@ test.group('Card controller', (group) => {
   })
 
   test('index - it should apply pagination correctly', async ({ client, assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.createMany(15)
+
     const response1 = await client
       .get('/api/v1/cards')
       .qs({ page: 1, limit: 5 })
@@ -71,6 +86,12 @@ test.group('Card controller', (group) => {
   })
 
   test('index - it should handle invalid pagination parameters', async ({ client }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.createMany(15)
+
     const responseNegativePage = await client
       .get('/api/v1/cards')
       .qs({ page: -1, limit: 10 })
@@ -93,6 +114,12 @@ test.group('Card controller', (group) => {
   })
 
   test('index - it should handle invalid filters params', async ({ client, assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.createMany(15)
+
     const responseNotExistingFilter = await client
       .get('/api/v1/cards')
       .qs({ page: 1, limit: 10, names: 'Pikachu' })
@@ -122,6 +149,12 @@ test.group('Card controller', (group) => {
     client,
     assert,
   }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.createMany(15)
+
     const response = await client
       .get('/api/v1/cards')
       .qs({ page: 99999, limit: 10 })
@@ -132,20 +165,32 @@ test.group('Card controller', (group) => {
   })
 
   test('show - it should return a single base card infos by id', async ({ client, assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.merge({ id: `base1-1` }).create()
+
     const response = await client
-      .get('/api/v1/cards/base1-23')
+      .get('/api/v1/cards/base1-1')
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
 
     const card = response.body()
 
-    assert.equal(card.id, 'base1-23')
+    assert.equal(card.id, 'base1-1')
     assert.properties(card, ['id', 'imageLarge', 'number', 'set'])
     assert.properties(card.set, ['id', 'name', 'imageSymbol'])
   })
 
   test('show - it should return 404 for non-existent card', async ({ client }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.createMany(3)
+
     const response = await client
       .get('/api/v1/cards/non-existent-id')
       .header('Authorization', 'Bearer fake-token-for-testing')
@@ -159,15 +204,21 @@ test.group('Card controller', (group) => {
   })
 
   test('details - it should return a single card details by id', async ({ client, assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.merge({ id: `base1-1` }).with('subtypes').create()
+
     const response = await client
-      .get('/api/v1/cards/base1-23/details')
+      .get('/api/v1/cards/base1-1/details')
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
 
     const card = response.body()
 
-    assert.equal(card.id, 'base1-23')
+    assert.equal(card.id, 'base1-1')
     assert.properties(card, ['id', 'flavorText', 'set', 'rarity', 'artist', 'subtypes'])
     assert.properties(card.set, ['id', 'releaseDate'])
     assert.properties(card.rarity, ['id', 'label'])
@@ -193,14 +244,18 @@ test.group('Card controller', (group) => {
     client,
     assert,
   }) => {
-    await CardFactory.merge({ id: 'base1-0' })
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.merge({ id: 'base1-1' })
       .with('cardMarketPrices', 1, (cardMarketPrices) =>
         cardMarketPrices.merge({
           id: 1234567890,
           url: 'https://cardmarket.com/base1-0',
           trendPrice: 10.5,
           reverseHoloTrend: 15.75,
-          cardId: 'base1-0',
+          cardId: 'base1-1',
         })
       )
       .with('tcgPlayerReportings', 1, (tcgPlayerReportings) =>
@@ -220,14 +275,14 @@ test.group('Card controller', (group) => {
       .create()
 
     const response = await client
-      .get('/api/v1/cards/base1-0/prices')
+      .get('/api/v1/cards/base1-1/prices')
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
 
     const cardPrices = response.body()
 
-    assert.equal(cardPrices.id, 'base1-0')
+    assert.equal(cardPrices.id, 'base1-1')
 
     assert.properties(cardPrices, ['cardMarketReporting'])
     assert.properties(cardPrices.cardMarketReporting, ['id', 'url', 'cardMarketPrices'])
@@ -258,6 +313,7 @@ test.group('Card controller', (group) => {
   })
 
   test('rarity - it should return all rarities', async ({ client, assert }) => {
+    await RarityFactory.create()
     const response = await client
       .get('/api/v1/cards/rarity')
       .header('Authorization', 'Bearer fake-token-for-testing')
@@ -271,6 +327,7 @@ test.group('Card controller', (group) => {
   })
 
   test('subtype - it should return all subtypes', async ({ client, assert }) => {
+    await SubtypeFactory.create()
     const response = await client
       .get('/api/v1/cards/subtype')
       .header('Authorization', 'Bearer fake-token-for-testing')
@@ -284,6 +341,7 @@ test.group('Card controller', (group) => {
   })
 
   test('artist - it should return all artists', async ({ client, assert }) => {
+    await ArtistFactory.create()
     const response = await client
       .get('/api/v1/cards/artist')
       .header('Authorization', 'Bearer fake-token-for-testing')
