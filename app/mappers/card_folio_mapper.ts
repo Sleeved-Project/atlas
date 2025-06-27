@@ -37,12 +37,12 @@ export default class CardFolioMapper {
   public static getLowerTcgPlayerMarketPrice(cardFolios: CardFolio[]): number {
     return cardFolios.reduce((acc, cardFolio) => {
       const firstTcgPlayerReporting = cardFolio.card?.tcgPlayerReportings?.[0]
-      const lowerTcgPlayerMarketPrice = firstTcgPlayerReporting.tcgPlayerPrices.sort(
-        (a, b) => (b.market || 0) - (a.market || 0)
-      )[0].market
-      const marketPrice = +(lowerTcgPlayerMarketPrice || 0)
-      if (marketPrice) {
-        return acc + marketPrice
+      if (firstTcgPlayerReporting?.tcgPlayerPrices?.length > 0) {
+        const lowerTcgPlayerMarketPrice = firstTcgPlayerReporting.tcgPlayerPrices.sort(
+          (a, b) => (a.market || 0) - (b.market || 0)
+        )[0].market
+        const marketPrice = +(lowerTcgPlayerMarketPrice || 0)
+        return acc + marketPrice * cardFolio.occurrence
       }
       return acc
     }, 0)
@@ -51,9 +51,9 @@ export default class CardFolioMapper {
   public static getCardMarketTrendPrice(cardFolios: CardFolio[]): number {
     return cardFolios.reduce((acc, cardFolio) => {
       const firstCardMarketPrice = cardFolio.card?.cardMarketPrices?.[0]
-      const trendPrice = +(firstCardMarketPrice.trendPrice || 0)
-      if (trendPrice) {
-        return acc + trendPrice
+      if (firstCardMarketPrice) {
+        const trendPrice = +(firstCardMarketPrice.trendPrice || 0)
+        return acc + trendPrice * cardFolio.occurrence
       }
       return acc
     }, 0)
