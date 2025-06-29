@@ -7,7 +7,7 @@ import FolioService from '#services/folio_service'
 import { SuccessOutputDto } from '#types/success_output_dto_type'
 import {
   collectValidator,
-  occurenceValidator,
+  occurrenceValidator,
   removeMainValidator,
 } from '#validators/card_folio_validator'
 import CardService from '#services/card_service'
@@ -49,8 +49,8 @@ export default class CardFoliosController {
 
   async occurrence({ request, response, authUser }: HttpContext) {
     try {
-      const payload = await occurenceValidator.validate(request.all())
-      const card = await this.cardService.getCardBaseById(payload.cardId)
+      const payload = await request.validateUsing(occurrenceValidator)
+      const card = await this.cardService.getCardBaseById(payload.params.id)
       const folio = await this.folioService.getMainFolioByUserId(authUser.id)
       await this.cardFolioService.updateCardFolioOccurrence(card.id, folio.id, payload.occurrence)
       const successResponse: SuccessOutputDto = {
