@@ -32,4 +32,31 @@ export default class CardFolioService {
       )
       .paginate(filters.page, filters.limit)
   }
+
+  public async getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
+    mainFolioId: string,
+    daysBefore: number
+  ): Promise<CardFolio[]> {
+    return await CardFolio.query()
+      .join('Card', 'Card_Folio.card_id', 'Card.id')
+      .where('Card_Folio.folio_id', mainFolioId)
+      .preload('card', (cardQuery) => {
+        cardQuery
+          .select('id', 'image_small')
+          .preload('cardMarketPrices', (cardMarketPricesQuery) => {
+            cardMarketPricesQuery
+              .select('id', 'trendPrice', 'reverseHoloTrend')
+              .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
+          })
+          .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
+            tcgPlayerReportings
+              .select('id', 'url')
+              .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
+              .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
+                tcgPlayerPricesQuery.select('id', 'type', 'market')
+              })
+          })
+      })
+      .select('Card_Folio.id', 'Card_Folio.occurrence', 'Card_Folio.card_id', 'Card_Folio.folio_id')
+  }
 }

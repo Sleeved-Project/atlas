@@ -11,6 +11,8 @@ import CardFolioService from '#services/card_folio_service'
 import ValidationException from '#exceptions/validation_exception'
 import DuplicateEntryException from '#exceptions/duplicate_entry_exception'
 import { getAllMainFolioCardsFiltersValidator } from '#validators/card_validator'
+import CardFolioMapper from '#mappers/card_folio_mapper'
+import { FolioStatistics } from '#types/folio_type'
 
 @inject()
 export default class FoliosController {
@@ -63,12 +65,41 @@ export default class FoliosController {
     try {
       const filters = await getAllMainFolioCardsFiltersValidator.validate(request.qs())
       const mainFolio = await this.folioService.getMainFolioByUserId(authUser.id) // Get the user's main folio of fail
-      const paginatedCards = await this.cardFolioService.getAllMainFolioCards(filters, mainFolio.id)
-      return response.ok(paginatedCards)
+      const paginatedCardFolios = await this.cardFolioService.getAllMainFolioCards(
+        filters,
+        mainFolio.id
+      )
+      return response.ok(paginatedCardFolios)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)
       }
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async statistics({ response, authUser }: HttpContext) {
+    try {
+      const mainFolio = await this.folioService.getMainFolioByUserId(authUser.id) // Get the user's main folio of fail
+      const todayCardFolios =
+        await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
+          mainFolio.id,
+          1
+        )
+      const yesterdayCardFolios =
+        await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
+          mainFolio.id,
+          2
+        )
+      const folioStatistics: FolioStatistics = CardFolioMapper.toFolioStatistics(
+        todayCardFolios,
+        yesterdayCardFolios
+      )
+      return response.ok(folioStatistics)
+    } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
       }

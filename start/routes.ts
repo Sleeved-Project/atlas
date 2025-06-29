@@ -26,6 +26,7 @@ router
         router.post('/folios/init', [FoliosController, 'init']).use(middleware.auth())
         router.get('/folios/cards', [FoliosController, 'cards']).use(middleware.auth())
         router.post('/folios/collect', [FoliosController, 'collect']).use(middleware.auth())
+        router.get('/folios/statistics', [FoliosController, 'statistics']).use(middleware.auth())
       })
       .prefix('v1')
   })
