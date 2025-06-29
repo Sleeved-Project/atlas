@@ -2,8 +2,8 @@ export type FolioStatistics = {
   totalCardsCount: number
   cardMarketPrice: string
   tcgPlayerPrice: string
-  cardMarketTrending: string
-  tcgPlayerTrending: string
+  cardMarketTrending: PriceTrending
+  tcgPlayerTrending: PriceTrending
 }
 
 export enum PriceTrending {

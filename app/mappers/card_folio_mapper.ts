@@ -25,7 +25,7 @@ export default class CardFolioMapper {
     }
   }
 
-  public static getPriceTrend(todayPrice: number, yesterdayPrice: number): 'up' | 'down' | 'equal' {
+  public static getPriceTrend(todayPrice: number, yesterdayPrice: number): PriceTrending {
     if (todayPrice > yesterdayPrice) {
       return PriceTrending.UP
     } else if (todayPrice < yesterdayPrice) {
