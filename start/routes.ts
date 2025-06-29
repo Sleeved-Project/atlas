@@ -26,9 +26,11 @@ router
         router.post('/scan/analyze', [ScanController, 'analyze'])
         router.post('/folios/init', [FoliosController, 'init']).use(middleware.auth())
         router.get('/folios/cards', [FoliosController, 'cards']).use(middleware.auth())
-        router.post('/folios/collect', [CardFoliosController, 'collect']).use(middleware.auth())
         router
-          .patch('/folios/occurrence', [CardFoliosController, 'occurrence'])
+          .post('/folios/cards/collect', [CardFoliosController, 'collect'])
+          .use(middleware.auth())
+        router
+          .patch('/folios/cards/:id/occurrence', [CardFoliosController, 'occurrence'])
           .use(middleware.auth())
         router.get('/folios/statistics', [FoliosController, 'statistics']).use(middleware.auth())
       })

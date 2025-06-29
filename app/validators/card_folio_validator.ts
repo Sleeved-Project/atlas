@@ -9,9 +9,11 @@ export const collectValidator = vine.compile(
   })
 )
 
-export const occurenceValidator = vine.compile(
+export const occurrenceValidator = vine.compile(
   vine.object({
-    cardId: vine.string(),
     occurrence: vine.number().min(1).max(1000),
+    params: vine.object({
+      id: vine.string(),
+    }),
   })
 )
