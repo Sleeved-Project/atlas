@@ -548,4 +548,46 @@ test.group('CardFolioService', (group) => {
     assert.equal(cardMarketPrices.length, 0)
     assert.equal(tcgPlayerReportings.length, 0)
   })
+
+  test('updateCardFolioOccurrence - should update occurrence for existing card folio', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+    const folio = await FolioFactory.create()
+
+    const initialCardFolio = await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: folio.id,
+      occurrence: 2,
+    }).create()
+
+    const updatedCardFolio = await cardFolioService.updateCardFolioOccurrence(card.id, folio.id, 5)
+
+    assert.equal(updatedCardFolio.occurrence, 5)
+
+    const reloadedCardFolio = await CardFolio.findOrFail(initialCardFolio.id)
+    assert.equal(reloadedCardFolio.occurrence, 5)
+  })
+
+  test('updateCardFolioOccurrence - should throw error when card folio does not exist', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+    const folio = await FolioFactory.create()
+
+    await assert.rejects(
+      async () => await cardFolioService.updateCardFolioOccurrence(card.id, folio.id, 5),
+      'Row not found'
+    )
+  })
 })

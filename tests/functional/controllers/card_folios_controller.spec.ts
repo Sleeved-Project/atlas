@@ -127,4 +127,111 @@ test.group('Folio controller', (group) => {
     const response = await client.post('/api/v1/folios/collect').json({ cardId: 'base1-1' })
     response.assertStatus(401)
   })
+
+  test('occurrence - it should update card occurrence in user main folio', async ({
+    client,
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    const rootFolio = await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    const card = await CardFactory.create()
+
+    await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: rootFolio.id,
+      occurrence: 2,
+    }).create()
+
+    const response = await client
+      .patch('/api/v1/folios/occurrence')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({ cardId: card.id, occurrence: 5 })
+
+    response.assertStatus(200)
+    response.assertBodyContains({
+      message: 'Card occurence updated successfully',
+    })
+
+    const updatedCardFolio = await CardFolio.query()
+      .where('folio_id', rootFolio.id)
+      .where('card_id', card.id)
+      .first()
+
+    assert.exists(updatedCardFolio)
+    assert.equal(updatedCardFolio?.occurrence, 5)
+  })
+
+  test('occurrence - it should return 404 when card folio does not exist', async ({ client }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    const card = await CardFactory.create()
+
+    const response = await client
+      .patch('/api/v1/folios/occurrence')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({ cardId: card.id, occurrence: 3 })
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
+
+  test('occurrence - it should validate the request payload', async ({ client }) => {
+    const response = await client
+      .patch('/api/v1/folios/occurrence')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({})
+
+    response.assertStatus(422)
+  })
+
+  test('occurrence - it should require authentication', async ({ client }) => {
+    const response = await client
+      .patch('/api/v1/folios/occurrence')
+      .json({ cardId: 'base1-1', occurrence: 3 })
+
+    response.assertStatus(401)
+  })
+
+  test('occurrence - it should return 404 for non-existent card', async ({ client }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    const response = await client
+      .patch('/api/v1/folios/occurrence')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({ cardId: 'non-existent-card-id', occurrence: 3 })
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      message: 'Card not found',
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
 })
