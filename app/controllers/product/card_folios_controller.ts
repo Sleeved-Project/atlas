@@ -70,8 +70,8 @@ export default class CardFoliosController {
 
   async delete({ request, response, authUser }: HttpContext) {
     try {
-      const payload = await removeMainValidator.validate(request.all())
-      const card = await this.cardService.getCardBaseById(payload.cardId)
+      const payload = await request.validateUsing(removeMainValidator)
+      const card = await this.cardService.getCardBaseById(payload.params.id)
       const folio = await this.folioService.getMainFolioByUserId(authUser.id)
       await this.cardFolioService.deleteCardFromFolioByCardIdAndFolioId(card.id, folio.id)
       const successResponse: SuccessOutputDto = {

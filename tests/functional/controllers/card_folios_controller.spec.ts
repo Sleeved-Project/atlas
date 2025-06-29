@@ -257,9 +257,8 @@ test.group('Folio controller', (group) => {
     }).create()
 
     const response = await client
-      .delete('/api/v1/folios/remove')
+      .delete(`/api/v1/folios/cards/${card.id}/remove`)
       .header('Authorization', 'Bearer fake-token-for-testing')
-      .json({ cardId: card.id })
 
     response.assertStatus(200)
     response.assertBodyContains({
@@ -290,9 +289,8 @@ test.group('Folio controller', (group) => {
     const card = await CardFactory.create()
 
     const response = await client
-      .delete('/api/v1/folios/remove')
+      .delete(`/api/v1/folios/cards/${card.id}/remove`)
       .header('Authorization', 'Bearer fake-token-for-testing')
-      .json({ cardId: card.id })
 
     response.assertStatus(404)
     response.assertBodyContains({
@@ -310,9 +308,8 @@ test.group('Folio controller', (group) => {
     }).create()
 
     const response = await client
-      .delete('/api/v1/folios/remove')
+      .delete('/api/v1/folios/cards/non-existente/remove')
       .header('Authorization', 'Bearer fake-token-for-testing')
-      .json({ cardId: 'non-existent-card-id' })
 
     response.assertStatus(404)
     response.assertBodyContains({
@@ -321,17 +318,8 @@ test.group('Folio controller', (group) => {
     })
   })
 
-  test('delete - it should validate the request payload', async ({ client }) => {
-    const response = await client
-      .delete('/api/v1/folios/remove')
-      .header('Authorization', 'Bearer fake-token-for-testing')
-      .json({})
-
-    response.assertStatus(422)
-  })
-
   test('delete - it should require authentication', async ({ client }) => {
-    const response = await client.delete('/api/v1/folios/remove').json({ cardId: 'base1-1' })
+    const response = await client.delete('/api/v1/folios/cards/base1-1/remove')
 
     response.assertStatus(401)
   })
