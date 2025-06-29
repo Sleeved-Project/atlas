@@ -59,4 +59,16 @@ export default class CardFolioService {
       })
       .select('Card_Folio.id', 'Card_Folio.occurrence', 'Card_Folio.card_id', 'Card_Folio.folio_id')
   }
+
+  public async updateCardFolioOccurrence(
+    cardId: string,
+    folioId: string,
+    occurrence: number
+  ): Promise<CardFolio> {
+    const cardFolio = await CardFolio.findByOrFail({
+      cardId,
+      folioId,
+    })
+    return await cardFolio.merge({ occurrence }).save()
+  }
 }
