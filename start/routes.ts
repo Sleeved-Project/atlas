@@ -31,6 +31,7 @@ router
           .patch('/folios/occurrence', [CardFoliosController, 'occurrence'])
           .use(middleware.auth())
         router.get('/folios/statistics', [FoliosController, 'statistics']).use(middleware.auth())
+        router.delete('/folios/remove', [CardFoliosController, 'delete']).use(middleware.auth())
       })
       .prefix('v1')
   })

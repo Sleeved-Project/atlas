@@ -15,3 +15,9 @@ export const occurenceValidator = vine.compile(
     occurrence: vine.number().min(1).max(1000),
   })
 )
+
+export const removeMainValidator = vine.compile(
+  vine.object({
+    cardId: vine.string(),
+  })
+)

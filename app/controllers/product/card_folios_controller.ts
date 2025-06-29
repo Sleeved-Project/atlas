@@ -5,7 +5,11 @@ import { errors as vineErrors } from '@vinejs/vine'
 import NotFoundException from '#exceptions/not_found_exception'
 import FolioService from '#services/folio_service'
 import { SuccessOutputDto } from '#types/success_output_dto_type'
-import { collectValidator, occurenceValidator } from '#validators/card_folio_validator'
+import {
+  collectValidator,
+  occurenceValidator,
+  removeMainValidator,
+} from '#validators/card_folio_validator'
 import CardService from '#services/card_service'
 import CardFolioService from '#services/card_folio_service'
 import ValidationException from '#exceptions/validation_exception'
@@ -51,6 +55,27 @@ export default class CardFoliosController {
       await this.cardFolioService.updateCardFolioOccurrence(card.id, folio.id, payload.occurrence)
       const successResponse: SuccessOutputDto = {
         message: 'Card occurence updated successfully',
+      }
+      return response.ok(successResponse)
+    } catch (error) {
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async delete({ request, response, authUser }: HttpContext) {
+    try {
+      const payload = await removeMainValidator.validate(request.all())
+      const card = await this.cardService.getCardBaseById(payload.cardId)
+      const folio = await this.folioService.getMainFolioByUserId(authUser.id)
+      await this.cardFolioService.deleteCardFromFolioByCardIdAndFolioId(card.id, folio.id)
+      const successResponse: SuccessOutputDto = {
+        message: 'Card remove from main folio successfully',
       }
       return response.ok(successResponse)
     } catch (error) {
