@@ -25,6 +25,7 @@ export default class CardFolioService {
         cardQuery.select('id', 'image_small')
       })
       .select('Card_Folio.id', 'Card_Folio.occurrence', 'Card_Folio.card_id', 'Card_Folio.folio_id')
+      .if(filters.name, (query) => query.whereILike('Card.name', `%${filters.name}%`))
       .orderBy('Set.release_date', 'asc')
       .orderBy(
         db.raw('CAST(NULLIF(REGEXP_REPLACE(Card.number, "[^0-9]", ""), "") AS UNSIGNED)'),
@@ -70,5 +71,16 @@ export default class CardFolioService {
       folioId,
     })
     return await cardFolio.merge({ occurrence }).save()
+  }
+
+  public async deleteCardFromFolioByCardIdAndFolioId(
+    cardId: string,
+    folioId: string
+  ): Promise<void> {
+    const cardFolio = await CardFolio.findByOrFail({
+      cardId,
+      folioId,
+    })
+    await cardFolio.delete()
   }
 }
