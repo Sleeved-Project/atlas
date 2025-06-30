@@ -40,7 +40,7 @@ test.group('Folio controller', (group) => {
     const card = await CardFactory.create()
 
     const response = await client
-      .post('/api/v1/folios/cards/collect')
+      .post('/api/v1/folios/cards')
       .header('Authorization', 'Bearer fake-token-for-testing')
       .json({ cardId: card.id })
 
@@ -78,7 +78,7 @@ test.group('Folio controller', (group) => {
     await CardFolioFactory.merge({ cardId: card.id, folioId: rootFolio.id, occurrence: 1 }).create()
 
     const response = await client
-      .post('/api/v1/folios/cards/collect')
+      .post('/api/v1/folios/cards')
       .header('Authorization', 'Bearer fake-token-for-testing')
       .json({ cardId: card.id })
 
@@ -103,7 +103,7 @@ test.group('Folio controller', (group) => {
     }).create()
 
     const response = await client
-      .post('/api/v1/folios/cards/collect')
+      .post('/api/v1/folios/cards')
       .header('Authorization', 'Bearer fake-token-for-testing')
       .json({ cardId: 'non-existent-card-id' })
 
@@ -116,7 +116,7 @@ test.group('Folio controller', (group) => {
 
   test('collect - it should validate the request payload', async ({ client }) => {
     const response = await client
-      .post('/api/v1/folios/cards/collect')
+      .post('/api/v1/folios/cards')
       .header('Authorization', 'Bearer fake-token-for-testing')
       .json({})
 
@@ -124,7 +124,7 @@ test.group('Folio controller', (group) => {
   })
 
   test('collect - it should require authentication', async ({ client }) => {
-    const response = await client.post('/api/v1/folios/cards/collect').json({ cardId: 'base1-1' })
+    const response = await client.post('/api/v1/folios/cards').json({ cardId: 'base1-1' })
     response.assertStatus(401)
   })
 
@@ -153,7 +153,7 @@ test.group('Folio controller', (group) => {
     }).create()
 
     const response = await client
-      .patch(`/api/v1/folios/cards/${card.id}/occurrence`)
+      .patch(`/api/v1/folios/cards/${card.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
       .json({ occurrence: 5 })
 
@@ -187,7 +187,7 @@ test.group('Folio controller', (group) => {
     const card = await CardFactory.create()
 
     const response = await client
-      .patch(`/api/v1/folios/cards/${card.id}/occurrence`)
+      .patch(`/api/v1/folios/cards/${card.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
       .json({ occurrence: 3 })
 
@@ -199,7 +199,7 @@ test.group('Folio controller', (group) => {
 
   test('occurrence - it should validate the request payload', async ({ client }) => {
     const response = await client
-      .patch(`/api/v1/folios/cards/base1-1/occurrence`)
+      .patch(`/api/v1/folios/cards/base1-1`)
       .header('Authorization', 'Bearer fake-token-for-testing')
       .json({})
 
@@ -207,9 +207,7 @@ test.group('Folio controller', (group) => {
   })
 
   test('occurrence - it should require authentication', async ({ client }) => {
-    const response = await client
-      .patch(`/api/v1/folios/cards/base1-1/occurrence`)
-      .json({ occurrence: 3 })
+    const response = await client.patch(`/api/v1/folios/cards/base1-1`).json({ occurrence: 3 })
 
     response.assertStatus(401)
   })
@@ -224,7 +222,7 @@ test.group('Folio controller', (group) => {
     }).create()
 
     const response = await client
-      .patch(`/api/v1/folios/cards/no-existent/occurrence`)
+      .patch(`/api/v1/folios/cards/no-existent`)
       .header('Authorization', 'Bearer fake-token-for-testing')
       .json({ occurrence: 3 })
 
