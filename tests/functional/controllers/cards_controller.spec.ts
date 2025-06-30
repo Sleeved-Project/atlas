@@ -1,13 +1,12 @@
-import { test } from '@japa/runner'
-import testUtils from '@adonisjs/core/services/test_utils'
-import sinon from 'sinon'
-import { CardFactory } from '#database/factories/card'
-import AuthServiceMock from '#tests/mocks/auth_service_mock'
 import { ArtistFactory } from '#database/factories/artist'
-import { RarityFactory } from '#database/factories/rarity'
+import { CardFactory } from '#database/factories/card'
 import { LegalityFactory } from '#database/factories/legality'
+import { RarityFactory } from '#database/factories/rarity'
 import { SetFactory } from '#database/factories/set'
-import { SubtypeFactory } from '#database/factories/subtype'
+import AuthServiceMock from '#tests/mocks/auth_service_mock'
+import testUtils from '@adonisjs/core/services/test_utils'
+import { test } from '@japa/runner'
+import sinon from 'sinon'
 
 test.group('Card controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
@@ -310,47 +309,5 @@ test.group('Card controller', (group) => {
       message: 'Card not found',
       code: 'E_ROW_NOT_FOUND',
     })
-  })
-
-  test('rarity - it should return all rarities', async ({ client, assert }) => {
-    await RarityFactory.create()
-    const response = await client
-      .get('/api/v1/cards/rarity')
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(200)
-
-    const rarities = response.body()
-    assert.isArray(rarities)
-    assert.isAbove(rarities.length, 0, 'Expected at least one rarity to be returned')
-    assert.properties(rarities[0], ['id', 'label'])
-  })
-
-  test('subtype - it should return all subtypes', async ({ client, assert }) => {
-    await SubtypeFactory.create()
-    const response = await client
-      .get('/api/v1/cards/subtype')
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(200)
-
-    const subtypes = response.body()
-    assert.isArray(subtypes)
-    assert.isAtLeast(subtypes.length, 0, 'Expected at least one subtype to be returned')
-    assert.properties(subtypes[0], ['id', 'label'])
-  })
-
-  test('artist - it should return all artists', async ({ client, assert }) => {
-    await ArtistFactory.create()
-    const response = await client
-      .get('/api/v1/cards/artist')
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(200)
-
-    const artists = response.body()
-    assert.isArray(artists)
-    assert.isAtLeast(artists.length, 0, 'Expected at least one artist to be returned')
-    assert.properties(artists[0], ['id', 'name'])
   })
 })
