@@ -257,7 +257,7 @@ test.group('Folio controller', (group) => {
     }).create()
 
     const response = await client
-      .delete(`/api/v1/folios/cards/${card.id}/remove`)
+      .delete(`/api/v1/folios/cards/${card.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
@@ -289,7 +289,7 @@ test.group('Folio controller', (group) => {
     const card = await CardFactory.create()
 
     const response = await client
-      .delete(`/api/v1/folios/cards/${card.id}/remove`)
+      .delete(`/api/v1/folios/cards/${card.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(404)
@@ -308,7 +308,7 @@ test.group('Folio controller', (group) => {
     }).create()
 
     const response = await client
-      .delete('/api/v1/folios/cards/non-existente/remove')
+      .delete('/api/v1/folios/cards/non-existente')
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(404)
@@ -319,7 +319,7 @@ test.group('Folio controller', (group) => {
   })
 
   test('delete - it should require authentication', async ({ client }) => {
-    const response = await client.delete('/api/v1/folios/cards/base1-1/remove')
+    const response = await client.delete('/api/v1/folios/cards/base1-1')
 
     response.assertStatus(401)
   })
