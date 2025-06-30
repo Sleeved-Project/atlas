@@ -26,6 +26,7 @@ router
         // Filters API
         router
           .group(() => {
+            router.get('/available', [FiltersController, 'available'])
             router.get('/cards', [FiltersController, 'cards'])
           })
           .prefix('filters')

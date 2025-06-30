@@ -13,10 +13,7 @@ export default class FiltersController {
     try {
       const { types } = await getResourceFiltersCardsValidator.validate(request.qs())
 
-      // Default to all card filter types if none specified
-      const filterTypes = types || ['rarity', 'subtype', 'artist']
-
-      const filters = await this.filterService.getCardFilters(filterTypes)
+      const filters = await this.filterService.getCardFilters({ types })
       return response.ok(filters)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
@@ -24,5 +21,10 @@ export default class FiltersController {
       }
       throw error
     }
+  }
+
+  async available({ response }: HttpContext) {
+    const availableFilters = this.filterService.getAvailableFilterTypes()
+    return response.ok({ filters: availableFilters })
   }
 }
