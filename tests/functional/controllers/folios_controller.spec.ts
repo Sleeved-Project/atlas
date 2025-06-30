@@ -10,6 +10,8 @@ import { RarityFactory } from '#database/factories/rarity'
 import { LegalityFactory } from '#database/factories/legality'
 import { SetFactory } from '#database/factories/set'
 import { DateTime } from 'luxon'
+import { SubtypeFactory } from '#database/factories/subtype'
+import { TypeFactory } from '#database/factories/type'
 
 test.group('Folio controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
@@ -338,6 +340,269 @@ test.group('Folio controller', (group) => {
 
     const returnedCardFolio = body.data[0]
     assert.equal(returnedCardFolio.card.id, pikachuCard.id)
+    assert.equal(returnedCardFolio.occurrence, 1)
+  })
+
+  test('cards - should filter cards by rarity when rarity parameter is provided', async ({
+    client,
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
+    const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
+    const artist = await ArtistFactory.create()
+
+    const mainFolio = await FolioFactory.merge({
+      userId,
+      isRoot: true,
+    }).create()
+
+    const commonCard = await CardFactory.merge({
+      name: 'Common Card',
+      rarityId: commonRarity.id,
+      artistId: artist.id,
+    }).create()
+
+    const rareCard = await CardFactory.merge({
+      name: 'Rare Card',
+      rarityId: rareRarity.id,
+      artistId: artist.id,
+    }).create()
+
+    await CardFolioFactory.merge([
+      { cardId: commonCard.id, folioId: mainFolio.id, occurrence: 1 },
+      { cardId: rareCard.id, folioId: mainFolio.id, occurrence: 2 },
+    ]).createMany(2)
+
+    const response = await client
+      .get(`/api/v1/folios/cards?rarity[]=${commonRarity.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .qs({ page: 1, limit: 10 })
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.equal(body.meta.total, 1)
+    assert.equal(body.data.length, 1)
+
+    const returnedCardFolio = body.data[0]
+    assert.equal(returnedCardFolio.card.id, commonCard.id)
+    assert.equal(returnedCardFolio.occurrence, 1)
+  })
+
+  test('cards - should filter cards by artist when artist parameter is provided', async ({
+    client,
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
+    const artist2 = await ArtistFactory.merge({ id: 2, name: 'Artist Two' }).create()
+
+    const mainFolio = await FolioFactory.merge({
+      userId,
+      isRoot: true,
+    }).create()
+
+    const card1 = await CardFactory.merge({
+      name: 'Card by Artist One',
+      artistId: artist1.id,
+    }).create()
+
+    const card2 = await CardFactory.merge({
+      name: 'Card by Artist Two',
+      artistId: artist2.id,
+    }).create()
+
+    await CardFolioFactory.merge([
+      { cardId: card1.id, folioId: mainFolio.id, occurrence: 1 },
+      { cardId: card2.id, folioId: mainFolio.id, occurrence: 2 },
+    ]).createMany(2)
+
+    const response = await client
+      .get(`/api/v1/folios/cards?artist[]=${artist1.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .qs({ page: 1, limit: 10 })
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.equal(body.meta.total, 1)
+    assert.equal(body.data.length, 1)
+
+    const returnedCardFolio = body.data[0]
+    assert.equal(returnedCardFolio.card.id, card1.id)
+    assert.equal(returnedCardFolio.occurrence, 1)
+  })
+
+  test('cards - should filter cards by subtype when subtype parameter is provided', async ({
+    client,
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const basicSubtype = await SubtypeFactory.merge({ id: 1, label: 'Basic' }).create()
+    const stage1Subtype = await SubtypeFactory.merge({ id: 2, label: 'Stage 1' }).create()
+
+    const mainFolio = await FolioFactory.merge({
+      userId,
+      isRoot: true,
+    }).create()
+
+    const basicCard = await CardFactory.merge({
+      name: 'Basic Card',
+    })
+      .with('subtypes', 1, (subtypes) => subtypes.merge([basicSubtype]))
+      .create()
+
+    const stage1Card = await CardFactory.merge({
+      name: 'Stage 1 Card',
+    })
+      .with('subtypes', 1, (subtypes) => subtypes.merge([stage1Subtype]))
+      .create()
+
+    await CardFolioFactory.merge([
+      { cardId: basicCard.id, folioId: mainFolio.id, occurrence: 1 },
+      { cardId: stage1Card.id, folioId: mainFolio.id, occurrence: 2 },
+    ]).createMany(2)
+
+    const response = await client
+      .get(`/api/v1/folios/cards?subtype[]=${basicSubtype.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .qs({ page: 1, limit: 10 })
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.equal(body.meta.total, 1)
+    assert.equal(body.data.length, 1)
+
+    const returnedCardFolio = body.data[0]
+    assert.equal(returnedCardFolio.card.id, basicCard.id)
+    assert.equal(returnedCardFolio.occurrence, 1)
+  })
+
+  test('cards - should filter cards by type when type parameter is provided', async ({
+    client,
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const psychicType = await TypeFactory.merge({ id: 1, label: 'Psychic' }).create()
+    const fireType = await TypeFactory.merge({ id: 2, label: 'Fire' }).create()
+
+    const mainFolio = await FolioFactory.merge({
+      userId,
+      isRoot: true,
+    }).create()
+
+    const psychicCard = await CardFactory.merge({
+      name: 'Psychic Card',
+    })
+      .with('types', 1, (types) => types.merge([psychicType]))
+      .create()
+
+    const fireCard = await CardFactory.merge({
+      name: 'Fire Card',
+    })
+      .with('types', 1, (types) => types.merge([fireType]))
+      .create()
+
+    await CardFolioFactory.merge([
+      { cardId: psychicCard.id, folioId: mainFolio.id, occurrence: 1 },
+      { cardId: fireCard.id, folioId: mainFolio.id, occurrence: 2 },
+    ]).createMany(2)
+
+    const response = await client
+      .get(`/api/v1/folios/cards?type[]=${psychicType.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .qs({ page: 1, limit: 10 })
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.equal(body.meta.total, 1)
+    assert.equal(body.data.length, 1)
+
+    const returnedCardFolio = body.data[0]
+    assert.equal(returnedCardFolio.card.id, psychicCard.id)
+    assert.equal(returnedCardFolio.occurrence, 1)
+  })
+
+  test('cards - should apply multiple filters simultaneously', async ({ client, assert }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
+    const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
+    const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
+
+    const mainFolio = await FolioFactory.merge({
+      userId,
+      isRoot: true,
+    }).create()
+
+    const matchingCard = await CardFactory.merge({
+      name: 'Pikachu Common',
+      rarityId: commonRarity.id,
+      artistId: artist1.id,
+    }).create()
+
+    const nonMatchingCard1 = await CardFactory.merge({
+      name: 'Charizard Common',
+      rarityId: commonRarity.id,
+      artistId: artist1.id,
+    }).create()
+
+    const nonMatchingCard2 = await CardFactory.merge({
+      name: 'Pikachu Rare',
+      rarityId: rareRarity.id,
+      artistId: artist1.id,
+    }).create()
+
+    await CardFolioFactory.merge([
+      { cardId: matchingCard.id, folioId: mainFolio.id, occurrence: 1 },
+      { cardId: nonMatchingCard1.id, folioId: mainFolio.id, occurrence: 2 },
+      { cardId: nonMatchingCard2.id, folioId: mainFolio.id, occurrence: 3 },
+    ]).createMany(3)
+
+    const response = await client
+      .get(`/api/v1/folios/cards?rarity[]=${commonRarity.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .qs({
+        page: 1,
+        limit: 10,
+        name: 'Pika',
+      })
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.equal(body.meta.total, 1)
+    assert.equal(body.data.length, 1)
+
+    const returnedCardFolio = body.data[0]
+    assert.equal(returnedCardFolio.card.id, matchingCard.id)
     assert.equal(returnedCardFolio.occurrence, 1)
   })
 
