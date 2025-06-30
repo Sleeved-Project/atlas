@@ -1,8 +1,9 @@
 import Artist from '#models/artist'
 import Factory from '@adonisjs/lucid/factories'
 
-export const ArtistFactory = Factory.define(Artist, ({ faker }) => {
+export const ArtistFactory = Factory.define(Artist, () => {
   return {
-    name: `${faker.person.firstName()} ${faker.person.lastName()}`,
+    id: 1,
+    name: `Artist name`,
   }
 }).build()

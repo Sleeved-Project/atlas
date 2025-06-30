@@ -249,7 +249,6 @@ test.group('CardMapper', (group) => {
   })
 
   test('getBestTcgPlayerReportingPrice - should return the highest price', ({ assert }) => {
-    // On utilise Reflect pour accéder à la méthode protected
     const getBestTcgPlayerReportingPrice = Reflect.get(
       CardMapper,
       'getBestTcgPlayerReportingPrice'

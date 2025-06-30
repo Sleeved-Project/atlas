@@ -8,13 +8,14 @@ export default class extends BaseSchema {
       table.uuid('id').primary().notNullable()
       table.uuid('folio_id').notNullable()
       table.string('card_id').notNullable()
-      table.integer('occurences').notNullable()
-      table.timestamp('created_at')
-      table.timestamp('updated_at')
+      table.integer('occurrence').notNullable()
+      table.timestamp('created_at').notNullable()
+      table.timestamp('updated_at').notNullable()
 
-      // Clés étrangères pour les relations many-to-one
       table.foreign('folio_id').references('id').inTable('Folio').onDelete('CASCADE')
       table.foreign('card_id').references('id').inTable('Card').onDelete('CASCADE')
+
+      table.unique(['folio_id', 'card_id'])
     })
   }
 

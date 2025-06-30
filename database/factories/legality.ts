@@ -1,10 +1,11 @@
 import Legality from '#models/legality'
 import Factory from '@adonisjs/lucid/factories'
 
-export const LegalityFactory = Factory.define(Legality, ({ faker }) => {
+export const LegalityFactory = Factory.define(Legality, () => {
   return {
-    standard: faker.helpers.arrayElement(['Legal', 'Banned', 'Not Legal', null]),
-    expanded: faker.helpers.arrayElement(['Legal', 'Banned', 'Not Legal', null]),
-    unlimited: faker.helpers.arrayElement(['Legal', 'Banned', 'Not Legal', null]),
+    id: 1,
+    standard: `Legal`,
+    expanded: `Legal`,
+    unlimited: `Legal`,
   }
 }).build()

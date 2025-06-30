@@ -7,6 +7,7 @@ import Set from '#models/set'
 import Subtype from './subtypes.js'
 import CardMarketPrice from './card_market_price.js'
 import TcgPlayerReporting from './tcg_player_reporting.js'
+import CardFolio from './card_folio.js'
 
 export default class Card extends BaseModel {
   /**
@@ -91,4 +92,9 @@ export default class Card extends BaseModel {
     foreignKey: 'cardId',
   })
   declare tcgPlayerReportings: HasMany<typeof TcgPlayerReporting>
+
+  @hasMany(() => CardFolio, {
+    foreignKey: 'cardId',
+  })
+  declare cardFolios: HasMany<typeof CardFolio>
 }

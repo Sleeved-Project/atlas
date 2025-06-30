@@ -16,4 +16,8 @@ export default class FolioService {
       userId: userId,
     })
   }
+
+  public async getMainFolioByUserId(userId: string): Promise<Folio> {
+    return await Folio.query().where({ userId, isRoot: true }).firstOrFail()
+  }
 }

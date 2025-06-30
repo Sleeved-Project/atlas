@@ -3,6 +3,7 @@ import FolioService from '#services/folio_service'
 import testUtils from '@adonisjs/core/services/test_utils'
 import Folio from '#models/folio'
 import { FolioFactory } from '#database/factories/folio'
+import { TEST_AUTH_USER_ID } from '#tests/mocks/auth_service_mock'
 
 test.group('FolioService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -47,5 +48,46 @@ test.group('FolioService', (group) => {
 
     const rootFolios = await Folio.query().where({ userId, isRoot: true }).count('* as count')
     assert.equal(rootFolios[0].$extras.count, 1)
+  })
+
+  test('getMainFolioByUserId - should return the root folio for a user', async ({ assert }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    const rootFolio = await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    await FolioFactory.merge({
+      userId,
+      name: 'Secondary Collection',
+      isRoot: false,
+    }).create()
+
+    const result = await folioService.getMainFolioByUserId(userId)
+
+    assert.exists(result)
+    assert.equal(result.id, rootFolio.id)
+    assert.equal(result.userId, userId)
+    assert.equal(result.name, 'root')
+    assert.equal(result.isRoot, 1)
+  })
+
+  test('getMainFolioByUserId - should throw error when user has no root folio', async ({
+    assert,
+  }) => {
+    const userId = 'user-without-root-folio'
+
+    await FolioFactory.merge({
+      userId,
+      name: 'Non-Root Collection',
+      isRoot: false,
+    }).create()
+
+    await assert.rejects(
+      async () => await folioService.getMainFolioByUserId(userId),
+      'Row not found'
+    )
   })
 })

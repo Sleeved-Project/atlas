@@ -1,30 +1,29 @@
 services:
-  api:
+  api-test:
     build: .
     ports:
       - '8082:8082'
     depends_on:
-      mysql:
+      mysql-test:
         condition: service_healthy
     env_file:
-      - .env
+      - .env.test
     volumes:
       - ./:/app
       - /app/node_modules
       - /app/build
     networks:
-      - default
-      - sleeved-network
+      - test-network
 
-  mysql:
+  mysql-test:
     image: mysql:8.0
     restart: always
     ports:
       - '3307:3306'
     env_file:
-      - .env
+      - .env.test
     volumes:
-      - db_data:/var/lib/mysql
+      - db_test_data:/var/lib/mysql
       - ./sleeved_db_structure_dump.sql:/docker-entrypoint-initdb.d/sleeved_db_structure_dump.sql
     healthcheck:
       test:
@@ -44,16 +43,11 @@ services:
       retries: 10
       start_period: 60s
     networks:
-      - default
-      - looter-network
-    container_name: sleeved-db
+      - test-network
+    container_name: sleeved-db-test
 
 networks:
-  default:
-  sleeved-network:
-    external: true
-  looter-network:
-    external: true
+  test-network:
 
 volumes:
-  db_data:
+  db_test_data:
