@@ -7,10 +7,9 @@ import ValidationException from '#exceptions/validation_exception'
 import SetService from '#services/set_service'
 import {
   getAllSetsFiltersValidator,
-  getSetCardsParamsValidator,
+  getSetCardsValidator,
   getSetDetailParamsValidator,
 } from '#validators/set_validator'
-import { getAllCardsFiltersValidator } from '#validators/card_validator'
 import CardService from '#services/card_service'
 import { SetStatistics } from '#types/set_type'
 import SetCardsMapper from '#mappers/set_cards_mapper'
@@ -72,9 +71,13 @@ export default class SetsController {
 
   async cards({ response, request }: HttpContext) {
     try {
-      const filters = await getAllCardsFiltersValidator.validate(request.qs())
-      const params = await getSetCardsParamsValidator.validate(request.params())
-      const cards = await this.cardService.getAllCardsBySetIdAndPaginate(filters, params.id)
+      const payload = await request.validateUsing(getSetCardsValidator)
+      const filters = {
+        page: payload.page,
+        limit: payload.limit,
+        name: payload.name,
+      }
+      const cards = await this.cardService.getAllCardsBySetIdAndPaginate(filters, payload.params.id)
       return response.ok(cards)
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {

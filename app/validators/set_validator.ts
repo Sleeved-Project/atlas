@@ -25,7 +25,9 @@ export const getSetCardsParamsValidator = vine.compile(
 
 export const getSetCardsValidator = vine.compile(
   vine.object({
-    id: vine.string(),
+    params: vine.object({
+      id: vine.string(),
+    }),
     page: vine.number().positive(),
     limit: vine.number().positive().max(300),
     name: vine.string().optional(),
