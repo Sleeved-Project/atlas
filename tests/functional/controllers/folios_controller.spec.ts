@@ -289,6 +289,58 @@ test.group('Folio controller', (group) => {
     response.assertStatus(401)
   })
 
+  test('cards - should filter cards by name when name parameter is provided', async ({
+    client,
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const mainFolio = await FolioFactory.merge({
+      userId,
+      isRoot: true,
+    }).create()
+
+    const pikachuCard = await CardFactory.merge({
+      name: 'Pikachu',
+    }).create()
+
+    const charizardCard = await CardFactory.merge({
+      name: 'Charizard',
+    }).create()
+
+    const bulbasaurCard = await CardFactory.merge({
+      name: 'Bulbasaur',
+    }).create()
+
+    await CardFolioFactory.merge([
+      { cardId: pikachuCard.id, folioId: mainFolio.id, occurrence: 1 },
+      { cardId: charizardCard.id, folioId: mainFolio.id, occurrence: 2 },
+      { cardId: bulbasaurCard.id, folioId: mainFolio.id, occurrence: 1 },
+    ]).createMany(3)
+
+    const response = await client
+      .get('/api/v1/folios/cards')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .qs({ page: 1, limit: 10, name: 'Pika' })
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.equal(body.meta.total, 1)
+    assert.equal(body.data.length, 1)
+
+    console.log('DATA', body.data)
+
+    const returnedCardFolio = body.data[0]
+    assert.equal(returnedCardFolio.card.id, pikachuCard.id)
+    assert.equal(returnedCardFolio.occurrence, 1)
+  }).pin()
+
   test('statistics - should return folio statistics with correct structure', async ({
     client,
     assert,
