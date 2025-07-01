@@ -3,17 +3,18 @@ import { SetCardPriceTrending, SetStatistics } from '#types/set_type'
 
 export default class SetCardsMapper {
   public static toSetStatistics(todayCards: Card[], yesterdayCards: Card[]): SetStatistics {
-    const todayPrice = this.getLowerTcgPlayerMarketPrice(todayCards)
-    const yesterdayPrice = this.getLowerTcgPlayerMarketPrice(yesterdayCards)
+    const todayCardMarketPrice = this.getCardMarketTrendPrice(todayCards)
+    const yesterdayCardMarketPrice = this.getCardMarketTrendPrice(yesterdayCards)
 
-    const trending = this.getPriceTrend(todayPrice, yesterdayPrice)
+    const todayTcgPlayerPrice = this.getLowerTcgPlayerMarketPrice(todayCards)
+    const yesterdayTcgPlayerPrice = this.getLowerTcgPlayerMarketPrice(yesterdayCards)
 
     return {
       totalCardsCount: todayCards.length,
-      cardMarketPrice: todayPrice.toFixed(2),
-      tcgPlayerPrice: todayPrice.toFixed(2),
-      cardMarketTrending: trending,
-      tcgPlayerTrending: trending,
+      cardMarketPrice: todayCardMarketPrice.toFixed(2).toString(),
+      tcgPlayerPrice: todayTcgPlayerPrice.toFixed(2).toString(),
+      cardMarketTrending: this.getPriceTrend(todayCardMarketPrice, yesterdayCardMarketPrice),
+      tcgPlayerTrending: this.getPriceTrend(todayTcgPlayerPrice, yesterdayTcgPlayerPrice),
     }
   }
 
@@ -27,31 +28,27 @@ export default class SetCardsMapper {
   }
 
   public static getLowerTcgPlayerMarketPrice(cards: Card[]): number {
-    let total = 0
-    for (const card of cards) {
-      const reporting = card.tcgPlayerReportings?.[0]
-      if (reporting && reporting.tcgPlayerPrices && reporting.tcgPlayerPrices.length > 0) {
-        const lowest = Math.min(
-          ...reporting.tcgPlayerPrices
-            .map((price) => price.market ?? 0)
-            .filter((market) => market !== null)
-        )
-        total += lowest
+    return cards.reduce((acc, card) => {
+      const firstTcgPlayerReporting = card.tcgPlayerReportings?.[0]
+      if (firstTcgPlayerReporting?.tcgPlayerPrices?.length > 0) {
+        const lowerTcgPlayerMarketPrice = firstTcgPlayerReporting.tcgPlayerPrices.sort(
+          (a, b) => (a.market || 0) - (b.market || 0)
+        )[0].market
+        const marketPrice = +(lowerTcgPlayerMarketPrice || 0)
+        return acc + marketPrice
       }
-    }
-    return total
+      return acc
+    }, 0)
   }
 
   public static getCardMarketTrendPrice(cards: Card[]): number {
-    let total = 0
-    for (const card of cards) {
-      const price = card.cardMarketPrices?.[0]
-      if (price) {
-        const trend = price.trendPrice ?? 0
-        const reverseHolo = price.reverseHoloTrend ?? 0
-        total += Math.max(trend, reverseHolo)
+    return cards.reduce((acc, card) => {
+      const firstCardMarketPrice = card.cardMarketPrices?.[0]
+      if (firstCardMarketPrice) {
+        const trendPrice = +(firstCardMarketPrice.trendPrice || 0)
+        return acc + trendPrice
       }
-    }
-    return total
+      return acc
+    }, 0)
   }
 }
