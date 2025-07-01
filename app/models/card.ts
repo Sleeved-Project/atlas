@@ -4,10 +4,11 @@ import Artist from '#models/artist'
 import Rarity from '#models/rarity'
 import Legality from '#models/legality'
 import Set from '#models/set'
-import Subtype from './subtypes.js'
-import CardMarketPrice from './card_market_price.js'
-import TcgPlayerReporting from './tcg_player_reporting.js'
-import CardFolio from './card_folio.js'
+import Subtype from '#models/subtypes'
+import CardMarketPrice from '#models/card_market_price'
+import TcgPlayerReporting from '#models/tcg_player_reporting'
+import CardFolio from '#models/card_folio'
+import Type from '#models/type'
 
 export default class Card extends BaseModel {
   /**
@@ -82,6 +83,11 @@ export default class Card extends BaseModel {
     pivotTable: 'Card_Subtype',
   })
   declare subtypes: ManyToMany<typeof Subtype>
+
+  @manyToMany(() => Type, {
+    pivotTable: 'Card_Type',
+  })
+  declare types: ManyToMany<typeof Type>
 
   @hasMany(() => CardMarketPrice, {
     foreignKey: 'cardId',
