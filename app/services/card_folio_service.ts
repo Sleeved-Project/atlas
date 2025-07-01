@@ -72,4 +72,15 @@ export default class CardFolioService {
     })
     return await cardFolio.merge({ occurrence }).save()
   }
+
+  public async deleteCardFromFolioByCardIdAndFolioId(
+    cardId: string,
+    folioId: string
+  ): Promise<void> {
+    const cardFolio = await CardFolio.findByOrFail({
+      cardId,
+      folioId,
+    })
+    await cardFolio.delete()
+  }
 }

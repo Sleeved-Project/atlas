@@ -590,4 +590,90 @@ test.group('CardFolioService', (group) => {
       'Row not found'
     )
   })
+
+  test('deleteCardFromFolioByCardIdAndFolioId - should delete card folio relationship', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+    const folio = await FolioFactory.create()
+
+    await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: folio.id,
+      occurrence: 2,
+    }).create()
+
+    await cardFolioService.deleteCardFromFolioByCardIdAndFolioId(card.id, folio.id)
+
+    const deletedCardFolio = await CardFolio.query()
+      .where('card_id', card.id)
+      .where('folio_id', folio.id)
+      .first()
+
+    assert.isNull(deletedCardFolio)
+  })
+
+  test('deleteCardFromFolioByCardIdAndFolioId - should throw error when card folio does not exist', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+    const folio = await FolioFactory.create()
+
+    await assert.rejects(
+      async () => await cardFolioService.deleteCardFromFolioByCardIdAndFolioId(card.id, folio.id),
+      'Row not found'
+    )
+  })
+
+  test('deleteCardFromFolioByCardIdAndFolioId - should only delete the specified card folio relationship', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card1 = await CardFactory.create()
+    const card2 = await CardFactory.create()
+    const folio1 = await FolioFactory.create()
+    const folio2 = await FolioFactory.create()
+
+    const cardFolio1 = await CardFolioFactory.merge({
+      cardId: card1.id,
+      folioId: folio1.id,
+      occurrence: 2,
+    }).create()
+
+    const cardFolio2 = await CardFolioFactory.merge({
+      cardId: card1.id,
+      folioId: folio2.id,
+      occurrence: 3,
+    }).create()
+
+    const cardFolio3 = await CardFolioFactory.merge({
+      cardId: card2.id,
+      folioId: folio1.id,
+      occurrence: 1,
+    }).create()
+
+    await cardFolioService.deleteCardFromFolioByCardIdAndFolioId(card1.id, folio1.id)
+
+    const deletedCardFolio1 = await CardFolio.find(cardFolio1.id)
+    const existingCardFolio2 = await CardFolio.find(cardFolio2.id)
+    const existingCardFolio3 = await CardFolio.find(cardFolio3.id)
+
+    assert.isNull(deletedCardFolio1)
+    assert.exists(existingCardFolio2)
+    assert.exists(existingCardFolio3)
+  })
 })

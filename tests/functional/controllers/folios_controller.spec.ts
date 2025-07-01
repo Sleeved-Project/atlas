@@ -339,7 +339,7 @@ test.group('Folio controller', (group) => {
     const returnedCardFolio = body.data[0]
     assert.equal(returnedCardFolio.card.id, pikachuCard.id)
     assert.equal(returnedCardFolio.occurrence, 1)
-  }).pin()
+  })
 
   test('statistics - should return folio statistics with correct structure', async ({
     client,
