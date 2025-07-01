@@ -28,9 +28,6 @@ export default class SetsController {
       const sets = await this.setService.getAllSets(filters)
       return response.ok(sets)
     } catch (error) {
-      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
-        throw new ValidationException(error)
-      }
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
       }
@@ -80,9 +77,6 @@ export default class SetsController {
       const cards = await this.cardService.getAllCardsBySetIdAndPaginate(filters, params.id)
       return response.ok(cards)
     } catch (error) {
-      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
-        throw new ValidationException(error)
-      }
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
       }

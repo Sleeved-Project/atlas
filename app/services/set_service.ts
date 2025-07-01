@@ -15,6 +15,9 @@ export default class SetService {
   }
 
   public async getSetDetailById(id: string): Promise<Set> {
-    return await Set.query().where('id', id).firstOrFail()
+    return await Set.query()
+      .where('id', id)
+      .select('id', 'name', 'release_date', 'image_symbol', 'image_logo', 'total')
+      .firstOrFail()
   }
 }

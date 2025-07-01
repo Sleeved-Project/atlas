@@ -32,7 +32,6 @@ export default class CardService {
       .select('Card.id', 'Card.image_small')
       .where('Card.set_id', setId)
       .if(filters.name, (query) => query.whereILike('Card.name', `%${filters.name}%`))
-      .orderBy('Set.release_date', 'asc')
       .orderBy(
         db.raw('CAST(NULLIF(REGEXP_REPLACE(Card.number, "[^0-9]", ""), "") AS UNSIGNED)'),
         'asc'
