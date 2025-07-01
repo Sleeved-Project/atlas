@@ -17,3 +17,11 @@ export const occurrenceValidator = vine.compile(
     }),
   })
 )
+
+export const removeMainValidator = vine.compile(
+  vine.object({
+    params: vine.object({
+      id: vine.string(),
+    }),
+  })
+)

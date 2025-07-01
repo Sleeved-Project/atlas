@@ -15,6 +15,11 @@ export const getAllMainFolioCardsFiltersValidator = vine.compile(
   vine.object({
     page: vine.number().positive(),
     limit: vine.number().positive().max(300),
+    name: vine.string().optional(),
+    rarity: vine.array(vine.string()).optional(),
+    artist: vine.array(vine.string()).optional(),
+    subtype: vine.array(vine.string()).optional(),
+    type: vine.array(vine.string()).optional(),
   })
 )
 

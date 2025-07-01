@@ -16,15 +16,17 @@ import CardMarketPrice from '#models/card_market_price'
 import TcgPlayerReporting from '#models/tcg_player_reporting'
 import TcgPlayerPrice from '#models/tcg_player_price'
 import { DateTime } from 'luxon'
+import { SubtypeFactory } from '#database/factories/subtype'
+import { TypeFactory } from '#database/factories/type'
 
 test.group('CardFolioService', (group) => {
-  group.each.setup(() => testUtils.db().withGlobalTransaction())
-
   let cardFolioService: CardFolioService
 
   group.setup(() => {
     cardFolioService = new CardFolioService()
   })
+
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
 
   test('createCardFolio - should create a card folio relationship with occurrence 1', async ({
     assert,
@@ -302,6 +304,340 @@ test.group('CardFolioService', (group) => {
     )
 
     assert.equal(result.length, 0)
+  })
+
+  test('getAllMainFolioCards - should filter cards by name when name parameter is provided', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const mainFolio = await FolioFactory.create()
+
+    const pikachuCard = await CardFactory.merge({
+      name: 'Pikachu',
+    }).create()
+
+    const charizardCard = await CardFactory.merge({
+      name: 'Charizard',
+    }).create()
+
+    await CardFolioFactory.merge([
+      { cardId: pikachuCard.id, folioId: mainFolio.id, occurrence: 1 },
+      { cardId: charizardCard.id, folioId: mainFolio.id, occurrence: 2 },
+    ]).createMany(2)
+
+    const result = await cardFolioService.getAllMainFolioCards(
+      { page: 1, limit: 10, name: 'Pika' },
+      mainFolio.id
+    )
+
+    assert.equal(result.length, 1)
+    const returnedCard = result[0].card
+    assert.equal(returnedCard.id, pikachuCard.id)
+  })
+
+  test('getAllMainFolioCards - should filter cards by rarity when rarity parameter is provided', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
+    const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
+
+    const mainFolio = await FolioFactory.create()
+
+    const commonCard = await CardFactory.merge({
+      name: 'Common Card',
+      rarityId: commonRarity.id,
+    }).create()
+
+    const rareCard = await CardFactory.merge({
+      name: 'Rare Card',
+      rarityId: rareRarity.id,
+    }).create()
+
+    await CardFolioFactory.merge([
+      { cardId: commonCard.id, folioId: mainFolio.id, occurrence: 1 },
+      { cardId: rareCard.id, folioId: mainFolio.id, occurrence: 2 },
+    ]).createMany(2)
+
+    const result = await cardFolioService.getAllMainFolioCards(
+      { page: 1, limit: 10, rarity: [commonRarity.id.toString()] },
+      mainFolio.id
+    )
+
+    assert.equal(result.length, 1)
+    const returnedCard = result[0].card
+    assert.equal(returnedCard.id, commonCard.id)
+  })
+
+  test('getAllMainFolioCards - should filter cards by artist when artist parameter is provided', async ({
+    assert,
+  }) => {
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
+    const artist2 = await ArtistFactory.merge({ id: 2, name: 'Artist Two' }).create()
+
+    const mainFolio = await FolioFactory.create()
+
+    const card1 = await CardFactory.merge({
+      name: 'Card by Artist One',
+      artistId: artist1.id,
+    }).create()
+
+    const card2 = await CardFactory.merge({
+      name: 'Card by Artist Two',
+      artistId: artist2.id,
+    }).create()
+
+    await CardFolioFactory.merge([
+      { cardId: card1.id, folioId: mainFolio.id, occurrence: 1 },
+      { cardId: card2.id, folioId: mainFolio.id, occurrence: 2 },
+    ]).createMany(2)
+
+    const result = await cardFolioService.getAllMainFolioCards(
+      { page: 1, limit: 10, artist: [artist1.id.toString()] },
+      mainFolio.id
+    )
+
+    assert.equal(result.length, 1)
+    const returnedCard = result[0].card
+    assert.equal(returnedCard.id, card1.id)
+  })
+
+  test('getAllMainFolioCards - should filter cards by subtype when subtype parameter is provided', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const basicSubtype = await SubtypeFactory.merge({ id: 1, label: 'Basic' }).create()
+    const stage1Subtype = await SubtypeFactory.merge({ id: 2, label: 'Stage 1' }).create()
+
+    const mainFolio = await FolioFactory.create()
+
+    const basicCard = await CardFactory.with('subtypes', 1, (subtypes) =>
+      subtypes.merge([basicSubtype])
+    ).create()
+
+    const stage1Card = await CardFactory.with('subtypes', 1, (subtypes) =>
+      subtypes.merge([stage1Subtype])
+    ).create()
+
+    await CardFolioFactory.merge([
+      { cardId: basicCard.id, folioId: mainFolio.id, occurrence: 1 },
+      { cardId: stage1Card.id, folioId: mainFolio.id, occurrence: 2 },
+    ]).createMany(2)
+
+    const result = await cardFolioService.getAllMainFolioCards(
+      { page: 1, limit: 10, subtype: [basicSubtype.id.toString()] },
+      mainFolio.id
+    )
+
+    assert.equal(result.length, 1)
+    const returnedCard = result[0].card
+    assert.equal(returnedCard.id, basicCard.id)
+  })
+
+  test('getAllMainFolioCards - should filter cards by type when type parameter is provided', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const psychicType = await TypeFactory.merge({ id: 1, label: 'Psychic' }).create()
+    const fireType = await TypeFactory.merge({ id: 2, label: 'Fire' }).create()
+
+    const mainFolio = await FolioFactory.create()
+
+    const psychicCard = await CardFactory.with('types', 1, (types) =>
+      types.merge([psychicType])
+    ).create()
+
+    const fireCard = await CardFactory.with('types', 1, (types) => types.merge([fireType])).create()
+
+    await CardFolioFactory.merge([
+      { cardId: psychicCard.id, folioId: mainFolio.id, occurrence: 1 },
+      { cardId: fireCard.id, folioId: mainFolio.id, occurrence: 2 },
+    ]).createMany(2)
+
+    const result = await cardFolioService.getAllMainFolioCards(
+      { page: 1, limit: 10, type: [psychicType.id.toString()] },
+      mainFolio.id
+    )
+
+    assert.equal(result.length, 1)
+    const returnedCard = result[0].card
+    assert.equal(returnedCard.id, psychicCard.id)
+  })
+
+  test('getAllMainFolioCards - should apply multiple filters simultaneously', async ({
+    assert,
+  }) => {
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
+    const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
+    const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
+
+    const mainFolio = await FolioFactory.create()
+
+    const matchingCard = await CardFactory.merge({
+      name: 'Pikachu Common',
+      rarityId: commonRarity.id,
+      artistId: artist1.id,
+    }).create()
+
+    const nonMatchingCard1 = await CardFactory.merge({
+      name: 'Charizard Common',
+      rarityId: commonRarity.id,
+      artistId: artist1.id,
+    }).create()
+
+    const nonMatchingCard2 = await CardFactory.merge({
+      name: 'Pikachu Rare',
+      rarityId: rareRarity.id,
+      artistId: artist1.id,
+    }).create()
+
+    await CardFolioFactory.merge([
+      { cardId: matchingCard.id, folioId: mainFolio.id, occurrence: 1 },
+      { cardId: nonMatchingCard1.id, folioId: mainFolio.id, occurrence: 2 },
+      { cardId: nonMatchingCard2.id, folioId: mainFolio.id, occurrence: 3 },
+    ]).createMany(3)
+
+    const result = await cardFolioService.getAllMainFolioCards(
+      {
+        page: 1,
+        limit: 10,
+        name: 'Pika',
+        rarity: [commonRarity.id.toString()],
+      },
+      mainFolio.id
+    )
+
+    assert.equal(result.length, 1)
+    const returnedCard = result[0].card
+    assert.equal(returnedCard.id, matchingCard.id)
+  })
+
+  test('getAllMainFolioCards - should only return cards for specified folio', async ({
+    assert,
+  }) => {
+    const userId1 = TEST_AUTH_USER_ID
+    const userId2 = 'other-user-id'
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const mainFolio1 = await FolioFactory.merge({
+      userId: userId1,
+      isRoot: true,
+    }).create()
+
+    const mainFolio2 = await FolioFactory.merge({
+      userId: userId2,
+      isRoot: true,
+    }).create()
+
+    const cards = await CardFactory.createMany(4)
+
+    const cardFolio1 = await CardFolioFactory.merge({
+      cardId: cards[0].id,
+      folioId: mainFolio1.id,
+      occurrence: 1,
+    }).create()
+
+    const cardFolio2 = await CardFolioFactory.merge({
+      cardId: cards[1].id,
+      folioId: mainFolio1.id,
+      occurrence: 2,
+    }).create()
+
+    const cardFolio3 = await CardFolioFactory.merge({
+      cardId: cards[2].id,
+      folioId: mainFolio2.id,
+      occurrence: 1,
+    }).create()
+
+    const cardFolio4 = await CardFolioFactory.merge({
+      cardId: cards[3].id,
+      folioId: mainFolio2.id,
+      occurrence: 3,
+    }).create()
+
+    const resultFolio1 = await cardFolioService.getAllMainFolioCards(
+      { page: 1, limit: 10 },
+      mainFolio1.id
+    )
+
+    assert.equal(resultFolio1.length, 2)
+    const cardFolioIdsFolio1 = resultFolio1.map((cardFolio) => cardFolio.id)
+    assert.includeMembers(cardFolioIdsFolio1, [cardFolio1.id, cardFolio2.id])
+    assert.notIncludeMembers(cardFolioIdsFolio1, [cardFolio3.id, cardFolio4.id])
+
+    const resultFolio2 = await cardFolioService.getAllMainFolioCards(
+      { page: 1, limit: 10 },
+      mainFolio2.id
+    )
+
+    assert.equal(resultFolio2.length, 2)
+    const cardFolioIdsFolio2 = resultFolio2.map((cardFolio) => cardFolio.id)
+    assert.includeMembers(cardFolioIdsFolio2, [cardFolio3.id, cardFolio4.id])
+    assert.notIncludeMembers(cardFolioIdsFolio2, [cardFolio1.id, cardFolio2.id])
+  })
+
+  test('getAllMainFolioCards - should sort by set release date and card number', async ({
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const mainFolio = await FolioFactory.merge({
+      userId,
+      isRoot: true,
+    }).create()
+
+    await CardFactory.merge([
+      { id: 'base1-3', number: '3' },
+      { id: 'base1-1', number: '1' },
+      { id: 'base1-2', number: '2' },
+    ])
+      .with('cardFolios', 1, (cardFolios) =>
+        cardFolios.merge([
+          {
+            folioId: mainFolio.id,
+            occurrence: 1,
+          },
+        ])
+      )
+      .createMany(3)
+
+    const result = await cardFolioService.getAllMainFolioCards({ page: 1, limit: 10 }, mainFolio.id)
+
+    const cardIds = result.map((cardFolio) => cardFolio.cardId)
+    assert.equal(cardIds[0], 'base1-1')
+    assert.equal(cardIds[1], 'base1-2')
+    assert.equal(cardIds[2], 'base1-3')
   })
 
   test('getAllMainFolioCardPricesAndOccurrenceByDaysBefore - should return cards with prices and occurrence for specified folio', async ({
@@ -589,5 +925,91 @@ test.group('CardFolioService', (group) => {
       async () => await cardFolioService.updateCardFolioOccurrence(card.id, folio.id, 5),
       'Row not found'
     )
+  })
+
+  test('deleteCardFromFolioByCardIdAndFolioId - should delete card folio relationship', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+    const folio = await FolioFactory.create()
+
+    await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: folio.id,
+      occurrence: 2,
+    }).create()
+
+    await cardFolioService.deleteCardFromFolioByCardIdAndFolioId(card.id, folio.id)
+
+    const deletedCardFolio = await CardFolio.query()
+      .where('card_id', card.id)
+      .where('folio_id', folio.id)
+      .first()
+
+    assert.isNull(deletedCardFolio)
+  })
+
+  test('deleteCardFromFolioByCardIdAndFolioId - should throw error when card folio does not exist', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+    const folio = await FolioFactory.create()
+
+    await assert.rejects(
+      async () => await cardFolioService.deleteCardFromFolioByCardIdAndFolioId(card.id, folio.id),
+      'Row not found'
+    )
+  })
+
+  test('deleteCardFromFolioByCardIdAndFolioId - should only delete the specified card folio relationship', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card1 = await CardFactory.create()
+    const card2 = await CardFactory.create()
+    const folio1 = await FolioFactory.create()
+    const folio2 = await FolioFactory.create()
+
+    const cardFolio1 = await CardFolioFactory.merge({
+      cardId: card1.id,
+      folioId: folio1.id,
+      occurrence: 2,
+    }).create()
+
+    const cardFolio2 = await CardFolioFactory.merge({
+      cardId: card1.id,
+      folioId: folio2.id,
+      occurrence: 3,
+    }).create()
+
+    const cardFolio3 = await CardFolioFactory.merge({
+      cardId: card2.id,
+      folioId: folio1.id,
+      occurrence: 1,
+    }).create()
+
+    await cardFolioService.deleteCardFromFolioByCardIdAndFolioId(card1.id, folio1.id)
+
+    const deletedCardFolio1 = await CardFolio.find(cardFolio1.id)
+    const existingCardFolio2 = await CardFolio.find(cardFolio2.id)
+    const existingCardFolio3 = await CardFolio.find(cardFolio3.id)
+
+    assert.isNull(deletedCardFolio1)
+    assert.exists(existingCardFolio2)
+    assert.exists(existingCardFolio3)
   })
 })
