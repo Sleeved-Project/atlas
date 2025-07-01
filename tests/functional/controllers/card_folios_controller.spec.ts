@@ -11,7 +11,7 @@ import { RarityFactory } from '#database/factories/rarity'
 import { LegalityFactory } from '#database/factories/legality'
 import { SetFactory } from '#database/factories/set'
 
-test.group('Folio controller', (group) => {
+test.group('Card Folio Controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
 
   group.setup(() => {
@@ -159,7 +159,7 @@ test.group('Folio controller', (group) => {
 
     response.assertStatus(200)
     response.assertBodyContains({
-      message: 'Card occurence updated successfully',
+      message: 'Card occurrence updated successfully',
     })
 
     const updatedCardFolio = await CardFolio.query()

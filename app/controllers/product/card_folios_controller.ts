@@ -54,7 +54,7 @@ export default class CardFoliosController {
       const folio = await this.folioService.getMainFolioByUserId(authUser.id)
       await this.cardFolioService.updateCardFolioOccurrence(card.id, folio.id, payload.occurrence)
       const successResponse: SuccessOutputDto = {
-        message: 'Card occurence updated successfully',
+        message: 'Card occurrence updated successfully',
       }
       return response.ok(successResponse)
     } catch (error) {
