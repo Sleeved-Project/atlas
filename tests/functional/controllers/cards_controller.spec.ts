@@ -8,6 +8,7 @@ import { RarityFactory } from '#database/factories/rarity'
 import { LegalityFactory } from '#database/factories/legality'
 import { SetFactory } from '#database/factories/set'
 import { SubtypeFactory } from '#database/factories/subtype'
+import { TypeFactory } from '#database/factories/type'
 
 test.group('Card controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
@@ -162,6 +163,233 @@ test.group('Card controller', (group) => {
 
     response.assertStatus(200)
     assert.isEmpty(response.body().data)
+  })
+
+  test('index - it should filter by name when name parameter is provided', async ({
+    client,
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const pikachuCard = await CardFactory.merge({ name: 'Pikachu' }).create()
+    await CardFactory.merge({ name: 'Charizard' }).create()
+    await CardFactory.merge({ name: 'Bulbasaur' }).create()
+
+    const response = await client
+      .get('/api/v1/cards')
+      .qs({ page: 1, limit: 10, name: 'Pika' })
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.equal(body.data.length, 1)
+    assert.equal(body.data[0].id, pikachuCard.id)
+    assert.equal(body.meta.total, 1)
+  })
+
+  test('index - it should filter by rarity when rarity parameter is provided', async ({
+    client,
+    assert,
+  }) => {
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
+    const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
+    const artist = await ArtistFactory.create()
+
+    const commonCard = await CardFactory.merge({
+      name: 'Common Card',
+      rarityId: commonRarity.id,
+      artistId: artist.id,
+    }).create()
+
+    await CardFactory.merge({
+      name: 'Rare Card',
+      rarityId: rareRarity.id,
+      artistId: artist.id,
+    }).create()
+
+    const response = await client
+      .get(`/api/v1/cards?page=1&limit=10&rarity[]=${commonRarity.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.equal(body.data.length, 1)
+    assert.equal(body.data[0].id, commonCard.id)
+    assert.equal(body.meta.total, 1)
+  })
+
+  test('index - it should filter by artist when artist parameter is provided', async ({
+    client,
+    assert,
+  }) => {
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
+    const artist2 = await ArtistFactory.merge({ id: 2, name: 'Artist Two' }).create()
+
+    const atist1Card = await CardFactory.merge({
+      name: 'Card by Artist One',
+      artistId: artist1.id,
+    }).create()
+
+    await CardFactory.merge({
+      name: 'Card by Artist Two',
+      artistId: artist2.id,
+    }).create()
+
+    const response = await client
+      .get(`/api/v1/cards?page=1&limit=10&artist[]=${artist1.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.equal(body.data.length, 1)
+    assert.equal(body.data[0].id, atist1Card.id)
+    assert.equal(body.meta.total, 1)
+  })
+
+  test('index - it should filter by subtype when subtype parameter is provided', async ({
+    client,
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const basicSubtype = await SubtypeFactory.merge({ id: 1, label: 'Basic' }).create()
+    const stage1Subtype = await SubtypeFactory.merge({ id: 2, label: 'Stage 1' }).create()
+
+    const basicCard = await CardFactory.merge({
+      name: 'Basic Card',
+    })
+      .with('subtypes', 1, (subtypes) => subtypes.merge([basicSubtype]))
+      .create()
+
+    await CardFactory.merge({
+      name: 'Stage 1 Card',
+    })
+      .with('subtypes', 1, (subtypes) => subtypes.merge([stage1Subtype]))
+      .create()
+
+    const response = await client
+      .get(`/api/v1/cards?page=1&limit=10&subtype[]=${basicSubtype.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.equal(body.data.length, 1)
+    assert.equal(body.data[0].id, basicCard.id)
+    assert.equal(body.meta.total, 1)
+  })
+
+  test('index - it should filter by type when type parameter is provided', async ({
+    client,
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const psychicType = await TypeFactory.merge({ id: 1, label: 'Psychic' }).create()
+    const fireType = await TypeFactory.merge({ id: 2, label: 'Fire' }).create()
+
+    await CardFactory.merge({
+      name: 'Psychic Card',
+    })
+      .with('types', 1, (types) => types.merge([psychicType]))
+      .create()
+
+    const fireCard = await CardFactory.merge({
+      name: 'Fire Card',
+    })
+      .with('types', 1, (types) => types.merge([fireType]))
+      .create()
+
+    const response = await client
+      .get(`/api/v1/cards?page=1&limit=10&type[]=${fireType.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.equal(body.data.length, 1)
+    assert.equal(body.data[0].id, fireCard.id)
+    assert.equal(body.meta.total, 1)
+  })
+
+  test('index - it should apply multiple filters simultaneously', async ({ client, assert }) => {
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
+    const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
+    const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
+
+    await CardFactory.merge({
+      name: 'Pikachu Common',
+      rarityId: commonRarity.id,
+      artistId: artist1.id,
+    }).create()
+
+    const matchingCard = await CardFactory.merge({
+      name: 'Charizard Common',
+      rarityId: commonRarity.id,
+      artistId: artist1.id,
+    }).create()
+
+    await CardFactory.merge({
+      name: 'Pikachu Rare',
+      rarityId: rareRarity.id,
+      artistId: artist1.id,
+    }).create()
+
+    const response = await client
+      .get(`/api/v1/cards?page=1&limit=10&name=Char&rarity[]=${commonRarity.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.equal(body.data.length, 1)
+    assert.equal(body.data[0].id, matchingCard.id)
+    assert.equal(body.meta.total, 1)
+  })
+
+  test('index - it should return empty result when no cards match filters', async ({
+    client,
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    await CardFactory.merge({ name: 'Pikachu' }).create()
+
+    const response = await client
+      .get('/api/v1/cards')
+      .qs({ page: 1, limit: 10, name: 'NonExistentCard' })
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.equal(body.data.length, 0)
+    assert.equal(body.meta.total, 0)
   })
 
   test('show - it should return a single base card infos by id', async ({ client, assert }) => {
