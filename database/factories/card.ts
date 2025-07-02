@@ -8,6 +8,7 @@ import { SubtypeFactory } from './subtype.js'
 import { CardMarketPriceFactory } from './card_marker_price.js'
 import { TcgPlayerReportingFactory } from './tcg_player_reporting.js'
 import { CardFolioFactory } from './card_folio.js'
+import { TypeFactory } from './type.js'
 
 export const CardFactory = Factory.define(Card, ({ faker }) => {
   // This is a simplified example. In a real application, you would likely
@@ -37,6 +38,7 @@ export const CardFactory = Factory.define(Card, ({ faker }) => {
   .relation('legality', () => LegalityFactory)
   .relation('set', () => SetFactory)
   .relation('subtypes', () => SubtypeFactory)
+  .relation('types', () => TypeFactory)
   .relation('cardMarketPrices', () => CardMarketPriceFactory)
   .relation('tcgPlayerReportings', () => TcgPlayerReportingFactory)
   .relation('cardFolios', () => CardFolioFactory)

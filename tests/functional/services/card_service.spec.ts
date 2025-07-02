@@ -13,6 +13,8 @@ import { ArtistFactory } from '#database/factories/artist'
 import { RarityFactory } from '#database/factories/rarity'
 import { LegalityFactory } from '#database/factories/legality'
 import { SetFactory } from '#database/factories/set'
+import { SubtypeFactory } from '#database/factories/subtype'
+import { TypeFactory } from '#database/factories/type'
 
 test.group('CardService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -99,6 +101,197 @@ test.group('CardService', (group) => {
     })
 
     assert.equal(noMatchResult.length, 0)
+  })
+
+  test('getAllCards - should filter by rarity correctly', async ({ assert }) => {
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
+    const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
+    const artist = await ArtistFactory.create()
+
+    const commonCard = await CardFactory.merge({
+      name: 'Common Card',
+      rarityId: commonRarity.id,
+      artistId: artist.id,
+    }).create()
+
+    await CardFactory.merge({
+      name: 'Rare Card',
+      rarityId: rareRarity.id,
+      artistId: artist.id,
+    }).create()
+
+    const result = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      rarity: [commonRarity.id.toString()],
+    })
+
+    assert.equal(result.length, 1)
+    const cardResult = result[0]
+    assert.equal(cardResult.id, commonCard.id)
+  })
+
+  test('getAllCards - should filter by artist correctly', async ({ assert }) => {
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
+    const artist2 = await ArtistFactory.merge({ id: 2, name: 'Artist Two' }).create()
+
+    const artist1Card = await CardFactory.merge({
+      name: 'Card by Artist One',
+      artistId: artist1.id,
+    }).create()
+
+    await CardFactory.merge({
+      name: 'Card by Artist Two',
+      artistId: artist2.id,
+    }).create()
+
+    const result = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      artist: [artist1.id.toString()],
+    })
+
+    assert.equal(result.length, 1)
+    const cardResult = result[0]
+    assert.equal(cardResult.id, artist1Card.id)
+  })
+
+  test('getAllCards - should filter by subtype correctly', async ({ assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const basicSubtype = await SubtypeFactory.merge({ id: 1, label: 'Basic' }).create()
+    const stage1Subtype = await SubtypeFactory.merge({ id: 2, label: 'Stage 1' }).create()
+
+    const basicCard = await CardFactory.merge({
+      name: 'Basic Card',
+    })
+      .with('subtypes', 1, (subtypes) => subtypes.merge([basicSubtype]))
+      .create()
+
+    await CardFactory.merge({
+      name: 'Stage 1 Card',
+    })
+      .with('subtypes', 1, (subtypes) => subtypes.merge([stage1Subtype]))
+      .create()
+
+    const result = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      subtype: [basicSubtype.id.toString()],
+    })
+
+    assert.equal(result.length, 1)
+    const cardResult = await result[0]
+    assert.equal(cardResult.id, basicCard.id)
+  })
+
+  test('getAllCards - should filter by type correctly', async ({ assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const psychicType = await TypeFactory.merge({ id: 1, label: 'Psychic' }).create()
+    const fireType = await TypeFactory.merge({ id: 2, label: 'Fire' }).create()
+
+    const pysCard = await CardFactory.merge({
+      name: 'Psychic Card',
+    })
+      .with('types', 1, (types) => types.merge([psychicType]))
+      .create()
+
+    await CardFactory.merge({
+      name: 'Fire Card',
+    })
+      .with('types', 1, (types) => types.merge([fireType]))
+      .create()
+
+    const result = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      type: [psychicType.id.toString()],
+    })
+
+    assert.equal(result.length, 1)
+
+    // Vérifier que la carte retournée a le bon type
+    const cardResult = await result[0]
+    assert.equal(cardResult.id, pysCard.id)
+  })
+
+  test('getAllCards - should apply multiple filters simultaneously', async ({ assert }) => {
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
+    const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
+    const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
+
+    // Carte qui match tous les critères
+    const matchingCard = await CardFactory.merge({
+      name: 'Pikachu Common',
+      rarityId: commonRarity.id,
+      artistId: artist1.id,
+    }).create()
+
+    // Cartes qui ne matchent pas tous les critères
+    await CardFactory.merge({
+      name: 'Charizard Common',
+      rarityId: commonRarity.id,
+      artistId: artist1.id,
+    }).create()
+
+    await CardFactory.merge({
+      name: 'Pikachu Rare',
+      rarityId: rareRarity.id,
+      artistId: artist1.id,
+    }).create()
+
+    const result = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      name: 'Pika',
+      rarity: [commonRarity.id.toString()],
+    })
+
+    assert.equal(result.length, 1)
+
+    const cardResult = result[0]
+    assert.equal(cardResult.id, matchingCard.id)
+  })
+
+  test('getAllCards - should return empty result when no cards match filters', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
+
+    await CardFactory.merge({
+      name: 'Pikachu',
+      rarityId: commonRarity.id,
+    }).create()
+
+    const result = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      name: 'NonExistentCard',
+      rarity: [commonRarity.id.toString()],
+    })
+
+    assert.equal(result.length, 0)
   })
 
   test('getCardBaseById - should return a card base infos with all required fields', async ({

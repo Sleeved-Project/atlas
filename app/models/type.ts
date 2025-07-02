@@ -1,4 +1,6 @@
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
+import type { HasMany } from '@adonisjs/lucid/types/relations'
+import Card from '#models/card'
 
 export default class Type extends BaseModel {
   /**
@@ -11,4 +13,7 @@ export default class Type extends BaseModel {
 
   @column()
   declare label: string
+
+  @hasMany(() => Card)
+  declare cards: HasMany<typeof Card>
 }

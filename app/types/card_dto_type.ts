@@ -17,9 +17,3 @@ export type CardScanResultOutputDTO = {
   bestTrendPrice: string
   similarity: number
 }
-
-export type CardsWithFolioOccurenceOutputDTO = {
-  id: string
-  imageSmall: string
-  occurrence: number
-}

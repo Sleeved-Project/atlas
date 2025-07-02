@@ -2,58 +2,60 @@ import Artist from '#models/artist'
 import Rarity from '#models/rarity'
 import Subtype from '#models/subtypes'
 import Type from '#models/type'
+import Set from '#models/set'
 import { getResourceFiltersCardsValidator } from '#validators/filter_validator'
 import { inject } from '@adonisjs/core/container'
 import { Infer } from '@vinejs/vine/types'
 import InvalidFilterException from '#exceptions/invalid_filter_exception'
 
-// Filters models configuration with their instances
-const FILTER_MODELS = {
-  Artist: { model: Artist, orderBy: 'name' },
-  Rarity: { model: Rarity, orderBy: 'label' },
-  Subtype: { model: Subtype, orderBy: 'label' },
-  Type: { model: Type, orderBy: 'label' },
+const FILTER_CONTEXTS = {
+  cards: {
+    Artist: { model: Artist, orderBy: 'name', columns: ['id', 'name'] },
+    Rarity: { model: Rarity, orderBy: 'label', columns: ['id', 'label'] },
+    Subtype: { model: Subtype, orderBy: 'label', columns: ['id', 'label'] },
+    Type: { model: Type, orderBy: 'label', columns: ['id', 'label'] },
+    Set: { model: Set, orderBy: 'name', columns: ['id', 'name'] },
+  },
 } as const
+
+type FilterContext = keyof typeof FILTER_CONTEXTS
 
 @inject()
 export default class FilterService {
-  /**
-   * Return the available filter types with their model and result key
-   */
-  public getAvailableFilterTypes(): { type: string; resultKey: string; model: string }[] {
-    return Object.keys(FILTER_MODELS).map((modelName) => ({
-      type: modelName.toLowerCase(),
-      resultKey: `${modelName.toLowerCase()}s`,
-      model: modelName,
-    }))
+  public async getCardFilters(
+    filters: Infer<typeof getResourceFiltersCardsValidator>
+  ): Promise<Record<string, any>> {
+    return this.getFilters('cards', filters)
   }
 
-  /**
-   * Get filters for cards based on the provided types
-   * @param filterData - The filter data containing types
-   */
-  public async getCardFilters(filterData: Infer<typeof getResourceFiltersCardsValidator>) {
+  private async getFilters(
+    context: FilterContext,
+    filters: { types?: string[] }
+  ): Promise<Record<string, any>> {
     const result: Record<string, any> = {}
-    const { types = [] } = filterData
+    const contextConfig = FILTER_CONTEXTS[context]
+    const allFilterTypes = Object.keys(contextConfig).map((name) => name.toLowerCase())
+    const { types = allFilterTypes } = filters
 
     await Promise.all(
       types.map(async (type: string) => {
-        const modelName = this.getModelNameFromType(type)
-        const config = FILTER_MODELS[modelName as keyof typeof FILTER_MODELS]
+        const modelName = type.charAt(0).toUpperCase() + type.slice(1)
+        const config = contextConfig[modelName as keyof typeof contextConfig]
 
         if (!config) {
-          const availableTypes = Object.keys(FILTER_MODELS).map((name) => name.toLowerCase())
+          const availableTypes = Object.keys(contextConfig).map((name) => name.toLowerCase())
           throw new InvalidFilterException(type, availableTypes)
         }
 
-        result[`${type}s`] = await config.model.query().orderBy(config.orderBy, 'asc')
+        const data = await config.model
+          .query()
+          .select(...config.columns)
+          .orderBy(config.orderBy, 'asc')
+
+        result[`${type}s`] = data
       })
     )
 
     return result
-  }
-
-  private getModelNameFromType(type: string): string {
-    return type.charAt(0).toUpperCase() + type.slice(1)
   }
 }
