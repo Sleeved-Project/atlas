@@ -7,6 +7,7 @@ import { TypeFactory } from '#database/factories/type'
 import AuthServiceMock from '#tests/mocks/auth_service_mock'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
+import sinon from 'sinon'
 
 test.group('Filters controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
