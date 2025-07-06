@@ -10,6 +10,7 @@ import { ArtistFactory } from '#database/factories/artist'
 import { RarityFactory } from '#database/factories/rarity'
 import { LegalityFactory } from '#database/factories/legality'
 import { SetFactory } from '#database/factories/set'
+import Folio from '#models/folio'
 
 test.group('Card Folio Controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
@@ -320,5 +321,214 @@ test.group('Card Folio Controller', (group) => {
     const response = await client.delete('/api/v1/folios/cards/base1-1')
 
     response.assertStatus(401)
+  })
+
+  test('store - it should create a folio with cards from main folio', async ({
+    client,
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    const rootFolio = await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card1 = await CardFactory.merge({ id: 'base1-1' }).create()
+    const card2 = await CardFactory.merge({ id: 'base1-2' }).create()
+
+    await CardFolioFactory.merge({
+      cardId: card1.id,
+      folioId: rootFolio.id,
+      occurrence: 5,
+    }).create()
+
+    await CardFolioFactory.merge({
+      cardId: card2.id,
+      folioId: rootFolio.id,
+      occurrence: 3,
+    }).create()
+
+    const response = await client
+      .post('/api/v1/folios')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({
+        name: 'My Custom Folio',
+        imageUrl: 'https://example.com/folio.jpg',
+        cards: [
+          { id: 'base1-1', occurrence: 2 },
+          { id: 'base1-2', occurrence: 1 },
+        ],
+      })
+
+    response.assertStatus(200)
+    response.assertBodyContains({
+      message: 'Folio created successfully',
+    })
+
+    const createdFolio = await Folio.query()
+      .where('user_id', userId)
+      .where('name', 'My Custom Folio')
+      .where('is_root', false)
+      .first()
+
+    assert.exists(createdFolio)
+    assert.equal(createdFolio?.name, 'My Custom Folio')
+    assert.equal(createdFolio?.image, 'https://example.com/folio.jpg')
+
+    const folioCards = await CardFolio.query()
+      .where('folio_id', createdFolio!.id)
+      .orderBy('card_id')
+
+    assert.lengthOf(folioCards, 2)
+    assert.equal(folioCards[0].cardId, card1.id)
+    assert.equal(folioCards[0].occurrence, 2)
+    assert.equal(folioCards[1].cardId, card2.id)
+    assert.equal(folioCards[1].occurrence, 1)
+  })
+
+  test('store - it should return 403 when card is not owned in main folio', async ({ client }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+
+    const response = await client
+      .post('/api/v1/folios')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({
+        name: 'My Custom Folio',
+        imageUrl: 'https://example.com/folio.jpg',
+        cards: [{ id: card.id, occurrence: 1 }],
+      })
+
+    response.assertStatus(403)
+    response.assertBodyContains({
+      code: 'E_CARD_NOT_OWNED',
+    })
+  })
+
+  test('store - it should return 422 when insufficient card occurrence', async ({ client }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    const rootFolio = await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+
+    // Add only 2 cards to main folio
+    await CardFolioFactory.merge({ cardId: card.id, folioId: rootFolio.id, occurrence: 2 }).create()
+
+    const response = await client
+      .post('/api/v1/folios')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({
+        name: 'My Custom Folio',
+        imageUrl: 'https://example.com/folio.jpg',
+        cards: [
+          { id: card.id, occurrence: 5 }, // Requesting more than available
+        ],
+      })
+
+    response.assertStatus(422)
+    response.assertBodyContains({
+      code: 'E_INSUFFICIENT_CARD_OCCURRENCE',
+    })
+  })
+
+  test('store - it should return 404 for non-existent card', async ({ client }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    const response = await client
+      .post('/api/v1/folios')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({
+        name: 'My Custom Folio',
+        imageUrl: 'https://example.com/folio.jpg',
+        cards: [{ id: 'non-existent-card-id', occurrence: 1 }],
+      })
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
+
+  test('store - it should validate the request payload', async ({ client }) => {
+    const response = await client
+      .post('/api/v1/folios')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({
+        name: '', // Invalid: too short
+        cards: [
+          { id: 'card-id', occurrence: 0 }, // Invalid: occurrence too low
+        ],
+      })
+
+    response.assertStatus(422)
+  })
+
+  test('store - it should require authentication', async ({ client }) => {
+    const response = await client.post('/api/v1/folios').json({
+      name: 'My Custom Folio',
+      imageUrl: 'https://example.com/folio.jpg',
+      cards: [],
+    })
+
+    response.assertStatus(401)
+  })
+
+  test('store - it should handle empty cards array', async ({ client }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    const response = await client
+      .post('/api/v1/folios')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({
+        name: 'Empty Folio',
+        imageUrl: 'https://example.com/folio.jpg',
+        cards: [],
+      })
+
+    response.assertStatus(200)
+    response.assertBodyContains({
+      message: 'Folio created successfully',
+    })
   })
 })

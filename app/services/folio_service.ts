@@ -17,6 +17,15 @@ export default class FolioService {
     })
   }
 
+  public async createFolio(userId: string, name: string, image: string): Promise<Folio> {
+    return await Folio.create({
+      name,
+      image,
+      isRoot: false,
+      userId,
+    })
+  }
+
   public async getMainFolioByUserId(userId: string): Promise<Folio> {
     return await Folio.query().where({ userId, isRoot: true }).firstOrFail()
   }

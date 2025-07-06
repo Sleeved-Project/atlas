@@ -90,4 +90,46 @@ test.group('FolioService', (group) => {
       'Row not found'
     )
   })
+
+  test('createFolio - should create a custom folio for a user', async ({ assert }) => {
+    const userId = TEST_AUTH_USER_ID
+    const folioName = 'My Custom Collection'
+    const folioImage = 'https://example.com/custom-folio.jpg'
+
+    const folio = await folioService.createFolio(userId, folioName, folioImage)
+
+    assert.exists(folio)
+    assert.equal(folio.userId, userId)
+    assert.equal(folio.name, folioName)
+    assert.equal(folio.image, folioImage)
+    assert.isFalse(folio.isRoot)
+
+    const savedFolio = await Folio.query()
+      .where('user_id', userId)
+      .where('name', folioName)
+      .where('is_root', false)
+      .first()
+
+    assert.exists(savedFolio)
+    assert.equal(savedFolio!.id, folio.id)
+  })
+
+  test('createFolio - should allow multiple custom folios for same user', async ({ assert }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    const folio1 = await folioService.createFolio(userId, 'Collection 1', 'image1.jpg')
+    const folio2 = await folioService.createFolio(userId, 'Collection 2', 'image2.jpg')
+
+    assert.exists(folio1)
+    assert.exists(folio2)
+    assert.notEqual(folio1.id, folio2.id)
+    assert.equal(folio1.userId, userId)
+    assert.equal(folio2.userId, userId)
+    assert.isFalse(folio1.isRoot)
+    assert.isFalse(folio2.isRoot)
+
+    const userFolios = await Folio.query().where('user_id', userId).where('is_root', false)
+
+    assert.lengthOf(userFolios, 2)
+  })
 })
