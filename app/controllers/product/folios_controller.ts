@@ -10,6 +10,8 @@ import ValidationException from '#exceptions/validation_exception'
 import { getAllMainFolioCardsFiltersValidator } from '#validators/card_validator'
 import CardFolioMapper from '#mappers/card_folio_mapper'
 import { FolioStatistics } from '#types/folio_type'
+import FolioMapper from '#mappers/folio_mapper'
+import ConstanteUtils from '#utils/constante_utils'
 
 @inject()
 export default class FoliosController {
@@ -59,18 +61,35 @@ export default class FoliosController {
       const todayCardFolios =
         await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
           mainFolio.id,
-          1
+          ConstanteUtils.TODAY_DAY_BEFORE_COUNT
         )
       const yesterdayCardFolios =
         await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
           mainFolio.id,
-          2
+          ConstanteUtils.YESTERDAY_DAY_BEFORE_COUNT
         )
       const folioStatistics: FolioStatistics = CardFolioMapper.toFolioStatistics(
         todayCardFolios,
         yesterdayCardFolios
       )
       return response.ok(folioStatistics)
+    } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async index({ response, authUser }: HttpContext) {
+    try {
+      const childFolioWithCardPrices = await this.folioService.getAllMyChildFolioWithCardPrices(
+        authUser.id,
+        ConstanteUtils.TODAY_DAY_BEFORE_COUNT
+      )
+      const foliosWithStatistics = FolioMapper.toFoliosWithStatistics(childFolioWithCardPrices)
+
+      return response.ok(foliosWithStatistics)
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)

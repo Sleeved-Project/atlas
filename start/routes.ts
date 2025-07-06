@@ -30,6 +30,7 @@ router
         router
           .group(() => {
             router.post('/init', [FoliosController, 'init']).use(middleware.auth())
+            router.get('/', [FoliosController, 'index']).use(middleware.auth())
             router.get('/cards', [FoliosController, 'cards']).use(middleware.auth())
             router.get('/statistics', [FoliosController, 'statistics']).use(middleware.auth())
             router.post('/', [CardFoliosController, 'store']).use(middleware.auth())
