@@ -30,9 +30,10 @@ router
         router
           .group(() => {
             router.get('/', [FoliosController, 'index']).use(middleware.auth())
-            router.get('/cards', [FoliosController, 'cards']).use(middleware.auth())
+            router.get('/cards', [FoliosController, 'mainFolioCards']).use(middleware.auth())
             router.get('/statistics', [FoliosController, 'statistics']).use(middleware.auth())
             router.get('/:id', [FoliosController, 'show']).use(middleware.auth())
+            router.get('/:id/cards', [FoliosController, 'childFolioCards']).use(middleware.auth())
             router.post('/', [CardFoliosController, 'store']).use(middleware.auth())
             router.post('/init', [FoliosController, 'init']).use(middleware.auth())
             router.post('/cards', [CardFoliosController, 'collect']).use(middleware.auth())

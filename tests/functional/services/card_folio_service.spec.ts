@@ -1199,4 +1199,117 @@ test.group('CardFolioService', (group) => {
 
     await assert.rejects(async () => await cardFolioService.createCardFolio(card.id, folio.id, 5))
   })
+
+  test('getAllChildFolioCards - should return paginated cards from specific child folio', async ({
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const childFolio = await FolioFactory.merge({
+      userId,
+      name: 'My Custom Collection',
+      isRoot: false,
+    }).create()
+
+    const otherFolio = await FolioFactory.merge({
+      userId,
+      name: 'Other Collection',
+      isRoot: false,
+    }).create()
+
+    const cards = await CardFactory.createMany(3)
+
+    await CardFolioFactory.merge([
+      { cardId: cards[0].id, folioId: childFolio.id, occurrence: 2 },
+      { cardId: cards[1].id, folioId: childFolio.id, occurrence: 1 },
+      { cardId: cards[2].id, folioId: otherFolio.id, occurrence: 3 }, // Should not be returned
+    ]).createMany(3)
+
+    const result = await cardFolioService.getAllChildFolioCards(
+      { page: 1, limit: 10 },
+      childFolio.id
+    )
+
+    assert.equal(result.length, 2)
+    assert.equal(result.currentPage, 1)
+
+    result.map((cardFolio) => cardFolio.id)
+    const cardIds = result.map((cardFolio) => cardFolio.cardId)
+
+    // Should only contain cards from target child folio
+    assert.includeMembers(cardIds, [cards[0].id, cards[1].id])
+    assert.notInclude(cardIds, cards[2].id)
+
+    const firstCardFolio = result[0].$attributes
+    assert.properties(firstCardFolio, ['id', 'occurrence', 'cardId', 'folioId'])
+    assert.equal(firstCardFolio.folioId, childFolio.id)
+
+    // Verify preloaded card relation
+    assert.property(result[0].$preloaded, 'card')
+    const preloadedCard = result[0].$preloaded.card as Card
+    assert.properties(preloadedCard.$attributes, ['id', 'imageSmall'])
+    assert.isString(preloadedCard.$attributes.id)
+    assert.isString(preloadedCard.$attributes.imageSmall)
+  })
+
+  test('getAllChildFolioCards - should handle pagination correctly', async ({ assert }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const childFolio = await FolioFactory.merge({
+      userId,
+      isRoot: false,
+    }).create()
+
+    // Create 15 cards in the child folio
+    await CardFactory.with('cardFolios', 1, (cardFolios) =>
+      cardFolios.merge([
+        {
+          folioId: childFolio.id,
+          occurrence: 1,
+        },
+      ])
+    ).createMany(15)
+
+    const page1 = await cardFolioService.getAllChildFolioCards(
+      { page: 1, limit: 10 },
+      childFolio.id
+    )
+
+    assert.equal(page1.length, 10)
+    assert.equal(page1.currentPage, 1)
+
+    const page2 = await cardFolioService.getAllChildFolioCards(
+      { page: 2, limit: 10 },
+      childFolio.id
+    )
+
+    assert.equal(page2.length, 5)
+    assert.equal(page2.currentPage, 2)
+  })
+
+  test('getAllChildFolioCards - should return empty result for non-existent folio', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const result = await cardFolioService.getAllChildFolioCards(
+      { page: 1, limit: 10 },
+      'non-existent-folio-id'
+    )
+
+    assert.equal(result.length, 0)
+  })
 })
