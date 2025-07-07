@@ -22,7 +22,7 @@ router
             router.get('/rarity', [CardsController, 'rarity'])
             router.get('/subtype', [CardsController, 'subtype'])
             router.get('/artist', [CardsController, 'artist'])
-            router.get('/:id', [CardsController, 'show'])
+            router.get('/:id', [CardsController, 'show']).use(middleware.auth())
             router.get('/:id/details', [CardsController, 'details'])
             router.get('/:id/prices', [CardsController, 'prices'])
           })

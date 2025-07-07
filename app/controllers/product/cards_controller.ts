@@ -33,11 +33,12 @@ export default class CardsController {
     }
   }
 
-  async show({ response, request }: HttpContext) {
+  async show({ response, request, authUser }: HttpContext) {
     try {
       const params = await getCardBaseParamsValidator.validate(request.params())
-      const card = await this.cardService.getCardBaseById(params.id)
-      return response.ok(card)
+      const card = await this.cardService.getCardBasesByIdAndUserId(params.id, authUser.id)
+      const cardBaseOutputDTO = CardMapper.toCardBaseOuputDTO(card)
+      return response.ok(cardBaseOutputDTO)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)

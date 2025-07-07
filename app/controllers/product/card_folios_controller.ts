@@ -29,7 +29,7 @@ export default class CardFoliosController {
   async collect({ request, response, authUser }: HttpContext) {
     try {
       const payload = await collectValidator.validate(request.all())
-      const card = await this.cardService.getCardBaseById(payload.cardId)
+      const card = await this.cardService.getCardIdById(payload.cardId)
       const folio = await this.folioService.getMainFolioByUserId(authUser.id)
       await this.cardFolioService.createCardMainFolio(card.id, folio.id)
       const successResponse: SuccessOutputDto = {
@@ -53,7 +53,7 @@ export default class CardFoliosController {
   async occurrence({ request, response, authUser }: HttpContext) {
     try {
       const payload = await request.validateUsing(occurrenceValidator)
-      const card = await this.cardService.getCardBaseById(payload.params.id)
+      const card = await this.cardService.getCardIdById(payload.params.id)
       const folio = await this.folioService.getMainFolioByUserId(authUser.id)
       await this.cardFolioService.updateCardFolioOccurrence(card.id, folio.id, payload.occurrence)
       const successResponse: SuccessOutputDto = {
@@ -74,7 +74,7 @@ export default class CardFoliosController {
   async delete({ request, response, authUser }: HttpContext) {
     try {
       const payload = await request.validateUsing(removeMainValidator)
-      const card = await this.cardService.getCardBaseById(payload.params.id)
+      const card = await this.cardService.getCardIdById(payload.params.id)
       const folio = await this.folioService.getMainFolioByUserId(authUser.id)
       await this.cardFolioService.deleteCardFromFolioByCardIdAndFolioId(card.id, folio.id)
       const successResponse: SuccessOutputDto = {
@@ -98,7 +98,7 @@ export default class CardFoliosController {
       const mainFolio = await this.folioService.getMainFolioByUserId(authUser.id)
 
       for (const card of payload.cards) {
-        await this.cardService.getCardBaseById(card.id)
+        await this.cardService.getCardIdById(card.id)
         const cardInMainFolio = await this.cardFolioService.getCardFolioByCardIdAndFolioId(
           card.id,
           mainFolio.id
