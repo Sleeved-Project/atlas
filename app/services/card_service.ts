@@ -6,13 +6,25 @@ import { Infer } from '@vinejs/vine/types'
 
 export default class CardService {
   public async getAllCards(
-    filters: Infer<typeof getAllCardsFiltersValidator>
+    filters: Infer<typeof getAllCardsFiltersValidator>,
+    authUserId: string
   ): Promise<ModelPaginatorContract<Card>> {
     return await Card.query()
       .join('Set', 'Card.set_id', 'Set.id')
       .join('Rarity', 'Card.rarity_id', 'Rarity.id')
       .join('Artist', 'Card.artist_id', 'Artist.id')
-      .select('Card.id', 'Card.image_small')
+      .leftJoin('Card_Folio', 'Card.id', 'Card_Folio.card_id')
+      .leftJoin('Folio', (join) => {
+        join
+          .on('Card_Folio.folio_id', '=', 'Folio.id')
+          .andOnVal('Folio.is_root', true)
+          .andOnVal('Folio.user_id', authUserId)
+      })
+      .select(
+        'Card.id',
+        'Card.image_small',
+        db.raw('CASE WHEN Card_Folio.occurrence > 0 THEN true ELSE false END as isOwned')
+      )
       .if(filters.name, (query) => query.whereILike('Card.name', `%${filters.name}%`))
       .if(filters.subtype && filters.subtype.length > 0, (query) => {
         query
