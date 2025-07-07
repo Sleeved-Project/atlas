@@ -258,4 +258,100 @@ test.group('FolioService', (group) => {
     const getUserFolio = await Folio.findOrFail(result[0].id)
     assert.equal(getUserFolio.userId, userId)
   })
+
+  test('getMyChildFolioWithCardPrices - should return specific child folio with card prices', async ({
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await TypeFactory.create()
+    await SubtypeFactory.create()
+
+    const targetFolio = await FolioFactory.merge({
+      userId,
+      name: 'Target Collection',
+      image: 'target.jpg',
+      isRoot: false,
+    }).create()
+
+    const otherFolio = await FolioFactory.merge({
+      userId,
+      name: 'Other Collection',
+      isRoot: false,
+    }).create()
+
+    const cards = await CardFactory.with('cardMarketPrices', 1, (cardMarketPrices) =>
+      cardMarketPrices.merge({
+        trendPrice: 25.0,
+        reverseHoloTrend: 35.0,
+      })
+    )
+      .with('tcgPlayerReportings', 1, (tcgPlayerReportings) =>
+        tcgPlayerReportings.with('tcgPlayerPrices', 1, (tcgPlayerPrices) =>
+          tcgPlayerPrices.merge({ type: 'normal', market: 20.0 })
+        )
+      )
+      .createMany(2)
+
+    await CardFolioFactory.merge([
+      { cardId: cards[0].id, folioId: targetFolio.id, occurrence: 3 },
+      { cardId: cards[1].id, folioId: otherFolio.id, occurrence: 1 },
+    ]).createMany(2)
+
+    const result = await folioService.getMyChildFolioWithCardPrices(targetFolio.id, 1)
+
+    assert.exists(result)
+    assert.equal(result.id, targetFolio.id)
+    assert.equal(result.name, 'Target Collection')
+    assert.equal(result.image, 'target.jpg')
+    assert.exists(result.createdAt)
+
+    // Verify only target folio's cards are returned
+    assert.exists(result.cardFolios)
+    assert.lengthOf(result.cardFolios, 1)
+    assert.equal(result.cardFolios[0].cardId, cards[0].id)
+    assert.equal(result.cardFolios[0].occurrence, 3)
+
+    // Verify preloaded relations
+    assert.exists(result.cardFolios[0].card)
+    assert.exists(result.cardFolios[0].card.cardMarketPrices)
+    assert.exists(result.cardFolios[0].card.tcgPlayerReportings)
+  })
+
+  test('getMyChildFolioWithCardPrices - should throw error when folio does not exist', async ({
+    assert,
+  }) => {
+    const nonExistentFolioId = 'non-existent-folio-id'
+
+    await assert.rejects(
+      async () => await folioService.getMyChildFolioWithCardPrices(nonExistentFolioId, 1),
+      'Row not found'
+    )
+  })
+
+  test('getMyChildFolioWithCardPrices - should return folio with empty cardFolios when no cards', async ({
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    const emptyFolio = await FolioFactory.merge({
+      userId,
+      name: 'Empty Collection',
+      image: 'empty.jpg',
+      isRoot: false,
+    }).create()
+
+    const result = await folioService.getMyChildFolioWithCardPrices(emptyFolio.id, 1)
+
+    assert.exists(result)
+    assert.equal(result.id, emptyFolio.id)
+    assert.equal(result.name, 'Empty Collection')
+    assert.equal(result.image, 'empty.jpg')
+    assert.exists(result.cardFolios)
+    assert.lengthOf(result.cardFolios, 0)
+  })
 })

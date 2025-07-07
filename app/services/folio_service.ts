@@ -31,6 +31,10 @@ export default class FolioService {
     return await Folio.query().where({ userId, isRoot: true }).firstOrFail()
   }
 
+  public async getFolioByFolioId(folioId: string): Promise<Folio> {
+    return await Folio.findOrFail(folioId)
+  }
+
   public async getAllMyChildFolioWithCardPrices(
     userId: string,
     daysBefore: number
@@ -45,11 +49,13 @@ export default class FolioService {
                 cardMarketPricesQuery
                   .select('id', 'trendPrice', 'reverseHoloTrend')
                   .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
+                  .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
               })
               .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
                 tcgPlayerReportings
                   .select('id', 'url')
                   .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
+                  .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
                   .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
                     tcgPlayerPricesQuery.select('id', 'type', 'market')
                   })
@@ -61,5 +67,35 @@ export default class FolioService {
       .where('Folio.user_id', userId)
       .andWhere('Folio.is_root', false)
       .orderBy('Folio.created_at', 'desc')
+  }
+
+  public async getMyChildFolioWithCardPrices(folioId: string, daysBefore: number): Promise<Folio> {
+    return await Folio.query()
+      .preload('cardFolios', (cardFolioQuery) => {
+        cardFolioQuery
+          .preload('card', (cardQuery) => {
+            cardQuery
+              .select('id')
+              .preload('cardMarketPrices', (cardMarketPricesQuery) => {
+                cardMarketPricesQuery
+                  .select('id', 'trendPrice', 'reverseHoloTrend')
+                  .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
+                  .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
+              })
+              .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
+                tcgPlayerReportings
+                  .select('id', 'url')
+                  .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
+                  .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
+                  .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
+                    tcgPlayerPricesQuery.select('id', 'type', 'market')
+                  })
+              })
+          })
+          .select('Card_Folio.id', 'Card_Folio.occurrence', 'Card_Folio.card_id')
+      })
+      .select('Folio.id', 'Folio.name', 'Folio.image', 'Folio.created_at')
+      .where('Folio.id', folioId)
+      .firstOrFail()
   }
 }

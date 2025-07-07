@@ -26,3 +26,11 @@ export type FoliosInfosAndStatistics = {
   image: string | null
   statistics: FolioListStatistics
 }
+
+export type FoliosDetailsDTO = {
+  id: string
+  name: string
+  image: string | null
+  createdAt: string | null
+  statistics: FolioStatistics
+}
