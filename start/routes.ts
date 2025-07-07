@@ -8,6 +8,7 @@ const ScanController = () => import('#controllers/product/scan_controller')
 const FoliosController = () => import('#controllers/product/folios_controller')
 const CardFoliosController = () => import('#controllers/product/card_folios_controller')
 const SetsController = () => import('#controllers/product/sets_controller')
+const FiltersController = () => import('#controllers/product/filters_controller')
 
 router.get('/', [RootController])
 router.get('/health', [HealthCheckController])
@@ -20,9 +21,6 @@ router
         router
           .group(() => {
             router.get('/', [CardsController, 'index']).use(middleware.auth())
-            router.get('/rarity', [CardsController, 'rarity'])
-            router.get('/subtype', [CardsController, 'subtype'])
-            router.get('/artist', [CardsController, 'artist'])
             router.get('/:id', [CardsController, 'show'])
             router.get('/:id/details', [CardsController, 'details'])
             router.get('/:id/prices', [CardsController, 'prices'])
@@ -45,6 +43,11 @@ router
             router.get('/:id/cards', [SetsController, 'cards']).use(middleware.auth())
           })
           .prefix('sets')
+        router
+          .group(() => {
+            router.get('/cards', [FiltersController, 'cards'])
+          })
+          .prefix('filters')
         router.post('/scan/analyze', [ScanController, 'analyze'])
       })
       .prefix('v1')
