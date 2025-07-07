@@ -3,9 +3,9 @@ import Rarity from '#models/rarity'
 import Subtype from '#models/subtypes'
 import Type from '#models/type'
 
-export interface FilterCardsResponse {
+export interface FilterCardsOutputDTO {
   artists: Artist[]
-  raritys: Rarity[]
+  rarities: Rarity[]
   subtypes: Subtype[]
   types: Type[]
 }

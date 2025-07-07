@@ -2,7 +2,7 @@ import ArtistService from '#services/artist_service'
 import RarityService from '#services/rarity_service'
 import SubtypeService from '#services/subtype_service'
 import TypeService from '#services/type_service'
-import { FilterCardsResponse } from '#types/filter_cards_type'
+import { FilterCardsOutputDTO } from '#types/filter_cards_type'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 
@@ -16,16 +16,16 @@ export default class FiltersController {
   ) {}
 
   async cards({ response }: HttpContext): Promise<void> {
-    const [artists, raritys, subtypes, types] = await Promise.all([
+    const [artists, rarities, subtypes, types] = await Promise.all([
       this.artistService.getAllArtists(),
       this.rarityService.getAllRarities(),
       this.subtypeService.getAllSubtypes(),
       this.typeService.getAllTypes(),
     ])
 
-    const cardFilters: FilterCardsResponse = {
+    const cardFilters: FilterCardsOutputDTO = {
       artists,
-      raritys,
+      rarities,
       subtypes,
       types,
     }
