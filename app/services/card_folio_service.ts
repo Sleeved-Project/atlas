@@ -5,7 +5,7 @@ import { Infer } from '@vinejs/vine/types'
 import db from '@adonisjs/lucid/services/db'
 
 export default class CardFolioService {
-  public async createCardFolio(cardId: string, folioId: string): Promise<CardFolio> {
+  public async createCardMainFolio(cardId: string, folioId: string): Promise<CardFolio> {
     return await CardFolio.create({
       occurrence: 1,
       cardId,
@@ -100,5 +100,27 @@ export default class CardFolioService {
       folioId,
     })
     await cardFolio.delete()
+  }
+
+  public async getCardFolioByCardIdAndFolioId(
+    cardId: string,
+    folioId: string
+  ): Promise<CardFolio | null> {
+    return await CardFolio.findBy({
+      cardId,
+      folioId,
+    })
+  }
+
+  public async createCardFolio(
+    cardId: string,
+    folioId: string,
+    occurrence: number
+  ): Promise<CardFolio> {
+    return await CardFolio.create({
+      occurrence,
+      cardId,
+      folioId,
+    })
   }
 }

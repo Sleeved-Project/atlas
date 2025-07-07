@@ -28,7 +28,7 @@ test.group('CardFolioService', (group) => {
 
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  test('createCardFolio - should create a card folio relationship with occurrence 1', async ({
+  test('createCardMainFolio - should create a card folio relationship with occurrence 1', async ({
     assert,
   }) => {
     await ArtistFactory.create()
@@ -38,7 +38,7 @@ test.group('CardFolioService', (group) => {
     const card = await CardFactory.create()
     const folio = await FolioFactory.create()
 
-    const cardFolio = await cardFolioService.createCardFolio(card.id, folio.id)
+    const cardFolio = await cardFolioService.createCardMainFolio(card.id, folio.id)
 
     assert.exists(cardFolio)
     assert.isNotNull(cardFolio.id)
@@ -55,16 +55,16 @@ test.group('CardFolioService', (group) => {
     assert.equal(savedCardFolio?.id, cardFolio.id)
   })
 
-  test('createCardFolio - should throw error when card does not exist', async ({ assert }) => {
+  test('createCardMainFolio - should throw error when card does not exist', async ({ assert }) => {
     const nonExistentCardId = 'non-existent-card'
     const folio = await FolioFactory.create()
 
     await assert.rejects(
-      async () => await cardFolioService.createCardFolio(nonExistentCardId, folio.id)
+      async () => await cardFolioService.createCardMainFolio(nonExistentCardId, folio.id)
     )
   })
 
-  test('createCardFolio - should throw error when folio does not exist', async ({ assert }) => {
+  test('createCardMainFolio - should throw error when folio does not exist', async ({ assert }) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
@@ -73,11 +73,11 @@ test.group('CardFolioService', (group) => {
     const nonExistentFolioId = uuidv4()
 
     await assert.rejects(
-      async () => await cardFolioService.createCardFolio(card.id, nonExistentFolioId)
+      async () => await cardFolioService.createCardMainFolio(card.id, nonExistentFolioId)
     )
   })
 
-  test('createCardFolio - should throw unique constraint error for duplicate entry', async ({
+  test('createCardMainFolio - should throw unique constraint error for duplicate entry', async ({
     assert,
   }) => {
     await ArtistFactory.create()
@@ -87,9 +87,9 @@ test.group('CardFolioService', (group) => {
     const card = await CardFactory.create()
     const folio = await FolioFactory.create()
 
-    await cardFolioService.createCardFolio(card.id, folio.id)
+    await cardFolioService.createCardMainFolio(card.id, folio.id)
 
-    await assert.rejects(async () => await cardFolioService.createCardFolio(card.id, folio.id))
+    await assert.rejects(async () => await cardFolioService.createCardMainFolio(card.id, folio.id))
   })
 
   test('getAllMainFolioCards - should return paginated cards from user main folio', async ({
@@ -1011,5 +1011,191 @@ test.group('CardFolioService', (group) => {
     assert.isNull(deletedCardFolio1)
     assert.exists(existingCardFolio2)
     assert.exists(existingCardFolio3)
+  })
+
+  test('getCardFolioByCardIdAndFolioId - should return card folio when it exists', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+    const folio = await FolioFactory.create()
+
+    const createdCardFolio = await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: folio.id,
+      occurrence: 3,
+    }).create()
+
+    const result = await cardFolioService.getCardFolioByCardIdAndFolioId(card.id, folio.id)
+
+    assert.exists(result)
+    assert.equal(result?.id, createdCardFolio.id)
+    assert.equal(result?.cardId, card.id)
+    assert.equal(result?.folioId, folio.id)
+    assert.equal(result?.occurrence, 3)
+  })
+
+  test('getCardFolioByCardIdAndFolioId - should return null when card folio does not exist', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+    const folio = await FolioFactory.create()
+
+    const result = await cardFolioService.getCardFolioByCardIdAndFolioId(card.id, folio.id)
+
+    assert.isNull(result)
+  })
+
+  test('getCardFolioByCardIdAndFolioId - should return null when card does not exist', async ({
+    assert,
+  }) => {
+    const folio = await FolioFactory.create()
+    const nonExistentCardId = 'non-existent-card-id'
+
+    const result = await cardFolioService.getCardFolioByCardIdAndFolioId(
+      nonExistentCardId,
+      folio.id
+    )
+
+    assert.isNull(result)
+  })
+
+  test('getCardFolioByCardIdAndFolioId - should return null when folio does not exist', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+    const nonExistentFolioId = 'non-existent-folio-id'
+
+    const result = await cardFolioService.getCardFolioByCardIdAndFolioId(
+      card.id,
+      nonExistentFolioId
+    )
+
+    assert.isNull(result)
+  })
+
+  test('getCardFolioByCardIdAndFolioId - should return correct card folio when multiple exist for same card', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+    const folio1 = await FolioFactory.create()
+    const folio2 = await FolioFactory.create()
+
+    const cardFolio1 = await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: folio1.id,
+      occurrence: 2,
+    }).create()
+
+    await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: folio2.id,
+      occurrence: 5,
+    }).create()
+
+    const result = await cardFolioService.getCardFolioByCardIdAndFolioId(card.id, folio1.id)
+
+    assert.exists(result)
+    assert.equal(result?.id, cardFolio1.id)
+    assert.equal(result?.cardId, card.id)
+    assert.equal(result?.folioId, folio1.id)
+    assert.equal(result?.occurrence, 2)
+  })
+
+  test('getCardFolioByCardIdAndFolioId - should return correct card folio when multiple exist for same folio', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card1 = await CardFactory.create()
+    const card2 = await CardFactory.create()
+    const folio = await FolioFactory.create()
+
+    await CardFolioFactory.merge({
+      cardId: card1.id,
+      folioId: folio.id,
+      occurrence: 1,
+    }).create()
+
+    const cardFolio2 = await CardFolioFactory.merge({
+      cardId: card2.id,
+      folioId: folio.id,
+      occurrence: 4,
+    }).create()
+
+    const result = await cardFolioService.getCardFolioByCardIdAndFolioId(card2.id, folio.id)
+
+    assert.exists(result)
+    assert.equal(result?.id, cardFolio2.id)
+    assert.equal(result?.cardId, card2.id)
+    assert.equal(result?.folioId, folio.id)
+    assert.equal(result?.occurrence, 4)
+  })
+
+  test('createCardFolio - should create a card folio relationship with specified occurrence', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+    const folio = await FolioFactory.create()
+
+    const cardFolio = await cardFolioService.createCardFolio(card.id, folio.id, 3)
+
+    assert.exists(cardFolio)
+    assert.isNotNull(cardFolio.id)
+    assert.equal(cardFolio.cardId, card.id)
+    assert.equal(cardFolio.folioId, folio.id)
+    assert.equal(cardFolio.occurrence, 3)
+
+    const savedCardFolio = await CardFolio.query()
+      .where('card_id', card.id)
+      .where('folio_id', folio.id)
+      .first()
+
+    assert.exists(savedCardFolio)
+    assert.equal(savedCardFolio?.id, cardFolio.id)
+    assert.equal(savedCardFolio?.occurrence, 3)
+  })
+
+  test('createCardFolio - should throw unique constraint error for duplicate entry', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.create()
+    const folio = await FolioFactory.create()
+
+    await cardFolioService.createCardFolio(card.id, folio.id, 2)
+
+    await assert.rejects(async () => await cardFolioService.createCardFolio(card.id, folio.id, 5))
   })
 })
