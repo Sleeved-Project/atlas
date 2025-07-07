@@ -11,7 +11,6 @@ import {
   getSetDetailParamsValidator,
 } from '#validators/set_validator'
 import CardService from '#services/card_service'
-import { SetStatistics } from '#types/set_type'
 import SetCardsMapper from '#mappers/set_cards_mapper'
 
 @inject()
@@ -27,8 +26,8 @@ export default class SetsController {
       const sets = await this.setService.getAllSets(filters)
       return response.ok(sets)
     } catch (error) {
-      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
-        throw new NotFoundException(error)
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
       }
       throw error
     }
@@ -37,8 +36,7 @@ export default class SetsController {
   async details({ response, request }: HttpContext) {
     try {
       const params = await getSetDetailParamsValidator.validate(request.params())
-      const setModel = await this.setService.getSetDetailById(params.id)
-      const set = setModel.toJSON()
+      const set = await this.setService.getSetDetailById(params.id)
       const todaySetCards = await this.cardService.getAllMainSetCardPricesAndOccurrenceByDaysBefore(
         params.id,
         1
@@ -47,17 +45,13 @@ export default class SetsController {
       const yesterdaySetCards =
         await this.cardService.getAllMainSetCardPricesAndOccurrenceByDaysBefore(params.id, 2)
 
-      const setStatistics: SetStatistics = SetCardsMapper.toSetStatistics(
+      const setStatistics = SetCardsMapper.toSetStatisticsOutput(
+        set,
         todaySetCards,
         yesterdaySetCards
       )
 
-      const setWithStatistics = {
-        ...set,
-        statistics: setStatistics,
-      }
-
-      return response.ok(setWithStatistics)
+      return response.ok(setStatistics)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)
@@ -71,13 +65,11 @@ export default class SetsController {
 
   async cards({ response, request }: HttpContext) {
     try {
-      const payload = await request.validateUsing(getSetCardsValidator)
-      const filters = {
-        page: payload.page,
-        limit: payload.limit,
-        name: payload.name,
-      }
-      const cards = await this.cardService.getAllCardsBySetIdAndPaginate(filters, payload.params.id)
+      const { params, filters } = await getSetCardsValidator.validate({
+        params: request.params(),
+        filters: request.qs(),
+      })
+      const cards = await this.cardService.getAllCardsBySetIdAndPaginate(filters, params.id)
       return response.ok(cards)
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {

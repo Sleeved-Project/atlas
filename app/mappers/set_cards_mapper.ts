@@ -1,20 +1,29 @@
 import Card from '#models/card'
-import { SetCardPriceTrending, SetStatistics } from '#types/set_type'
+import Set from '#models/set'
+import { BasicSet, SetCardPriceTrending, SetStatisticsOutputDTO } from '#types/set_type'
 
 export default class SetCardsMapper {
-  public static toSetStatistics(todayCards: Card[], yesterdayCards: Card[]): SetStatistics {
+  public static toSetStatisticsOutput(
+    set: Set,
+    todayCards: Card[],
+    yesterdayCards: Card[]
+  ): SetStatisticsOutputDTO {
     const todayCardMarketPrice = this.getCardMarketTrendPrice(todayCards)
     const yesterdayCardMarketPrice = this.getCardMarketTrendPrice(yesterdayCards)
 
     const todayTcgPlayerPrice = this.getLowerTcgPlayerMarketPrice(todayCards)
     const yesterdayTcgPlayerPrice = this.getLowerTcgPlayerMarketPrice(yesterdayCards)
 
+    const basicSet = set.toJSON() as BasicSet
+
     return {
-      totalCardsCount: todayCards.length,
-      cardMarketPrice: todayCardMarketPrice.toFixed(2).toString(),
-      tcgPlayerPrice: todayTcgPlayerPrice.toFixed(2).toString(),
-      cardMarketTrending: this.getPriceTrend(todayCardMarketPrice, yesterdayCardMarketPrice),
-      tcgPlayerTrending: this.getPriceTrend(todayTcgPlayerPrice, yesterdayTcgPlayerPrice),
+      ...basicSet,
+      statistics: {
+        cardMarketPrice: todayCardMarketPrice.toFixed(2).toString(),
+        tcgPlayerPrice: todayTcgPlayerPrice.toFixed(2).toString(),
+        cardMarketTrending: this.getPriceTrend(todayCardMarketPrice, yesterdayCardMarketPrice),
+        tcgPlayerTrending: this.getPriceTrend(todayTcgPlayerPrice, yesterdayTcgPlayerPrice),
+      },
     }
   }
 

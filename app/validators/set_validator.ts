@@ -17,19 +17,15 @@ export const getSetDetailParamsValidator = vine.compile(
   })
 )
 
-export const getSetCardsParamsValidator = vine.compile(
-  vine.object({
-    id: vine.string(),
-  })
-)
-
 export const getSetCardsValidator = vine.compile(
   vine.object({
     params: vine.object({
       id: vine.string(),
     }),
-    page: vine.number().positive(),
-    limit: vine.number().positive().max(300),
-    name: vine.string().optional(),
+    filters: vine.object({
+      page: vine.number().positive(),
+      limit: vine.number().positive().max(300),
+      name: vine.string().optional(),
+    }),
   })
 )

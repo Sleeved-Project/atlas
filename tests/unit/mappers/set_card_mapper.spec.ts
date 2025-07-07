@@ -7,6 +7,10 @@ import TcgPlayerReporting from '#models/tcg_player_reporting'
 import TcgPlayerPrice from '#models/tcg_player_price'
 import { SetCardPriceTrending } from '#types/set_type'
 import testUtils from '@adonisjs/core/services/test_utils'
+import { ArtistFactory } from '#database/factories/artist'
+import { RarityFactory } from '#database/factories/rarity'
+import { LegalityFactory } from '#database/factories/legality'
+import { SetFactory } from '#database/factories/set'
 
 test.group('SetCardsMapper', (group) => {
   let sandbox: sinon.SinonSandbox
@@ -67,7 +71,12 @@ test.group('SetCardsMapper', (group) => {
     assert.equal(SetCardsMapper.getPriceTrend(10, 10), SetCardPriceTrending.EQUAL)
   })
 
-  test('toSetStatistics should return correct statistics', ({ assert }) => {
+  test('toSetStatistics should return correct statistics', async ({ assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    const set = await SetFactory.create()
+
     const card1 = new Card()
     const cmp1 = new CardMarketPrice()
     cmp1.trendPrice = 10
@@ -88,11 +97,10 @@ test.group('SetCardsMapper', (group) => {
     reporting2.tcgPlayerPrices = [price2] as any
     card2.tcgPlayerReportings = [reporting2] as any
 
-    const stats = SetCardsMapper.toSetStatistics([card1, card2], [card1])
-    assert.equal(stats.totalCardsCount, 2)
-    assert.equal(stats.cardMarketPrice, '30.00')
-    assert.equal(stats.tcgPlayerPrice, '20.00')
-    assert.equal(stats.cardMarketTrending, SetCardPriceTrending.UP)
-    assert.equal(stats.tcgPlayerTrending, SetCardPriceTrending.UP)
+    const setStatistics = SetCardsMapper.toSetStatisticsOutput(set, [card1, card2], [card1])
+    assert.equal(setStatistics.statistics.cardMarketPrice, '30.00')
+    assert.equal(setStatistics.statistics.tcgPlayerPrice, '20.00')
+    assert.equal(setStatistics.statistics.cardMarketTrending, SetCardPriceTrending.UP)
+    assert.equal(setStatistics.statistics.tcgPlayerTrending, SetCardPriceTrending.UP)
   })
 })

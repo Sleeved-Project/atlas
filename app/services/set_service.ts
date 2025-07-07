@@ -8,9 +8,9 @@ export default class SetService {
     filters: Infer<typeof getAllSetsFiltersValidator>
   ): Promise<ModelPaginatorContract<Set>> {
     return await Set.query()
-      .select('Set.id', 'Set.image_symbol', 'Set.image_logo')
-      .if(filters.name, (query) => query.whereILike('Set.name', `%${filters.name}%`))
-      .orderBy('Set.release_date', 'asc')
+      .select('id', 'image_symbol', 'image_logo')
+      .if(filters.name, (query) => query.whereILike('name', `%${filters.name}%`))
+      .orderBy('release_date', 'asc')
       .paginate(filters.page, filters.limit)
   }
 
