@@ -471,4 +471,75 @@ test.group('CardService', (group) => {
       'Row not found'
     )
   })
+
+  test('getAllCardsBySetIdAndPaginate - should return paginated results for a specific set', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.merge({ setId: 'base1' }).createMany(15)
+
+    const result = await cardService.getAllCardsBySetIdAndPaginate({ page: 1, limit: 10 }, 'base1')
+
+    assert.equal(result.length, 10)
+    assert.equal(result.currentPage, 1)
+    const firstCard = result[0].$attributes
+    assert.properties(firstCard, ['id', 'imageSmall'])
+    assert.isUndefined(firstCard.name)
+    assert.isUndefined(firstCard.number)
+  })
+
+  test('getAllCardsBySetIdAndPaginate - should filter by name correctly', async ({ assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+    await CardFactory.merge({ name: 'Pikachu' }).create()
+
+    const exactResult = await cardService.getAllCardsBySetIdAndPaginate(
+      {
+        page: 1,
+        limit: 10,
+        name: 'Pikachu',
+      },
+      'base1'
+    )
+
+    assert.isAtLeast(exactResult.length, 1)
+
+    const partialResult = await cardService.getAllCardsBySetIdAndPaginate(
+      {
+        page: 1,
+        limit: 10,
+        name: 'Pika',
+      },
+      'base1'
+    )
+
+    assert.isAtLeast(partialResult.length, 1)
+
+    const caseInsensitiveResult = await cardService.getAllCardsBySetIdAndPaginate(
+      {
+        page: 1,
+        limit: 10,
+        name: 'pikachu',
+      },
+      'base1'
+    )
+
+    assert.isAtLeast(caseInsensitiveResult.length, 1)
+
+    const noMatchResult = await cardService.getAllCardsBySetIdAndPaginate(
+      {
+        page: 1,
+        limit: 10,
+        name: 'NonExistentCard',
+      },
+      'base1'
+    )
+
+    assert.equal(noMatchResult.length, 0)
+  })
 })
