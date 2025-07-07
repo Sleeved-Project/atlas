@@ -60,7 +60,7 @@ test.group('Folio controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,
@@ -133,7 +133,8 @@ test.group('Folio controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.createMany(3)
 
     await FolioFactory.merge({
@@ -161,7 +162,7 @@ test.group('Folio controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,
@@ -211,7 +212,7 @@ test.group('Folio controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,
@@ -300,7 +301,7 @@ test.group('Folio controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,
@@ -350,7 +351,7 @@ test.group('Folio controller', (group) => {
     const userId = TEST_AUTH_USER_ID
 
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
     const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
@@ -402,7 +403,7 @@ test.group('Folio controller', (group) => {
 
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
     const artist2 = await ArtistFactory.merge({ id: 2, name: 'Artist Two' }).create()
@@ -452,7 +453,7 @@ test.group('Folio controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const basicSubtype = await SubtypeFactory.merge({ id: 1, label: 'Basic' }).create()
     const stage1Subtype = await SubtypeFactory.merge({ id: 2, label: 'Stage 1' }).create()
@@ -504,7 +505,7 @@ test.group('Folio controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const psychicType = await TypeFactory.merge({ id: 1, label: 'Psychic' }).create()
     const fireType = await TypeFactory.merge({ id: 2, label: 'Fire' }).create()
@@ -551,7 +552,7 @@ test.group('Folio controller', (group) => {
     const userId = TEST_AUTH_USER_ID
 
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
     const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
@@ -615,7 +616,7 @@ test.group('Folio controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,
@@ -683,7 +684,7 @@ test.group('Folio controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,
@@ -718,7 +719,7 @@ test.group('Folio controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio1 = await FolioFactory.merge({
       userId: userId1,
@@ -818,7 +819,7 @@ test.group('Folio controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,

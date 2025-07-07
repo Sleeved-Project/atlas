@@ -30,7 +30,8 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.createMany(15)
 
     const userId = TEST_AUTH_USER_ID
@@ -50,7 +51,8 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.merge([
       { id: 'base1-1', number: '1' },
       { id: 'base1-2', number: '2' },
@@ -72,7 +74,8 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.merge({ name: 'Pikachu' }).create()
 
     const userId = TEST_AUTH_USER_ID
@@ -124,7 +127,7 @@ test.group('CardService', (group) => {
 
   test('getAllCards - should filter by rarity correctly', async ({ assert }) => {
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const userId = TEST_AUTH_USER_ID
 
@@ -161,7 +164,7 @@ test.group('CardService', (group) => {
   test('getAllCards - should filter by artist correctly', async ({ assert }) => {
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const userId = TEST_AUTH_USER_ID
 
@@ -196,7 +199,7 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const userId = TEST_AUTH_USER_ID
 
@@ -233,7 +236,7 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const userId = TEST_AUTH_USER_ID
 
@@ -270,7 +273,7 @@ test.group('CardService', (group) => {
 
   test('getAllCards - should apply multiple filters simultaneously', async ({ assert }) => {
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const userId = TEST_AUTH_USER_ID
 
@@ -319,7 +322,7 @@ test.group('CardService', (group) => {
   }) => {
     await ArtistFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const userId = TEST_AUTH_USER_ID
 
@@ -349,7 +352,8 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.merge({ id: 'base1-3' }).create()
 
     const card = await cardService.getCardBaseById('base1-3')
@@ -360,7 +364,8 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.merge({ id: 'base1-5' }).create()
 
     const card = await cardService.getCardBaseById('base1-5')
@@ -379,7 +384,8 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.merge({ id: 'base1-1' }).create()
 
     const card = await cardService.getCardBaseById('base1-1')
@@ -399,7 +405,8 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.merge({ id: 'base1-1' }).create()
 
     const card = await cardService.getCardDetailById('base1-1')
@@ -410,7 +417,8 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.merge({ id: 'base1-1' }).with('subtypes').create()
 
     const card = await cardService.getCardDetailById('base1-1')
@@ -439,7 +447,8 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.merge({ id: 'base1-1' }).create()
 
     const card = await cardService.getCardDetailById('base1-1')
@@ -458,7 +467,8 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     const cardMock = await CardFactory.merge({ id: 'base1-1' })
       .with('cardMarketPrices', 1, (cardMarketPrices) =>
         cardMarketPrices.merge({
@@ -527,7 +537,8 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.merge({ setId: 'base1' }).createMany(15)
 
     const result = await cardService.getAllCardsBySetIdAndPaginate({ page: 1, limit: 10 }, 'base1')
@@ -544,7 +555,8 @@ test.group('CardService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.merge({ name: 'Pikachu' }).create()
 
     const exactResult = await cardService.getAllCardsBySetIdAndPaginate(

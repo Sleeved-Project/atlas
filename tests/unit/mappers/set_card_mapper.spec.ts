@@ -75,7 +75,7 @@ test.group('SetCardsMapper', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    const set = await SetFactory.create()
+    const set = await SetFactory.merge({ id: 'base1' }).create()
 
     const card1 = new Card()
     const cmp1 = new CardMarketPrice()

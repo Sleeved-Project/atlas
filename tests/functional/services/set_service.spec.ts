@@ -11,33 +11,15 @@ test.group('SetService', (group) => {
 
   let setService: SetService
 
-  let setIdArray: { id: string }[]
   group.setup(() => {
     setService = new SetService()
-    setIdArray = [
-      { id: 'base1' },
-      { id: 'base2' },
-      { id: 'base3' },
-      { id: 'base4' },
-      { id: 'base5' },
-      { id: 'base6' },
-      { id: 'base7' },
-      { id: 'base8' },
-      { id: 'base9' },
-      { id: 'base10' },
-      { id: 'base11' },
-      { id: 'base12' },
-      { id: 'base13' },
-      { id: 'base14' },
-      { id: 'base15' },
-    ]
   })
 
   test('getAllSets - should return paginated results with correct fields', async ({ assert }) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.merge(setIdArray).createMany(15)
+    await SetFactory.createMany(15)
 
     const result = await setService.getAllSets({ page: 1, limit: 10 })
 
@@ -95,7 +77,7 @@ test.group('SetService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const set = await setService.getSetDetailById('base1')
     assert.properties(set.$attributes, [
@@ -118,7 +100,7 @@ test.group('SetService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const set = await setService.getSetDetailById('base1')
     assert.property(set.$attributes, 'id')

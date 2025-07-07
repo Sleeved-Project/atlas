@@ -34,7 +34,8 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     const card = await CardFactory.create()
     const folio = await FolioFactory.create()
 
@@ -68,7 +69,8 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     const card = await CardFactory.create()
     const nonExistentFolioId = uuidv4()
 
@@ -83,7 +85,8 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     const card = await CardFactory.create()
     const folio = await FolioFactory.create()
 
@@ -100,7 +103,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,
@@ -160,7 +163,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio1 = await FolioFactory.merge({
       userId: userId1,
@@ -227,7 +230,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,
@@ -263,7 +266,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,
@@ -296,7 +299,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const result = await cardFolioService.getAllMainFolioCards(
       { page: 1, limit: 10 },
@@ -312,7 +315,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.create()
 
@@ -344,7 +347,7 @@ test.group('CardFolioService', (group) => {
   }) => {
     await ArtistFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
     const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
@@ -381,7 +384,7 @@ test.group('CardFolioService', (group) => {
   }) => {
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
     const artist2 = await ArtistFactory.merge({ id: 2, name: 'Artist Two' }).create()
@@ -419,7 +422,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const basicSubtype = await SubtypeFactory.merge({ id: 1, label: 'Basic' }).create()
     const stage1Subtype = await SubtypeFactory.merge({ id: 2, label: 'Stage 1' }).create()
@@ -455,7 +458,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const psychicType = await TypeFactory.merge({ id: 1, label: 'Psychic' }).create()
     const fireType = await TypeFactory.merge({ id: 2, label: 'Fire' }).create()
@@ -487,7 +490,7 @@ test.group('CardFolioService', (group) => {
     assert,
   }) => {
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
     const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
@@ -543,7 +546,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio1 = await FolioFactory.merge({
       userId: userId1,
@@ -610,7 +613,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,
@@ -648,7 +651,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,
@@ -716,7 +719,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio1 = await FolioFactory.merge({
       userId: userId1,
@@ -785,7 +788,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,
@@ -837,7 +840,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const result = await cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
       'non-existent-folio-id',
@@ -855,7 +858,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const mainFolio = await FolioFactory.merge({
       userId,
@@ -891,7 +894,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const card = await CardFactory.create()
     const folio = await FolioFactory.create()
@@ -916,7 +919,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const card = await CardFactory.create()
     const folio = await FolioFactory.create()
@@ -933,7 +936,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const card = await CardFactory.create()
     const folio = await FolioFactory.create()
@@ -960,7 +963,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const card = await CardFactory.create()
     const folio = await FolioFactory.create()
@@ -977,7 +980,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const card1 = await CardFactory.create()
     const card2 = await CardFactory.create()
@@ -1019,7 +1022,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const card = await CardFactory.create()
     const folio = await FolioFactory.create()
@@ -1045,7 +1048,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const card = await CardFactory.create()
     const folio = await FolioFactory.create()
@@ -1075,7 +1078,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const card = await CardFactory.create()
     const nonExistentFolioId = 'non-existent-folio-id'
@@ -1094,7 +1097,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const card = await CardFactory.create()
     const folio1 = await FolioFactory.create()
@@ -1127,7 +1130,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const card1 = await CardFactory.create()
     const card2 = await CardFactory.create()
@@ -1160,7 +1163,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const card = await CardFactory.create()
     const folio = await FolioFactory.create()
@@ -1189,7 +1192,7 @@ test.group('CardFolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const card = await CardFactory.create()
     const folio = await FolioFactory.create()

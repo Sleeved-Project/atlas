@@ -32,7 +32,7 @@ test.group('CardFolioMapper', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const folio = await FolioFactory.create()
 
@@ -148,7 +148,7 @@ test.group('CardFolioMapper', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const folio = await FolioFactory.create()
     const card = await CardFactory.create()
@@ -196,7 +196,7 @@ test.group('CardFolioMapper', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const folio = await FolioFactory.create()
 
@@ -242,7 +242,7 @@ test.group('CardFolioMapper', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const folio = await FolioFactory.create()
     const card = await CardFactory.with('cardMarketPrices', 1, (cardMarketPrices) =>
@@ -269,7 +269,7 @@ test.group('CardFolioMapper', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const folio = await FolioFactory.create()
     const card = await CardFactory.create()
@@ -295,7 +295,7 @@ test.group('CardFolioMapper', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const folio = await FolioFactory.create()
     const card = await CardFactory.with('tcgPlayerReportings', 1).create()
@@ -322,7 +322,7 @@ test.group('CardFolioMapper', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const folio = await FolioFactory.create()
     const card = await CardFactory.create()

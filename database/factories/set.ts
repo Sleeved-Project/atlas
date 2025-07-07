@@ -3,9 +3,9 @@ import Factory from '@adonisjs/lucid/factories'
 import { DateTime } from 'luxon'
 import { LegalityFactory } from './legality.js'
 
-export const SetFactory = Factory.define(Set, () => {
+export const SetFactory = Factory.define(Set, ({ faker }) => {
   return {
-    id: `base1`,
+    id: faker.string.uuid(),
     name: `Base Set`,
     series: `Base`,
     printedTotal: 120,
