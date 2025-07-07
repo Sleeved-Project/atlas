@@ -1,7 +1,5 @@
 import { ArtistFactory } from '#database/factories/artist'
-import { LegalityFactory } from '#database/factories/legality'
 import { RarityFactory } from '#database/factories/rarity'
-import { SetFactory } from '#database/factories/set'
 import { SubtypeFactory } from '#database/factories/subtype'
 import { TypeFactory } from '#database/factories/type'
 import AuthServiceMock from '#tests/mocks/auth_service_mock'
@@ -23,12 +21,10 @@ test.group('Filters controller', (group) => {
   })
 
   test('cards - should return all filter types', async ({ client, assert }) => {
-    await LegalityFactory.create()
     await ArtistFactory.create()
     await RarityFactory.create()
     await SubtypeFactory.create()
     await TypeFactory.create()
-    await SetFactory.create()
 
     const response = await client
       .get('/api/v1/filters/cards')
@@ -38,14 +34,13 @@ test.group('Filters controller', (group) => {
 
     const result = response.body()
 
-    assert.properties(result, ['artists', 'raritys', 'subtypes', 'types', 'sets'])
+    assert.properties(result, ['artists', 'raritys', 'subtypes', 'types'])
 
     assert.isArray(result.artists)
     assert.isAtLeast(result.artists.length, 1)
     assert.isAtLeast(result.raritys.length, 1)
     assert.isAtLeast(result.subtypes.length, 1)
     assert.isAtLeast(result.types.length, 1)
-    assert.isAtLeast(result.sets.length, 1)
   })
 
   test('cards - should return data with correct structure', async ({ client, assert }) => {

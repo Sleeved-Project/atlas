@@ -134,4 +134,27 @@ export default class CardService {
       .where('id', id)
       .firstOrFail()
   }
+
+  public async getAllMainSetCardPricesAndOccurrenceByDaysBefore(
+    setId: string,
+    daysBefore: number
+  ): Promise<Card[]> {
+    return await Card.query()
+      .join('Set', 'Card.set_id', 'Set.id')
+      .where('Card.set_id', setId)
+      .preload('cardMarketPrices', (cardMarketPricesQuery) => {
+        cardMarketPricesQuery
+          .select('id', 'trendPrice', 'reverseHoloTrend')
+          .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
+      })
+      .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
+        tcgPlayerReportings
+          .select('id', 'url')
+          .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
+          .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
+            tcgPlayerPricesQuery.select('id', 'type', 'market')
+          })
+      })
+      .select('Card.id')
+  }
 }
