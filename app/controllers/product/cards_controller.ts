@@ -17,10 +17,10 @@ import CardMapper from '#mappers/card_mapper'
 export default class CardsController {
   constructor(private cardService: CardService) {}
 
-  async index({ request, response }: HttpContext) {
+  async index({ request, response, authUser }: HttpContext) {
     try {
       const filters = await getAllCardsFiltersValidator.validate(request.qs())
-      const cards = await this.cardService.getAllCards(filters)
+      const cards = await this.cardService.getAllCards(filters, authUser?.id)
       return response.ok(cards)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
