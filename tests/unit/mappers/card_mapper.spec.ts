@@ -20,7 +20,6 @@ test.group('CardMapper', (group) => {
   })
 
   test('formatPriceValue - should return "unknown" for null or zero values', ({ assert }) => {
-    // On utilise Reflect pour accéder à la méthode privée
     const formatPriceValue = Reflect.get(CardMapper, 'formatPriceValue').bind(CardMapper)
 
     assert.equal(formatPriceValue(null), 'unknown')
@@ -30,7 +29,6 @@ test.group('CardMapper', (group) => {
   })
 
   test('formatPriceValue - should convert non-null values to string', ({ assert }) => {
-    // On utilise Reflect pour accéder à la méthode privée
     const formatPriceValue = Reflect.get(CardMapper, 'formatPriceValue').bind(CardMapper)
 
     assert.equal(formatPriceValue(10), '10')
@@ -46,14 +44,12 @@ test.group('CardMapper', (group) => {
   })
 
   test('toCardPricesOutputDTO - should return a correctly formatted DTO', ({ assert }) => {
-    // Création d'un mock de CardMarketPrice
     const cardMarketPrice = new CardMarketPrice()
     cardMarketPrice.id = 1
     cardMarketPrice.url = 'https://cardmarket.com/card/1'
     cardMarketPrice.trendPrice = 10.5
     cardMarketPrice.reverseHoloTrend = 15.75
 
-    // Création d'un mock de TcgPlayerPrice
     const tcgPlayerPrice1 = new TcgPlayerPrice()
     tcgPlayerPrice1.id = 1
     tcgPlayerPrice1.type = 'normal'
@@ -64,7 +60,6 @@ test.group('CardMapper', (group) => {
     tcgPlayerPrice2.type = 'holofoil'
     tcgPlayerPrice2.market = 18.99
 
-    // Création d'un mock de TcgPlayerReporting
     const tcgPlayerReporting = new TcgPlayerReporting()
     tcgPlayerReporting.id = 1
     tcgPlayerReporting.url = 'https://tcgplayer.com/card/1'
@@ -72,7 +67,6 @@ test.group('CardMapper', (group) => {
       typeof TcgPlayerPrice
     >
 
-    // Création d'un mock de Card
     const card = new Card()
     card.id = '1'
     card.cardMarketPrices = [cardMarketPrice] as HasMany<typeof CardMarketPrice>
@@ -80,10 +74,8 @@ test.group('CardMapper', (group) => {
 
     const result = CardMapper.toCardPricesOutputDTO(card)
 
-    // Assertions
     assert.equal(result.id, '1')
 
-    // Vérification des prix CardMarket
     assert.isNotNull(result.cardMarketReporting)
     assert.equal(result.cardMarketReporting!.id, '1')
     assert.equal(result.cardMarketReporting!.url, 'https://cardmarket.com/card/1')
@@ -93,7 +85,6 @@ test.group('CardMapper', (group) => {
     assert.equal(result.cardMarketReporting!.cardMarketPrices[1].type, 'reverseHolo')
     assert.equal(result.cardMarketReporting!.cardMarketPrices[1].market, '15.75')
 
-    // Vérification des prix TCGPlayer
     assert.isNotNull(result.tcgPlayerReporting)
     assert.equal(result.tcgPlayerReporting!.id, '1')
     assert.equal(result.tcgPlayerReporting!.url, 'https://tcgplayer.com/card/1')
@@ -107,7 +98,6 @@ test.group('CardMapper', (group) => {
   test('toCardPricesOutputDTO - should handle the case where cardMarketPrices or tcgPlayerReportings is empty', ({
     assert,
   }) => {
-    // Création d'un mock de Card sans cardMarketPrices
     const card = new Card()
     card.id = '1'
     card.cardMarketPrices = [] as unknown as HasMany<typeof CardMarketPrice>
@@ -121,13 +111,11 @@ test.group('CardMapper', (group) => {
   })
 
   test('toCardScanResultOutputDTO - should return a correctly formatted DTO', ({ assert }) => {
-    // Création d'un mock de Card
     const card = new Card()
     card.id = '1'
     card.imageSmall = 'small.jpg'
     card.imageLarge = 'large.jpg'
 
-    // Mock de getBestPriceFromCardScanResultInfos
     const getBestPriceStub = sandbox.stub(CardMapper, 'getBestPriceFromCardScanResultInfos')
     getBestPriceStub.returns('15.75')
 
@@ -138,21 +126,18 @@ test.group('CardMapper', (group) => {
 
     const result = CardMapper.toCardScanResultOutputDTO(card, scanCardInfo)
 
-    // Assertions
     assert.equal(result.id, '1')
     assert.equal(result.imageSmall, 'small.jpg')
     assert.equal(result.imageLarge, 'large.jpg')
     assert.equal(result.bestTrendPrice, '15.75')
     assert.equal(result.similarity, 95)
 
-    // Vérification de l'appel de la méthode
     sinon.assert.calledOnceWithExactly(getBestPriceStub, card)
   })
 
   test('getBestPriceFromCardScanResultInfos - should return "unknown" if the card is null', ({
     assert,
   }) => {
-    // On utilise Reflect pour accéder à la méthode protected
     const getBestPrice = Reflect.get(CardMapper, 'getBestPriceFromCardScanResultInfos').bind(
       CardMapper
     )
@@ -163,7 +148,6 @@ test.group('CardMapper', (group) => {
   test('getBestPriceFromCardScanResultInfos - should return "unknown" if cardMarketPrices and tcgPlayerReportings are empty', ({
     assert,
   }) => {
-    // On utilise Reflect pour accéder à la méthode protected
     const getBestPrice = Reflect.get(CardMapper, 'getBestPriceFromCardScanResultInfos').bind(
       CardMapper
     )
@@ -179,12 +163,10 @@ test.group('CardMapper', (group) => {
   test('getBestPriceFromCardScanResultInfos - should return the best price between CardMarket and TCGPlayer', ({
     assert,
   }) => {
-    // On utilise Reflect pour accéder aux méthodes protected
     const getBestPrice = Reflect.get(CardMapper, 'getBestPriceFromCardScanResultInfos').bind(
       CardMapper
     )
 
-    // Mock des méthodes internes
     const getBestCardMarketPriceStub = sandbox.stub(CardMapper, 'getBestCardMarketPrice')
     const getBestTcgPlayerReportingPriceStub = sandbox.stub(
       CardMapper,
@@ -203,7 +185,6 @@ test.group('CardMapper', (group) => {
   })
 
   test('getBestCardMarketPrice - should return 0 if prices are null', ({ assert }) => {
-    // On utilise Reflect pour accéder à la méthode protected
     const getBestCardMarketPrice = Reflect.get(CardMapper, 'getBestCardMarketPrice').bind(
       CardMapper
     )
@@ -214,7 +195,6 @@ test.group('CardMapper', (group) => {
   test('getBestCardMarketPrice - should return the best price between normal and reverseHolo', ({
     assert,
   }) => {
-    // On utilise Reflect pour accéder à la méthode protected
     const getBestCardMarketPrice = Reflect.get(CardMapper, 'getBestCardMarketPrice').bind(
       CardMapper
     )
@@ -234,7 +214,6 @@ test.group('CardMapper', (group) => {
   test('getBestTcgPlayerReportingPrice - should return 0 if prices are null or empty', ({
     assert,
   }) => {
-    // On utilise Reflect pour accéder à la méthode protected
     const getBestTcgPlayerReportingPrice = Reflect.get(
       CardMapper,
       'getBestTcgPlayerReportingPrice'
@@ -271,5 +250,210 @@ test.group('CardMapper', (group) => {
     ] as HasMany<typeof TcgPlayerPrice>
 
     assert.equal(getBestTcgPlayerReportingPrice(tcgPlayerReporting), 15.75)
+  })
+
+  test('toCardBaseOuputDTO - should return correct format with occurrence from cardFolios', ({
+    assert,
+  }) => {
+    const mockSet = {
+      id: 'base1',
+      name: 'Base',
+      imageSymbol: 'https://images.pokemontcg.io/base1/symbol.png',
+    }
+
+    const mockCardFolio = {
+      occurrence: 3,
+    }
+
+    const card = new Card()
+    const toJSONStub = sandbox.stub(card, 'toJSON')
+    toJSONStub.returns({
+      id: 'base1-17',
+      imageLarge: 'https://images.pokemontcg.io/base1/17_hires.png',
+      number: '17',
+      cardFolios: [mockCardFolio],
+      set: mockSet,
+    })
+
+    const result = CardMapper.toCardBaseOuputDTO(card)
+
+    assert.equal(result.id, 'base1-17')
+    assert.equal(result.imageLarge, 'https://images.pokemontcg.io/base1/17_hires.png')
+    assert.equal(result.number, '17')
+    assert.equal(result.occurrence, 3)
+    assert.deepEqual(result.set, {
+      id: 'base1',
+      name: 'Base',
+      imageSymbol: 'https://images.pokemontcg.io/base1/symbol.png',
+    })
+
+    sinon.assert.calledOnce(toJSONStub)
+  })
+
+  test('toCardBaseOuputDTO - should return occurrence 0 when cardFolios is empty', ({ assert }) => {
+    const mockSet = {
+      id: 'base1',
+      name: 'Base',
+      imageSymbol: 'https://images.pokemontcg.io/base1/symbol.png',
+    }
+
+    const card = new Card()
+    const toJSONStub = sandbox.stub(card, 'toJSON')
+    toJSONStub.returns({
+      id: 'base1-18',
+      imageLarge: 'https://images.pokemontcg.io/base1/18_hires.png',
+      number: '18',
+      cardFolios: [],
+      set: mockSet,
+    })
+
+    const result = CardMapper.toCardBaseOuputDTO(card)
+
+    assert.equal(result.id, 'base1-18')
+    assert.equal(result.imageLarge, 'https://images.pokemontcg.io/base1/18_hires.png')
+    assert.equal(result.number, '18')
+    assert.equal(result.occurrence, 0)
+    assert.deepEqual(result.set, {
+      id: 'base1',
+      name: 'Base',
+      imageSymbol: 'https://images.pokemontcg.io/base1/symbol.png',
+    })
+  })
+
+  test('toCardBaseOuputDTO - should return occurrence 0 when cardFolios is null', ({ assert }) => {
+    const mockSet = {
+      id: 'base1',
+      name: 'Base',
+      imageSymbol: 'https://images.pokemontcg.io/base1/symbol.png',
+    }
+
+    const card = new Card()
+    const toJSONStub = sandbox.stub(card, 'toJSON')
+    toJSONStub.returns({
+      id: 'base1-19',
+      imageLarge: 'https://images.pokemontcg.io/base1/19_hires.png',
+      number: '19',
+      cardFolios: null,
+      set: mockSet,
+    })
+
+    const result = CardMapper.toCardBaseOuputDTO(card)
+
+    assert.equal(result.id, 'base1-19')
+    assert.equal(result.imageLarge, 'https://images.pokemontcg.io/base1/19_hires.png')
+    assert.equal(result.number, '19')
+    assert.equal(result.occurrence, 0)
+    assert.deepEqual(result.set, {
+      id: 'base1',
+      name: 'Base',
+      imageSymbol: 'https://images.pokemontcg.io/base1/symbol.png',
+    })
+  })
+
+  test('toCardBaseOuputDTO - should return occurrence 0 when cardFolios is undefined', ({
+    assert,
+  }) => {
+    const mockSet = {
+      id: 'base1',
+      name: 'Base',
+      imageSymbol: 'https://images.pokemontcg.io/base1/symbol.png',
+    }
+
+    const card = new Card()
+    const toJSONStub = sandbox.stub(card, 'toJSON')
+    toJSONStub.returns({
+      id: 'base1-20',
+      imageLarge: 'https://images.pokemontcg.io/base1/20_hires.png',
+      number: '20',
+      set: mockSet,
+    })
+
+    const result = CardMapper.toCardBaseOuputDTO(card)
+
+    assert.equal(result.id, 'base1-20')
+    assert.equal(result.imageLarge, 'https://images.pokemontcg.io/base1/20_hires.png')
+    assert.equal(result.number, '20')
+    assert.equal(result.occurrence, 0)
+    assert.deepEqual(result.set, {
+      id: 'base1',
+      name: 'Base',
+      imageSymbol: 'https://images.pokemontcg.io/base1/symbol.png',
+    })
+  })
+
+  test('toCardBaseOuputDTO - should use occurrence from first cardFolio when multiple exist', ({
+    assert,
+  }) => {
+    const mockSet = {
+      id: 'base1',
+      name: 'Base',
+      imageSymbol: 'https://images.pokemontcg.io/base1/symbol.png',
+    }
+
+    const mockCardFolios = [{ occurrence: 5 }, { occurrence: 2 }, { occurrence: 8 }]
+
+    const card = new Card()
+    const toJSONStub = sandbox.stub(card, 'toJSON')
+    toJSONStub.returns({
+      id: 'base1-21',
+      imageLarge: 'https://images.pokemontcg.io/base1/21_hires.png',
+      number: '21',
+      cardFolios: mockCardFolios,
+      set: mockSet,
+    })
+
+    const result = CardMapper.toCardBaseOuputDTO(card)
+
+    assert.equal(result.id, 'base1-21')
+    assert.equal(result.imageLarge, 'https://images.pokemontcg.io/base1/21_hires.png')
+    assert.equal(result.number, '21')
+    assert.equal(result.occurrence, 5)
+    assert.deepEqual(result.set, {
+      id: 'base1',
+      name: 'Base',
+      imageSymbol: 'https://images.pokemontcg.io/base1/symbol.png',
+    })
+  })
+
+  test('toCardBaseOuputDTO - should handle all required fields correctly', ({ assert }) => {
+    const mockSet = {
+      id: 'xy1',
+      name: 'XY Base Set',
+      imageSymbol: 'https://images.pokemontcg.io/xy1/symbol.png',
+    }
+
+    const mockCardFolio = {
+      occurrence: 1,
+    }
+
+    const card = new Card()
+    const toJSONStub = sandbox.stub(card, 'toJSON')
+    toJSONStub.returns({
+      id: 'xy1-150',
+      imageLarge: 'https://images.pokemontcg.io/xy1/150_hires.png',
+      number: '150',
+      cardFolios: [mockCardFolio],
+      set: mockSet,
+      name: 'Mewtwo',
+      hp: '130',
+      supertype: 'Pokémon',
+    })
+
+    const result = CardMapper.toCardBaseOuputDTO(card)
+
+    const expectedKeys = ['id', 'imageLarge', 'number', 'occurrence', 'set']
+    const actualKeys = Object.keys(result)
+
+    assert.sameMembers(actualKeys, expectedKeys)
+
+    assert.equal(result.id, 'xy1-150')
+    assert.equal(result.imageLarge, 'https://images.pokemontcg.io/xy1/150_hires.png')
+    assert.equal(result.number, '150')
+    assert.equal(result.occurrence, 1)
+
+    assert.properties(result.set, ['id', 'name', 'imageSymbol'])
+    assert.equal(result.set.id, 'xy1')
+    assert.equal(result.set.name, 'XY Base Set')
+    assert.equal(result.set.imageSymbol, 'https://images.pokemontcg.io/xy1/symbol.png')
   })
 })

@@ -2,13 +2,15 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import sinon from 'sinon'
 import { CardFactory } from '#database/factories/card'
-import AuthServiceMock from '#tests/mocks/auth_service_mock'
+import AuthServiceMock, { TEST_AUTH_USER_ID } from '#tests/mocks/auth_service_mock'
 import { ArtistFactory } from '#database/factories/artist'
 import { RarityFactory } from '#database/factories/rarity'
 import { LegalityFactory } from '#database/factories/legality'
 import { SetFactory } from '#database/factories/set'
 import { SubtypeFactory } from '#database/factories/subtype'
 import { TypeFactory } from '#database/factories/type'
+import { FolioFactory } from '#database/factories/folio'
+import { CardFolioFactory } from '#database/factories/card_folio'
 
 test.group('Card controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
@@ -429,6 +431,72 @@ test.group('Card controller', (group) => {
       message: 'Card not found',
       code: 'E_ROW_NOT_FOUND',
     })
+  })
+
+  test('show - it should return card with occurrence when user has card in root folio', async ({
+    client,
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const card = await CardFactory.merge({ id: 'base1-25' }).create()
+
+    // Créer un folio root pour l'utilisateur
+    const rootFolio = await FolioFactory.merge({
+      userId,
+      isRoot: true,
+      name: 'My Collection',
+    }).create()
+
+    // Ajouter la carte dans le folio avec une occurrence spécifique
+    await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: rootFolio.id,
+      occurrence: 4,
+    }).create()
+
+    const response = await client
+      .get('/api/v1/cards/base1-25')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const cardResponse = response.body()
+
+    assert.equal(cardResponse.id, 'base1-25')
+    assert.properties(cardResponse, ['id', 'imageLarge', 'number', 'occurrence', 'set'])
+    assert.equal(cardResponse.occurrence, 4)
+    assert.properties(cardResponse.set, ['id', 'name', 'imageSymbol'])
+  })
+
+  test('show - it should return card with occurrence 0 when user does not have card in root folio', async ({
+    client,
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    await CardFactory.merge({ id: 'base1-26' }).create()
+
+    const response = await client
+      .get('/api/v1/cards/base1-26')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+
+    const cardResponse = response.body()
+
+    assert.equal(cardResponse.id, 'base1-26')
+    assert.properties(cardResponse, ['id', 'imageLarge', 'number', 'occurrence', 'set'])
+    assert.equal(cardResponse.occurrence, 0)
+    assert.properties(cardResponse.set, ['id', 'name', 'imageSymbol'])
   })
 
   test('details - it should return a single card details by id', async ({ client, assert }) => {

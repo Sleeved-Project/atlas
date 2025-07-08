@@ -11,7 +11,7 @@ export const showValidator = vine.compile(
   })
 )
 
-export const chilfFolioCardsValidator = vine.compile(
+export const childFolioCardsValidator = vine.compile(
   vine.object({
     params: vine.object({
       id: vine.string(),

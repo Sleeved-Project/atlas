@@ -3,7 +3,7 @@ import { getAllMainFolioCardsFiltersValidator } from '#validators/card_validator
 import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 import { Infer } from '@vinejs/vine/types'
 import db from '@adonisjs/lucid/services/db'
-import { chilfFolioCardsValidator } from '#validators/folio_validator'
+import { childFolioCardsValidator } from '#validators/folio_validator'
 
 export default class CardFolioService {
   public async createCardMainFolio(cardId: string, folioId: string): Promise<CardFolio> {
@@ -54,7 +54,7 @@ export default class CardFolioService {
   }
 
   public async getAllChildFolioCards(
-    filters: Infer<typeof chilfFolioCardsValidator>['filters'],
+    filters: Infer<typeof childFolioCardsValidator>['filters'],
     childFolioId: string
   ): Promise<ModelPaginatorContract<CardFolio>> {
     return await CardFolio.query()

@@ -1,7 +1,11 @@
 import Card from '#models/card'
 import CardMarketPrice from '#models/card_market_price'
 import TcgPlayerReporting from '#models/tcg_player_reporting'
-import { CardPricesOutputDTO, CardScanResultOutputDTO } from '#types/card_dto_type'
+import {
+  CardBaseOuputDTO,
+  CardPricesOutputDTO,
+  CardScanResultOutputDTO,
+} from '#types/card_dto_type'
 import { ScanCardInfoDTO } from '#types/iris_type'
 
 export default class CardMapper {
@@ -155,5 +159,27 @@ export default class CardMapper {
     const trendPrice = price.trendPrice || this.DEFAULT_PRICE
 
     return Math.max(trendPrice, reverseHoloTrend)
+  }
+
+  /**
+   * transforms a Card object to a CardBaseOuputDTO.
+   */
+  public static toCardBaseOuputDTO(card: Card): CardBaseOuputDTO {
+    const cardData = card.toJSON()
+
+    const occurrence =
+      cardData.cardFolios && cardData.cardFolios.length > 0 ? cardData.cardFolios[0].occurrence : 0
+
+    return {
+      id: cardData.id,
+      imageLarge: cardData.imageLarge,
+      number: cardData.number,
+      occurrence,
+      set: {
+        id: cardData.set.id,
+        name: cardData.set.name,
+        imageSymbol: cardData.set.imageSymbol,
+      },
+    }
   }
 }

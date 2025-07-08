@@ -21,7 +21,7 @@ router
         router
           .group(() => {
             router.get('/', [CardsController, 'index']).use(middleware.auth())
-            router.get('/:id', [CardsController, 'show'])
+            router.get('/:id', [CardsController, 'show']).use(middleware.auth())
             router.get('/:id/details', [CardsController, 'details'])
             router.get('/:id/prices', [CardsController, 'prices'])
           })
