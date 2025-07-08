@@ -15,6 +15,9 @@ import { LegalityFactory } from '#database/factories/legality'
 import { SetFactory } from '#database/factories/set'
 import { SubtypeFactory } from '#database/factories/subtype'
 import { TypeFactory } from '#database/factories/type'
+import { CardFolioFactory } from '#database/factories/card_folio'
+import CardFolio from '#models/card_folio'
+import { FolioFactory } from '#database/factories/folio'
 import { TEST_AUTH_USER_ID } from '#tests/mocks/auth_service_mock'
 
 test.group('CardService', (group) => {
@@ -346,9 +349,7 @@ test.group('CardService', (group) => {
     assert.equal(result.length, 0)
   })
 
-  test('getCardBaseById - should return a card base infos with all required fields', async ({
-    assert,
-  }) => {
+  test('getCardIdById - should return a card id if is present', async ({ assert }) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
@@ -356,11 +357,44 @@ test.group('CardService', (group) => {
 
     await CardFactory.merge({ id: 'base1-3' }).create()
 
-    const card = await cardService.getCardBaseById('base1-3')
+    const card = await cardService.getCardIdById('base1-3')
+    assert.properties(card.$attributes, ['id'])
+  })
+
+  test('getCardIdById - should return a card id if is present', async ({ assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+    await CardFactory.merge({ id: 'base1-3' }).create()
+
+    const card = await cardService.getCardIdById('base1-3')
+    assert.properties(card.$attributes, ['id'])
+  })
+  test('getCardIdById - should throw NotFoundException for non-existent card', async ({
+    assert,
+  }) => {
+    await assert.rejects(() => cardService.getCardIdById('non-existent-id'), 'Row not found')
+  })
+
+  test('getCardBasesByIdAndUserId - should return a card base infos with all required fields', async ({
+    assert,
+  }) => {
+    const userId = '123'
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+    await CardFactory.merge({ id: 'base1-3' }).create()
+
+    const card = await cardService.getCardBasesByIdAndUserId('base1-3', userId)
     assert.properties(card.$attributes, ['id', 'imageLarge', 'number'])
   })
 
-  test('getCardBaseById - should load related data correctly', async ({ assert }) => {
+  test('getCardBasesByIdAndUserId - should load related data correctly', async ({ assert }) => {
+    const userId = '123'
+
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
@@ -368,19 +402,27 @@ test.group('CardService', (group) => {
 
     await CardFactory.merge({ id: 'base1-5' }).create()
 
-    const card = await cardService.getCardBaseById('base1-5')
+    const card = await cardService.getCardBasesByIdAndUserId('base1-5', userId)
     assert.property(card.$preloaded, 'set')
     const set = card.$preloaded.set as Set
     assert.properties(set.$attributes, ['id', 'name', 'imageSymbol'])
   })
 
-  test('getCardBaseById - should throw NotFoundException for non-existent card', async ({
+  test('getCardBasesByIdAndUserId - should throw NotFoundException for non-existent card', async ({
     assert,
   }) => {
-    await assert.rejects(() => cardService.getCardBaseById('non-existent-id'), 'Row not found')
+    const userId = '123'
+    await assert.rejects(
+      () => cardService.getCardBasesByIdAndUserId('non-existent-id', userId),
+      'Row not found'
+    )
   })
 
-  test('getCardBaseById - should respect the selected fields only', async ({ assert }) => {
+  test('getCardBasesByIdAndUserId - should respect the selected fields only', async ({
+    assert,
+  }) => {
+    const userId = '123'
+
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
@@ -388,7 +430,7 @@ test.group('CardService', (group) => {
 
     await CardFactory.merge({ id: 'base1-1' }).create()
 
-    const card = await cardService.getCardBaseById('base1-1')
+    const card = await cardService.getCardBasesByIdAndUserId('base1-1', userId)
     assert.property(card.$attributes, 'id')
     assert.property(card.$attributes, 'imageLarge')
     assert.property(card.$attributes, 'number')
@@ -397,6 +439,116 @@ test.group('CardService', (group) => {
     assert.notProperty(card.$attributes, 'supertype')
     assert.notProperty(card.$attributes, 'hp')
     assert.notProperty(card.$attributes, 'convertedRetreatCost')
+  })
+
+  test('getCardBasesByIdAndUserId - should load cardFolios with correct occurrence for user root folio', async ({
+    assert,
+  }) => {
+    const userId = '123'
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
+    const card = await CardFactory.merge({ id: 'base1-10' }).create()
+
+    // Créer un folio root pour l'utilisateur
+    const rootFolio = await FolioFactory.merge({
+      userId: userId,
+      isRoot: true,
+      name: 'My Collection',
+    }).create()
+
+    // Créer un cardFolio avec une occurrence spécifique
+    await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: rootFolio.id,
+      occurrence: 3,
+    }).create()
+
+    const result = await cardService.getCardBasesByIdAndUserId('base1-10', userId)
+
+    assert.property(result.$preloaded, 'cardFolios')
+    const cardFolios = result.$preloaded.cardFolios as CardFolio[]
+    assert.isArray(cardFolios)
+    assert.lengthOf(cardFolios, 1)
+    assert.equal(cardFolios[0].occurrence, 3)
+  })
+
+  test('getCardBasesByIdAndUserId - should return empty cardFolios when user has no cards in root folio', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
+    const userId = '123'
+    await CardFactory.merge({ id: 'base1-11' }).create()
+
+    const result = await cardService.getCardBasesByIdAndUserId('base1-11', userId)
+
+    assert.property(result.$preloaded, 'cardFolios')
+    const cardFolios = result.$preloaded.cardFolios as CardFolio[]
+    assert.isArray(cardFolios)
+    assert.lengthOf(cardFolios, 0)
+  })
+
+  test('getCardBasesByIdAndUserId - should only load cardFolios from user root folio, not other folios', async ({
+    assert,
+  }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
+    const userId1 = '123'
+    const userId2 = '456'
+    const card = await CardFactory.merge({ id: 'base1-12' }).create()
+
+    // Créer des folios pour les deux utilisateurs
+    const user1RootFolio = await FolioFactory.merge({
+      userId: userId1,
+      isRoot: true,
+    }).create()
+
+    const user2RootFolio = await FolioFactory.merge({
+      userId: userId2,
+      isRoot: true,
+    }).create()
+
+    const user1NonRootFolio = await FolioFactory.merge({
+      userId: userId1,
+      isRoot: false,
+    }).create()
+
+    // Ajouter la carte dans différents folios
+    await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: user1RootFolio.id,
+      occurrence: 2,
+    }).create()
+
+    await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: user2RootFolio.id,
+      occurrence: 5,
+    }).create()
+
+    await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: user1NonRootFolio.id,
+      occurrence: 10,
+    }).create()
+
+    const result = await cardService.getCardBasesByIdAndUserId('base1-12', userId1)
+
+    assert.property(result.$preloaded, 'cardFolios')
+    const cardFolios = result.$preloaded.cardFolios as CardFolio[]
+    assert.isArray(cardFolios)
+    assert.lengthOf(cardFolios, 1)
+    assert.equal(cardFolios[0].occurrence, 2) // Seulement celle du root folio de userId1
   })
 
   test('getCardDetailById - should return a card details with all required fields', async ({

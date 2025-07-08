@@ -78,10 +78,23 @@ export default class CardService {
       )
   }
 
-  public async getCardBaseById(id: string): Promise<Card> {
+  public async getCardIdById(id: string): Promise<Card> {
+    return await Card.query().select('id').where('id', id).firstOrFail()
+  }
+
+  public async getCardBasesByIdAndUserId(id: string, userId: string): Promise<Card> {
     return await Card.query()
       .preload('set', (setQuery) => {
         setQuery.select('id', 'name', 'image_symbol')
+      })
+      .preload('cardFolios', (cardFolioQuery) => {
+        cardFolioQuery
+          .leftJoin('Folio', (folioQuery) => {
+            folioQuery.on('Folio.id', 'Card_Folio.folio_id')
+          })
+          .select('occurrence')
+          .where('Folio.user_id', userId)
+          .andWhere('Folio.is_root', true)
       })
       .select('id', 'image_large', 'number', 'set_id')
       .where('id', id)

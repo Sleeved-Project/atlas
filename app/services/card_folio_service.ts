@@ -3,6 +3,7 @@ import { getAllMainFolioCardsFiltersValidator } from '#validators/card_validator
 import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 import { Infer } from '@vinejs/vine/types'
 import db from '@adonisjs/lucid/services/db'
+import { childFolioCardsValidator } from '#validators/folio_validator'
 
 export default class CardFolioService {
   public async createCardMainFolio(cardId: string, folioId: string): Promise<CardFolio> {
@@ -52,6 +53,26 @@ export default class CardFolioService {
       .paginate(filters.page, filters.limit)
   }
 
+  public async getAllChildFolioCards(
+    filters: Infer<typeof childFolioCardsValidator>['filters'],
+    childFolioId: string
+  ): Promise<ModelPaginatorContract<CardFolio>> {
+    return await CardFolio.query()
+      .where('Card_Folio.folio_id', childFolioId)
+      .join('Card', 'Card_Folio.card_id', 'Card.id')
+      .join('Set', 'Card.set_id', 'Set.id')
+      .preload('card', (cardQuery) => {
+        cardQuery.select('id', 'image_small')
+      })
+      .select('Card_Folio.id', 'Card_Folio.occurrence', 'Card_Folio.card_id', 'Card_Folio.folio_id')
+      .orderBy('Set.release_date', 'asc')
+      .orderBy(
+        db.raw('CAST(NULLIF(REGEXP_REPLACE(Card.number, "[^0-9]", ""), "") AS UNSIGNED)'),
+        'asc'
+      )
+      .paginate(filters.page, filters.limit)
+  }
+
   public async getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
     mainFolioId: string,
     daysBefore: number
@@ -66,11 +87,13 @@ export default class CardFolioService {
             cardMarketPricesQuery
               .select('id', 'trendPrice', 'reverseHoloTrend')
               .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
+              .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
           })
           .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
             tcgPlayerReportings
               .select('id', 'url')
               .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
+              .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
               .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
                 tcgPlayerPricesQuery.select('id', 'type', 'market')
               })
