@@ -12,7 +12,7 @@ import CardFolioMapper from '#mappers/card_folio_mapper'
 import { FolioStatistics } from '#types/folio_type'
 import FolioMapper from '#mappers/folio_mapper'
 import ConstanteUtils from '#utils/constante_utils'
-import { chilfFolioCardsValidator, showValidator } from '#validators/folio_validator'
+import { childFolioCardsValidator, showValidator } from '#validators/folio_validator'
 import FolioNotOwnedException from '#exceptions/folio_not_owned_exception'
 import NotChildFolioException from '#exceptions/not_child_folio_exception'
 
@@ -141,7 +141,7 @@ export default class FoliosController {
 
   async childFolioCards({ request, response, authUser }: HttpContext) {
     try {
-      const { params, filters } = await chilfFolioCardsValidator.validate({
+      const { params, filters } = await childFolioCardsValidator.validate({
         params: request.params(),
         filters: request.qs(),
       })
