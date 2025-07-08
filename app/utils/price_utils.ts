@@ -30,7 +30,6 @@ export default class PriceUtils {
       const firstCardMarketPrice = cardFolio.card?.cardMarketPrices?.[0]
       if (firstCardMarketPrice) {
         const trendPrice = +(firstCardMarketPrice.trendPrice || 0)
-        console.log('trendPrice', trendPrice, 'occurrence', cardFolio.occurrence)
         return acc + trendPrice * cardFolio.occurrence
       }
       return acc

@@ -696,7 +696,6 @@ test.group('CardFolioService', (group) => {
     assert.property(preloadedCard.$preloaded, 'cardMarketPrices')
     const cardMarketPrices = preloadedCard.$preloaded.cardMarketPrices as CardMarketPrice[]
     assert.isArray(cardMarketPrices)
-    console.log('CARD MARKET PRICES', cardMarketPrices)
     assert.properties(cardMarketPrices[0].$attributes, ['id', 'trendPrice', 'reverseHoloTrend'])
 
     assert.property(preloadedCard.$preloaded, 'tcgPlayerReportings')
