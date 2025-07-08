@@ -50,14 +50,49 @@ export default class CardService {
       .paginate(filters.page, filters.limit)
   }
 
+  public async getAllCardsOccurencesBySetId(setId: string, authUserId: string): Promise<Card[]> {
+    return await Card.query()
+      .join('Set', 'Card.set_id', 'Set.id')
+      .join('Rarity', 'Card.rarity_id', 'Rarity.id')
+      .join('Artist', 'Card.artist_id', 'Artist.id')
+      .join('Card_Folio', 'Card.id', 'Card_Folio.card_id')
+      .join('Folio', (join) => {
+        join
+          .on('Card_Folio.folio_id', '=', 'Folio.id')
+          .andOnVal('Folio.is_root', '=', true)
+          .andOnVal('Folio.user_id', '=', authUserId)
+      })
+      .where('Card.set_id', setId)
+      .andWhere('Card_Folio.occurrence', '>', 0)
+      .select(
+        'Card.id',
+        db.raw('CASE WHEN Card_Folio.occurrence > 0 THEN true ELSE false END as isOwned')
+      )
+  }
+
   public async getAllCardsBySetIdAndPaginate(
     filters: Infer<typeof getAllCardsFiltersValidator>,
-    setId: string
+    setId: string,
+    authUserId: string
   ): Promise<ModelPaginatorContract<Card>> {
     return await Card.query()
       .join('Set', 'Card.set_id', 'Set.id')
       .select('Card.id', 'Card.image_small')
+      .join('Rarity', 'Card.rarity_id', 'Rarity.id')
+      .join('Artist', 'Card.artist_id', 'Artist.id')
+      .leftJoin('Card_Folio', 'Card.id', 'Card_Folio.card_id')
+      .leftJoin('Folio', (join) => {
+        join
+          .on('Card_Folio.folio_id', '=', 'Folio.id')
+          .andOnVal('Folio.is_root', '=', true)
+          .andOnVal('Folio.user_id', '=', authUserId)
+      })
       .where('Card.set_id', setId)
+      .select(
+        'Card.id',
+        'Card.image_small',
+        db.raw('CASE WHEN Card_Folio.occurrence > 0 THEN true ELSE false END as isOwned')
+      )
       .if(filters.name, (query) => query.whereILike('Card.name', `%${filters.name}%`))
       .orderBy(
         db.raw('CAST(NULLIF(REGEXP_REPLACE(Card.number, "[^0-9]", ""), "") AS UNSIGNED)'),

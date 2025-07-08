@@ -37,23 +37,13 @@ test.group('Set controller', (group) => {
     const body = response.body()
     assert.properties(body, ['meta', 'data'])
 
-    assert.properties(body.meta, [
-      'total',
-      'perPage',
-      'currentPage',
-      'lastPage',
-      'firstPage',
-      'firstPageUrl',
-      'lastPageUrl',
-      'nextPageUrl',
-      'previousPageUrl',
-    ])
+    assert.properties(body.meta, ['total', 'perPage', 'currentPage', 'lastPage'])
 
     assert.equal(body.data.length, 10)
 
     const firstSet = body.data[0]
 
-    assert.properties(firstSet, ['id', 'imageSymbol', 'imageLogo'])
+    assert.properties(firstSet, ['id', 'imageSymbol', 'imageLogo', 'total', 'nbOwned'])
   })
 
   test('index - it should apply pagination correctly', async ({ client, assert }) => {

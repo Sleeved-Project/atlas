@@ -12,19 +12,25 @@ import {
 } from '#validators/set_validator'
 import CardService from '#services/card_service'
 import SetCardsMapper from '#mappers/set_cards_mapper'
+import SetProcessor from '../../processors/set_processor.js'
 
 @inject()
 export default class SetsController {
   constructor(
     private setService: SetService,
-    private cardService: CardService
+    private cardService: CardService,
+    private setProcessor: SetProcessor
   ) {}
 
-  async index({ request, response }: HttpContext) {
+  async index({ request, response, authUser }: HttpContext) {
     try {
       const filters = await getAllSetsFiltersValidator.validate(request.all())
-      const sets = await this.setService.getAllSets(filters)
-      return response.ok(sets)
+      const paginatedSets = await this.setService.getAllSets(filters)
+      const basicSets = await this.setProcessor.processPaginatedSetCardsToBasicSetOuputDTO(
+        paginatedSets,
+        authUser?.id || ''
+      )
+      return response.ok(basicSets)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)
@@ -63,13 +69,17 @@ export default class SetsController {
     }
   }
 
-  async cards({ response, request }: HttpContext) {
+  async cards({ response, request, authUser }: HttpContext) {
     try {
       const { params, filters } = await getSetCardsValidator.validate({
         params: request.params(),
         filters: request.qs(),
       })
-      const cards = await this.cardService.getAllCardsBySetIdAndPaginate(filters, params.id)
+      const cards = await this.cardService.getAllCardsBySetIdAndPaginate(
+        filters,
+        params.id,
+        authUser?.id || ''
+      )
       return response.ok(cards)
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
