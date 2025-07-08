@@ -30,3 +30,9 @@ export interface CardBaseOuputDTO {
     imageSymbol: string
   }
 }
+
+export interface CardsWithIsOwnedOutputDTO {
+  id: string
+  imageSmall: string
+  isOwned: boolean
+}

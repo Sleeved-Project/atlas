@@ -12,16 +12,21 @@ import {
 } from '#validators/card_validator'
 import ValidationException from '#exceptions/validation_exception'
 import CardMapper from '#mappers/card_mapper'
+import CardProcessor from '#processors/card_processor'
 
 @inject()
 export default class CardsController {
-  constructor(private cardService: CardService) {}
+  constructor(
+    private cardService: CardService,
+    private cardProcessor: CardProcessor
+  ) {}
 
   async index({ request, response, authUser }: HttpContext) {
     try {
       const filters = await getAllCardsFiltersValidator.validate(request.qs())
-      const cards = await this.cardService.getAllCards(filters, authUser?.id)
-      return response.ok(cards)
+      const paginatedCards = await this.cardService.getAllCards(filters)
+      const result = await this.cardProcessor.processCardsWithOwnership(paginatedCards, authUser.id)
+      return response.ok(result)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)

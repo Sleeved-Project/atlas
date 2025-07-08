@@ -18,7 +18,6 @@ import { TypeFactory } from '#database/factories/type'
 import { CardFolioFactory } from '#database/factories/card_folio'
 import CardFolio from '#models/card_folio'
 import { FolioFactory } from '#database/factories/folio'
-import { TEST_AUTH_USER_ID } from '#tests/mocks/auth_service_mock'
 
 test.group('CardService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -37,9 +36,7 @@ test.group('CardService', (group) => {
 
     await CardFactory.createMany(15)
 
-    const userId = TEST_AUTH_USER_ID
-
-    const result = await cardService.getAllCards({ page: 1, limit: 10 }, userId)
+    const result = await cardService.getAllCards({ page: 1, limit: 10 })
 
     assert.equal(result.length, 10)
     assert.equal(result.currentPage, 1)
@@ -62,9 +59,7 @@ test.group('CardService', (group) => {
       { id: 'base1-3', number: '3' },
     ]).createMany(3)
 
-    const userId = TEST_AUTH_USER_ID
-
-    const result = await cardService.getAllCards({ page: 1, limit: 10 }, userId)
+    const result = await cardService.getAllCards({ page: 1, limit: 10 })
 
     const cardIds = result.map((card) => card.id)
 
@@ -81,49 +76,35 @@ test.group('CardService', (group) => {
 
     await CardFactory.merge({ name: 'Pikachu' }).create()
 
-    const userId = TEST_AUTH_USER_ID
-
-    const exactResult = await cardService.getAllCards(
-      {
-        page: 1,
-        limit: 10,
-        name: 'Pikachu',
-      },
-      userId
-    )
+    const exactResult = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      name: 'Pikachu',
+    })
 
     assert.isAtLeast(exactResult.length, 1)
 
-    const partialResult = await cardService.getAllCards(
-      {
-        page: 1,
-        limit: 10,
-        name: 'Pika',
-      },
-      userId
-    )
+    const partialResult = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      name: 'Pika',
+    })
 
     assert.isAtLeast(partialResult.length, 1)
 
-    const caseInsensitiveResult = await cardService.getAllCards(
-      {
-        page: 1,
-        limit: 10,
-        name: 'pikachu',
-      },
-      userId
-    )
+    const caseInsensitiveResult = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      name: 'pikachu',
+    })
 
     assert.isAtLeast(caseInsensitiveResult.length, 1)
 
-    const noMatchResult = await cardService.getAllCards(
-      {
-        page: 1,
-        limit: 10,
-        name: 'NonExistentCard',
-      },
-      userId
-    )
+    const noMatchResult = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      name: 'NonExistentCard',
+    })
 
     assert.equal(noMatchResult.length, 0)
   })
@@ -131,8 +112,6 @@ test.group('CardService', (group) => {
   test('getAllCards - should filter by rarity correctly', async ({ assert }) => {
     await LegalityFactory.create()
     await SetFactory.merge({ id: 'base1' }).create()
-
-    const userId = TEST_AUTH_USER_ID
 
     const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
     const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
@@ -150,14 +129,11 @@ test.group('CardService', (group) => {
       artistId: artist.id,
     }).create()
 
-    const result = await cardService.getAllCards(
-      {
-        page: 1,
-        limit: 10,
-        rarity: [commonRarity.id.toString()],
-      },
-      userId
-    )
+    const result = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      rarity: [commonRarity.id.toString()],
+    })
 
     assert.equal(result.length, 1)
     const cardResult = result[0]
@@ -168,8 +144,6 @@ test.group('CardService', (group) => {
     await RarityFactory.create()
     await LegalityFactory.create()
     await SetFactory.merge({ id: 'base1' }).create()
-
-    const userId = TEST_AUTH_USER_ID
 
     const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
     const artist2 = await ArtistFactory.merge({ id: 2, name: 'Artist Two' }).create()
@@ -184,14 +158,11 @@ test.group('CardService', (group) => {
       artistId: artist2.id,
     }).create()
 
-    const result = await cardService.getAllCards(
-      {
-        page: 1,
-        limit: 10,
-        artist: [artist1.id.toString()],
-      },
-      userId
-    )
+    const result = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      artist: [artist1.id.toString()],
+    })
 
     assert.equal(result.length, 1)
     const cardResult = result[0]
@@ -203,8 +174,6 @@ test.group('CardService', (group) => {
     await RarityFactory.create()
     await LegalityFactory.create()
     await SetFactory.merge({ id: 'base1' }).create()
-
-    const userId = TEST_AUTH_USER_ID
 
     const basicSubtype = await SubtypeFactory.merge({ id: 1, label: 'Basic' }).create()
     const stage1Subtype = await SubtypeFactory.merge({ id: 2, label: 'Stage 1' }).create()
@@ -221,14 +190,11 @@ test.group('CardService', (group) => {
       .with('subtypes', 1, (subtypes) => subtypes.merge([stage1Subtype]))
       .create()
 
-    const result = await cardService.getAllCards(
-      {
-        page: 1,
-        limit: 10,
-        subtype: [basicSubtype.id.toString()],
-      },
-      userId
-    )
+    const result = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      subtype: [basicSubtype.id.toString()],
+    })
 
     assert.equal(result.length, 1)
     const cardResult = await result[0]
@@ -240,8 +206,6 @@ test.group('CardService', (group) => {
     await RarityFactory.create()
     await LegalityFactory.create()
     await SetFactory.merge({ id: 'base1' }).create()
-
-    const userId = TEST_AUTH_USER_ID
 
     const psychicType = await TypeFactory.merge({ id: 1, label: 'Psychic' }).create()
     const fireType = await TypeFactory.merge({ id: 2, label: 'Fire' }).create()
@@ -258,14 +222,11 @@ test.group('CardService', (group) => {
       .with('types', 1, (types) => types.merge([fireType]))
       .create()
 
-    const result = await cardService.getAllCards(
-      {
-        page: 1,
-        limit: 10,
-        type: [psychicType.id.toString()],
-      },
-      userId
-    )
+    const result = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      type: [psychicType.id.toString()],
+    })
 
     assert.equal(result.length, 1)
 
@@ -277,8 +238,6 @@ test.group('CardService', (group) => {
   test('getAllCards - should apply multiple filters simultaneously', async ({ assert }) => {
     await LegalityFactory.create()
     await SetFactory.merge({ id: 'base1' }).create()
-
-    const userId = TEST_AUTH_USER_ID
 
     const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
     const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
@@ -304,15 +263,12 @@ test.group('CardService', (group) => {
       artistId: artist1.id,
     }).create()
 
-    const result = await cardService.getAllCards(
-      {
-        page: 1,
-        limit: 10,
-        name: 'Pika',
-        rarity: [commonRarity.id.toString()],
-      },
-      userId
-    )
+    const result = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      name: 'Pika',
+      rarity: [commonRarity.id.toString()],
+    })
 
     assert.equal(result.length, 1)
 
@@ -327,8 +283,6 @@ test.group('CardService', (group) => {
     await LegalityFactory.create()
     await SetFactory.merge({ id: 'base1' }).create()
 
-    const userId = TEST_AUTH_USER_ID
-
     const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
 
     await CardFactory.merge({
@@ -336,15 +290,12 @@ test.group('CardService', (group) => {
       rarityId: commonRarity.id,
     }).create()
 
-    const result = await cardService.getAllCards(
-      {
-        page: 1,
-        limit: 10,
-        name: 'NonExistentCard',
-        rarity: [commonRarity.id.toString()],
-      },
-      userId
-    )
+    const result = await cardService.getAllCards({
+      page: 1,
+      limit: 10,
+      name: 'NonExistentCard',
+      rarity: [commonRarity.id.toString()],
+    })
 
     assert.equal(result.length, 0)
   })
