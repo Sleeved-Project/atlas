@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column, computed } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Legality from '#models/legality'
 
@@ -44,4 +44,9 @@ export default class Set extends BaseModel {
 
   @belongsTo(() => Legality)
   declare legality: BelongsTo<typeof Legality>
+
+  @computed()
+  public get nbOwned(): number {
+    return this.$extras.nbOwned || 0
+  }
 }

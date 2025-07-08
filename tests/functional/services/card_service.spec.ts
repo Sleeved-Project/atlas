@@ -683,9 +683,51 @@ test.group('CardService', (group) => {
     )
   })
 
+  test('getAllCardsOccurencesBySetId - should return occurences of owned cards in a set', async ({
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    const sets = await SetFactory.createMany(15)
+    const rootFolio = await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+    const card1 = await CardFactory.merge({ setId: sets[0].id }).create()
+    const card2 = await CardFactory.merge({ setId: sets[0].id }).create()
+    const card3 = await CardFactory.merge({ setId: sets[2].id }).create()
+
+    await CardFolioFactory.merge({
+      cardId: card1.id,
+      folioId: rootFolio.id,
+      occurrence: 22,
+    }).create()
+
+    await CardFolioFactory.merge({
+      cardId: card2.id,
+      folioId: rootFolio.id,
+      occurrence: 1,
+    }).create()
+
+    await CardFolioFactory.merge({
+      cardId: card3.id,
+      folioId: rootFolio.id,
+      occurrence: 3,
+    }).create()
+
+    const result = await cardService.getAllCardsOccurencesBySetId(sets[0].id, userId)
+
+    assert.isArray(result)
+    assert.lengthOf(result, 2)
+  })
+
   test('getAllCardsBySetIdAndPaginate - should return paginated results for a specific set', async ({
     assert,
   }) => {
+    const userId = TEST_AUTH_USER_ID
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
@@ -693,7 +735,11 @@ test.group('CardService', (group) => {
 
     await CardFactory.merge({ setId: 'base1' }).createMany(15)
 
-    const result = await cardService.getAllCardsBySetIdAndPaginate({ page: 1, limit: 10 }, 'base1')
+    const result = await cardService.getAllCardsBySetIdAndPaginate(
+      { page: 1, limit: 10 },
+      'base1',
+      userId
+    )
 
     assert.equal(result.length, 10)
     assert.equal(result.currentPage, 1)
@@ -704,6 +750,7 @@ test.group('CardService', (group) => {
   })
 
   test('getAllCardsBySetIdAndPaginate - should filter by name correctly', async ({ assert }) => {
+    const userId = TEST_AUTH_USER_ID
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
@@ -717,7 +764,8 @@ test.group('CardService', (group) => {
         limit: 10,
         name: 'Pikachu',
       },
-      'base1'
+      'base1',
+      userId
     )
 
     assert.isAtLeast(exactResult.length, 1)
@@ -728,7 +776,8 @@ test.group('CardService', (group) => {
         limit: 10,
         name: 'Pika',
       },
-      'base1'
+      'base1',
+      userId
     )
 
     assert.isAtLeast(partialResult.length, 1)
@@ -739,7 +788,8 @@ test.group('CardService', (group) => {
         limit: 10,
         name: 'pikachu',
       },
-      'base1'
+      'base1',
+      userId
     )
 
     assert.isAtLeast(caseInsensitiveResult.length, 1)
@@ -750,7 +800,8 @@ test.group('CardService', (group) => {
         limit: 10,
         name: 'NonExistentCard',
       },
-      'base1'
+      'base1',
+      userId
     )
 
     assert.equal(noMatchResult.length, 0)
