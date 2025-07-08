@@ -66,11 +66,13 @@ export default class CardFolioService {
             cardMarketPricesQuery
               .select('id', 'trendPrice', 'reverseHoloTrend')
               .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
+              .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
           })
           .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
             tcgPlayerReportings
               .select('id', 'url')
               .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
+              .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
               .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
                 tcgPlayerPricesQuery.select('id', 'type', 'market')
               })

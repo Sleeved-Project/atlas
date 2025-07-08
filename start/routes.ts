@@ -28,11 +28,12 @@ router
           .prefix('cards')
         router
           .group(() => {
-            router.post('/init', [FoliosController, 'init']).use(middleware.auth())
             router.get('/', [FoliosController, 'index']).use(middleware.auth())
             router.get('/cards', [FoliosController, 'cards']).use(middleware.auth())
             router.get('/statistics', [FoliosController, 'statistics']).use(middleware.auth())
+            router.get('/:id', [FoliosController, 'show']).use(middleware.auth())
             router.post('/', [CardFoliosController, 'store']).use(middleware.auth())
+            router.post('/init', [FoliosController, 'init']).use(middleware.auth())
             router.post('/cards', [CardFoliosController, 'collect']).use(middleware.auth())
             router.patch('/cards/:id', [CardFoliosController, 'occurrence']).use(middleware.auth())
             router.delete('/cards/:id', [CardFoliosController, 'delete']).use(middleware.auth())

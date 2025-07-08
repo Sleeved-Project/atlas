@@ -18,6 +18,7 @@ import TcgPlayerPrice from '#models/tcg_player_price'
 import { DateTime } from 'luxon'
 import { SubtypeFactory } from '#database/factories/subtype'
 import { TypeFactory } from '#database/factories/type'
+import ConstanteUtils from '#utils/constante_utils'
 
 test.group('CardFolioService', (group) => {
   let cardFolioService: CardFolioService
@@ -679,7 +680,7 @@ test.group('CardFolioService', (group) => {
 
     const result = await cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
       mainFolio.id,
-      7
+      ConstanteUtils.TODAY_DAY_BEFORE_COUNT
     )
 
     assert.equal(result.length, 3)
@@ -792,8 +793,8 @@ test.group('CardFolioService', (group) => {
       isRoot: true,
     }).create()
 
-    const recentDate = DateTime.now().minus({ days: 3 })
-    const oldDate = DateTime.now().minus({ days: 10 })
+    const recentDate = DateTime.now()
+    const oldDate = DateTime.now().minus({ days: ConstanteUtils.TODAY_DAY_BEFORE_COUNT })
 
     const card = await CardFactory.with('cardMarketPrices', 2, (cardMarketPrices) =>
       cardMarketPrices.merge([
@@ -817,7 +818,7 @@ test.group('CardFolioService', (group) => {
 
     const result = await cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
       mainFolio.id,
-      7
+      ConstanteUtils.TODAY_DAY_BEFORE_COUNT
     )
 
     assert.equal(result.length, 1)
@@ -826,7 +827,6 @@ test.group('CardFolioService', (group) => {
     const cardMarketPrices = preloadedCard.$preloaded.cardMarketPrices as CardMarketPrice[]
     const tcgPlayerReportings = preloadedCard.$preloaded.tcgPlayerReportings as TcgPlayerReporting[]
 
-    // Should only include prices from the last 7 days
     assert.equal(cardMarketPrices.length, 1)
     assert.equal(tcgPlayerReportings.length, 1)
   })

@@ -35,8 +35,6 @@ export default class ScanController {
         throw new FileUploadException()
       }
 
-      console.log(file.headers['content-type'])
-
       const result = await this.scanService.getAnalyseResults(
         file.filePath,
         file.clientName,
