@@ -55,7 +55,10 @@ test.group('Folio controller', (group) => {
     response.assertStatus(401)
   })
 
-  test('cards - should return paginated cards from user main folio', async ({ client, assert }) => {
+  test('mainFolioCards - should return paginated cards from user main folio', async ({
+    client,
+    assert,
+  }) => {
     const userId = TEST_AUTH_USER_ID
 
     await ArtistFactory.create()
@@ -125,7 +128,7 @@ test.group('Folio controller', (group) => {
     assert.equal(cardFolioWithOccurrence3.occurrence, 3)
   })
 
-  test('cards - should return empty result when user has no cards in main folio', async ({
+  test('mainFolioCards - should return empty result when user has no cards in main folio', async ({
     client,
     assert,
   }) => {
@@ -156,7 +159,7 @@ test.group('Folio controller', (group) => {
     assert.equal(body.data.length, 0)
   })
 
-  test('cards - should handle pagination correctly', async ({ client, assert }) => {
+  test('mainFolioCards - should handle pagination correctly', async ({ client, assert }) => {
     const userId = TEST_AUTH_USER_ID
 
     await ArtistFactory.create()
@@ -203,7 +206,7 @@ test.group('Folio controller', (group) => {
     assert.equal(page2Body.meta.currentPage, 2)
   })
 
-  test('cards - should only return cards from main folio, not secondary folios', async ({
+  test('mainFolioCards - should only return cards from main folio, not secondary folios', async ({
     client,
     assert,
   }) => {
@@ -262,7 +265,7 @@ test.group('Folio controller', (group) => {
     assert.equal(returnedCardFolio.occurrence, 1)
   })
 
-  test('cards - should validate query parameters', async ({ client }) => {
+  test('mainFolioCards - should validate query parameters', async ({ client }) => {
     const response = await client
       .get('/api/v1/folios/cards')
       .header('Authorization', 'Bearer fake-token-for-testing')
@@ -274,7 +277,7 @@ test.group('Folio controller', (group) => {
     })
   })
 
-  test('cards - should return 404 when user has no main folio', async ({ client }) => {
+  test('mainFolioCards - should return 404 when user has no main folio', async ({ client }) => {
     const response = await client
       .get('/api/v1/folios/cards')
       .header('Authorization', 'Bearer fake-token-for-testing')
@@ -286,13 +289,13 @@ test.group('Folio controller', (group) => {
     })
   })
 
-  test('cards - should require authentication', async ({ client }) => {
+  test('mainFolioCards - should require authentication', async ({ client }) => {
     const response = await client.get('/api/v1/folios/cards').qs({ page: 1, limit: 10 })
 
     response.assertStatus(401)
   })
 
-  test('cards - should filter cards by name when name parameter is provided', async ({
+  test('mainFolioCards - should filter cards by name when name parameter is provided', async ({
     client,
     assert,
   }) => {
@@ -342,7 +345,7 @@ test.group('Folio controller', (group) => {
     assert.equal(returnedCardFolio.occurrence, 1)
   })
 
-  test('cards - should filter cards by rarity when rarity parameter is provided', async ({
+  test('mainFolioCards - should filter cards by rarity when rarity parameter is provided', async ({
     client,
     assert,
   }) => {
@@ -393,7 +396,7 @@ test.group('Folio controller', (group) => {
     assert.equal(returnedCardFolio.occurrence, 1)
   })
 
-  test('cards - should filter cards by artist when artist parameter is provided', async ({
+  test('mainFolioCards - should filter cards by artist when artist parameter is provided', async ({
     client,
     assert,
   }) => {
@@ -442,7 +445,7 @@ test.group('Folio controller', (group) => {
     assert.equal(returnedCardFolio.occurrence, 1)
   })
 
-  test('cards - should filter cards by subtype when subtype parameter is provided', async ({
+  test('mainFolioCards - should filter cards by subtype when subtype parameter is provided', async ({
     client,
     assert,
   }) => {
@@ -494,7 +497,7 @@ test.group('Folio controller', (group) => {
     assert.equal(returnedCardFolio.occurrence, 1)
   })
 
-  test('cards - should filter cards by type when type parameter is provided', async ({
+  test('mainFolioCards - should filter cards by type when type parameter is provided', async ({
     client,
     assert,
   }) => {
@@ -546,7 +549,10 @@ test.group('Folio controller', (group) => {
     assert.equal(returnedCardFolio.occurrence, 1)
   })
 
-  test('cards - should apply multiple filters simultaneously', async ({ client, assert }) => {
+  test('mainFolioCards - should apply multiple filters simultaneously', async ({
+    client,
+    assert,
+  }) => {
     const userId = TEST_AUTH_USER_ID
 
     await LegalityFactory.create()
@@ -847,8 +853,6 @@ test.group('Folio controller', (group) => {
     assert.equal(statistics.totalCardsCount, 5) // Should count all occurrences
     assert.equal(statistics.cardMarketPrice, '50.00') // 5 cards × 10.0 each
   })
-
-  // ...existing code...
 
   test('index - should return all child folios with statistics', async ({ client, assert }) => {
     const userId = TEST_AUTH_USER_ID
@@ -1283,5 +1287,118 @@ test.group('Folio controller', (group) => {
     const folio = response.body()
     assert.equal(folio.statistics.cardMarketTrending, 'up') // 20 > 10
     assert.equal(folio.statistics.tcgPlayerTrending, 'up') // 15 > 8
+  })
+
+  test('childFolioCards - should return paginated cards from specific child folio', async ({
+    client,
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.create()
+
+    const childFolio = await FolioFactory.merge({
+      userId,
+      name: 'My Custom Collection',
+      isRoot: false,
+    }).create()
+
+    const otherChildFolio = await FolioFactory.merge({
+      userId,
+      name: 'Other Collection',
+      isRoot: false,
+    }).create()
+
+    const cards = await CardFactory.createMany(3)
+
+    // Add cards to target child folio
+    await CardFolioFactory.merge([
+      { cardId: cards[0].id, folioId: childFolio.id, occurrence: 2 },
+      { cardId: cards[1].id, folioId: childFolio.id, occurrence: 1 },
+    ]).createMany(2)
+
+    // Add card to other folio (should not be returned)
+    await CardFolioFactory.merge({
+      cardId: cards[2].id,
+      folioId: otherChildFolio.id,
+      occurrence: 3,
+    }).create()
+
+    const response = await client
+      .get(`/api/v1/folios/${childFolio.id}/cards`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .qs({ page: 1, limit: 10 })
+
+    response.assertStatus(200)
+
+    const body = response.body()
+    assert.properties(body, ['meta', 'data'])
+    assert.properties(body.meta, ['total', 'currentPage', 'perPage'])
+    assert.equal(body.meta.total, 2)
+    assert.equal(body.meta.currentPage, 1)
+
+    assert.isArray(body.data)
+    assert.lengthOf(body.data, 2)
+
+    const firstCardFolio = body.data[0]
+    assert.properties(firstCardFolio, ['id', 'occurrence', 'card'])
+    assert.properties(firstCardFolio.card, ['id', 'imageSmall'])
+
+    const cardIds = body.data.map((cardFolio: any) => cardFolio.card.id)
+    assert.includeMembers(cardIds, [cards[0].id, cards[1].id])
+    assert.notInclude(cardIds, cards[2].id) // Should not include card from other folio
+
+    const cardFolioWithOccurrence2 = body.data.find((cf: any) => cf.card.id === cards[0].id)
+    const cardFolioWithOccurrence1 = body.data.find((cf: any) => cf.card.id === cards[1].id)
+
+    assert.equal(cardFolioWithOccurrence2.occurrence, 2)
+    assert.equal(cardFolioWithOccurrence1.occurrence, 1)
+  })
+
+  test('childFolioCards - should return 403 when folio is not owned by user', async ({
+    client,
+  }) => {
+    const otherUserId = 'other-user-id'
+
+    const otherUserFolio = await FolioFactory.merge({
+      userId: otherUserId,
+      name: 'Other User Collection',
+      isRoot: false,
+    }).create()
+
+    const response = await client
+      .get(`/api/v1/folios/${otherUserFolio.id}/cards`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .qs({ page: 1, limit: 10 })
+
+    response.assertStatus(403)
+    response.assertBodyContains({
+      code: 'E_FOLIO_NOT_OWNED',
+    })
+  })
+
+  test('childFolioCards - should return 422 when trying to access main folio cards', async ({
+    client,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    const mainFolio = await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    const response = await client
+      .get(`/api/v1/folios/${mainFolio.id}/cards`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .qs({ page: 1, limit: 10 })
+
+    response.assertStatus(422)
+    response.assertBodyContains({
+      code: 'E_NOT_CHILD_FOLIO',
+    })
   })
 })

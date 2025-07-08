@@ -3,6 +3,7 @@ import { getAllMainFolioCardsFiltersValidator } from '#validators/card_validator
 import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 import { Infer } from '@vinejs/vine/types'
 import db from '@adonisjs/lucid/services/db'
+import { chilfFolioCardsValidator } from '#validators/folio_validator'
 
 export default class CardFolioService {
   public async createCardMainFolio(cardId: string, folioId: string): Promise<CardFolio> {
@@ -44,6 +45,26 @@ export default class CardFolioService {
       .if(filters.artist && filters.artist.length > 0, (query) =>
         query.whereIn('Artist.id', filters.artist ? filters.artist : [])
       )
+      .orderBy('Set.release_date', 'asc')
+      .orderBy(
+        db.raw('CAST(NULLIF(REGEXP_REPLACE(Card.number, "[^0-9]", ""), "") AS UNSIGNED)'),
+        'asc'
+      )
+      .paginate(filters.page, filters.limit)
+  }
+
+  public async getAllChildFolioCards(
+    filters: Infer<typeof chilfFolioCardsValidator>['filters'],
+    childFolioId: string
+  ): Promise<ModelPaginatorContract<CardFolio>> {
+    return await CardFolio.query()
+      .where('Card_Folio.folio_id', childFolioId)
+      .join('Card', 'Card_Folio.card_id', 'Card.id')
+      .join('Set', 'Card.set_id', 'Set.id')
+      .preload('card', (cardQuery) => {
+        cardQuery.select('id', 'image_small')
+      })
+      .select('Card_Folio.id', 'Card_Folio.occurrence', 'Card_Folio.card_id', 'Card_Folio.folio_id')
       .orderBy('Set.release_date', 'asc')
       .orderBy(
         db.raw('CAST(NULLIF(REGEXP_REPLACE(Card.number, "[^0-9]", ""), "") AS UNSIGNED)'),

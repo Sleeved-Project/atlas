@@ -163,8 +163,6 @@ test.group('FolioMapper', (group) => {
     assert.equal(result[0].statistics.tcgPlayerPrice, '0.00')
   })
 
-  // ...existing code...
-
   test('toFolioWithStatistics - should return correct statistics with trending for folio', async ({
     assert,
   }) => {
