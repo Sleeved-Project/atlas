@@ -150,7 +150,7 @@ test.group('FolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
     await TypeFactory.create()
     await SubtypeFactory.create()
 
@@ -267,7 +267,7 @@ test.group('FolioService', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
     await TypeFactory.create()
     await SubtypeFactory.create()
 

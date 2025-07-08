@@ -10,27 +10,9 @@ import { CardFactory } from '#database/factories/card'
 
 test.group('Set controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
-  let setIdArray: { id: string }[]
 
   group.setup(() => {
     wardenApiClientStub = AuthServiceMock.setupWardenApiClientStub()
-    setIdArray = [
-      { id: 'base1' },
-      { id: 'base2' },
-      { id: 'base3' },
-      { id: 'base4' },
-      { id: 'base5' },
-      { id: 'base6' },
-      { id: 'base7' },
-      { id: 'base8' },
-      { id: 'base9' },
-      { id: 'base10' },
-      { id: 'base11' },
-      { id: 'base12' },
-      { id: 'base13' },
-      { id: 'base14' },
-      { id: 'base15' },
-    ]
   })
 
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -43,7 +25,7 @@ test.group('Set controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.merge(setIdArray).createMany(15)
+    await SetFactory.createMany(15)
 
     const response = await client
       .get('/api/v1/sets')
@@ -78,7 +60,7 @@ test.group('Set controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.merge(setIdArray).createMany(15)
+    await SetFactory.createMany(15)
 
     const response1 = await client
       .get('/api/v1/sets')
@@ -105,7 +87,7 @@ test.group('Set controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.merge(setIdArray).createMany(15)
+    await SetFactory.createMany(15)
 
     const responseNegativePage = await client
       .get('/api/v1/sets')
@@ -132,7 +114,7 @@ test.group('Set controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.merge(setIdArray).createMany(15)
+    await SetFactory.createMany(15)
 
     const responseNotExistingFilter = await client
       .get('/api/v1/sets')
@@ -166,7 +148,7 @@ test.group('Set controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.merge(setIdArray).createMany(15)
+    await SetFactory.createMany(15)
 
     const response = await client
       .get('/api/v1/sets')
@@ -181,7 +163,7 @@ test.group('Set controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const response = await client
       .get('/api/v1/sets/base1/details')
@@ -212,7 +194,8 @@ test.group('Set controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.createMany(15)
 
     const response = await client

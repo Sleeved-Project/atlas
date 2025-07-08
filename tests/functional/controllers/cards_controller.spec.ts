@@ -29,7 +29,7 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
     await CardFactory.createMany(15)
 
     const response = await client
@@ -64,7 +64,7 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
     await CardFactory.createMany(15)
 
     const response1 = await client
@@ -92,7 +92,8 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.createMany(15)
 
     const responseNegativePage = await client
@@ -120,7 +121,8 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.createMany(15)
 
     const responseNotExistingFilter = await client
@@ -155,7 +157,8 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.createMany(15)
 
     const response = await client
@@ -174,7 +177,7 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const pikachuCard = await CardFactory.merge({ name: 'Pikachu' }).create()
     await CardFactory.merge({ name: 'Charizard' }).create()
@@ -198,7 +201,7 @@ test.group('Card controller', (group) => {
     assert,
   }) => {
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
     const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
@@ -234,7 +237,7 @@ test.group('Card controller', (group) => {
   }) => {
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
     const artist2 = await ArtistFactory.merge({ id: 2, name: 'Artist Two' }).create()
@@ -268,7 +271,7 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const basicSubtype = await SubtypeFactory.merge({ id: 1, label: 'Basic' }).create()
     const stage1Subtype = await SubtypeFactory.merge({ id: 2, label: 'Stage 1' }).create()
@@ -304,7 +307,7 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const psychicType = await TypeFactory.merge({ id: 1, label: 'Psychic' }).create()
     const fireType = await TypeFactory.merge({ id: 2, label: 'Fire' }).create()
@@ -335,7 +338,7 @@ test.group('Card controller', (group) => {
 
   test('index - it should apply multiple filters simultaneously', async ({ client, assert }) => {
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
     const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
@@ -378,7 +381,7 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     await CardFactory.merge({ name: 'Pikachu' }).create()
 
@@ -398,7 +401,8 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.merge({ id: `base1-1` }).create()
 
     const response = await client
@@ -418,7 +422,8 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.createMany(3)
 
     const response = await client
@@ -442,7 +447,7 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const card = await CardFactory.merge({ id: 'base1-25' }).create()
 
@@ -481,7 +486,7 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     await CardFactory.merge({ id: 'base1-26' }).create()
 
@@ -503,7 +508,8 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.merge({ id: `base1-1` }).with('subtypes').create()
 
     const response = await client
@@ -543,7 +549,8 @@ test.group('Card controller', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
     await CardFactory.merge({ id: 'base1-1' })
       .with('cardMarketPrices', 1, (cardMarketPrices) =>
         cardMarketPrices.merge({

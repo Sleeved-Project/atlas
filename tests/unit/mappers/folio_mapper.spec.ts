@@ -33,7 +33,7 @@ test.group('FolioMapper', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const folio1 = await FolioFactory.merge({ name: 'Collection 1', image: 'image1.jpg' }).create()
     const folio2 = await FolioFactory.merge({ name: 'Collection 2', image: 'image2.jpg' }).create()
@@ -140,7 +140,7 @@ test.group('FolioMapper', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const folio = await FolioFactory.merge({ name: 'No Price Collection' }).create()
     const card = await CardFactory.create()
@@ -169,7 +169,7 @@ test.group('FolioMapper', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const folio = await FolioFactory.merge({
       name: 'My Collection',
@@ -272,7 +272,7 @@ test.group('FolioMapper', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const folio = await FolioFactory.merge({ name: 'Stable Collection' }).create()
 
@@ -356,7 +356,7 @@ test.group('FolioMapper', (group) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
-    await SetFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
 
     const folio = await FolioFactory.merge({ name: 'No Price Collection' }).create()
     const card = await CardFactory.create()
