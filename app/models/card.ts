@@ -1,4 +1,4 @@
-import { BaseModel, belongsTo, column, hasMany, manyToMany } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column, computed, hasMany, manyToMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
 import Artist from '#models/artist'
 import Rarity from '#models/rarity'
@@ -103,4 +103,9 @@ export default class Card extends BaseModel {
     foreignKey: 'cardId',
   })
   declare cardFolios: HasMany<typeof CardFolio>
+
+  @computed()
+  public get isOwned(): boolean {
+    return !!this.$extras.isOwned
+  }
 }

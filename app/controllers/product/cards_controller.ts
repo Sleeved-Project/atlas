@@ -17,10 +17,10 @@ import CardMapper from '#mappers/card_mapper'
 export default class CardsController {
   constructor(private cardService: CardService) {}
 
-  async index({ request, response }: HttpContext) {
+  async index({ request, response, authUser }: HttpContext) {
     try {
       const filters = await getAllCardsFiltersValidator.validate(request.qs())
-      const cards = await this.cardService.getAllCards(filters)
+      const cards = await this.cardService.getAllCards(filters, authUser?.id)
       return response.ok(cards)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
@@ -76,42 +76,6 @@ export default class CardsController {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)
       }
-      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
-        throw new NotFoundException(error)
-      }
-      throw error
-    }
-  }
-
-  async rarity({ response }: HttpContext) {
-    try {
-      const rarities = await this.cardService.getAllRarities()
-      return response.ok(rarities)
-    } catch (error) {
-      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
-        throw new NotFoundException(error)
-      }
-      throw error
-    }
-  }
-
-  async subtype({ response }: HttpContext) {
-    try {
-      const subtypes = await this.cardService.getAllSubtypes()
-      return response.ok(subtypes)
-    } catch (error) {
-      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
-        throw new NotFoundException(error)
-      }
-      throw error
-    }
-  }
-
-  async artist({ response }: HttpContext) {
-    try {
-      const artists = await this.cardService.getAllArtists()
-      return response.ok(artists)
-    } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
       }

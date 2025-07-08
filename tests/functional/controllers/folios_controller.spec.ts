@@ -340,8 +340,6 @@ test.group('Folio controller', (group) => {
     assert.equal(body.meta.total, 1)
     assert.equal(body.data.length, 1)
 
-    console.log('DATA', body.data)
-
     const returnedCardFolio = body.data[0]
     assert.equal(returnedCardFolio.card.id, pikachuCard.id)
     assert.equal(returnedCardFolio.occurrence, 1)
