@@ -146,4 +146,12 @@ export default class CardFolioService {
       folioId,
     })
   }
+
+  public async getAllCardsIdsFromMainFolio(userId: string): Promise<CardFolio[]> {
+    return await CardFolio.query()
+      .join('Folio', 'Card_Folio.folio_id', 'Folio.id')
+      .where('Folio.user_id', userId)
+      .andWhere('Folio.is_root', true)
+      .select('Card_Folio.card_id')
+  }
 }

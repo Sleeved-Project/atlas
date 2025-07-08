@@ -1314,4 +1314,91 @@ test.group('CardFolioService', (group) => {
 
     assert.equal(result.length, 0)
   })
+
+  test('getAllCardsIdsFromMainFolio - should return all card IDs from user main folio', async ({
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
+    const mainFolio = await FolioFactory.merge({
+      userId,
+      isRoot: true,
+    }).create()
+
+    const secondaryFolio = await FolioFactory.merge({
+      userId,
+      isRoot: false,
+    }).create()
+
+    const cards = await CardFactory.createMany(4)
+
+    await CardFolioFactory.merge([
+      { cardId: cards[0].id, folioId: mainFolio.id, occurrence: 2 },
+      { cardId: cards[1].id, folioId: mainFolio.id, occurrence: 1 },
+      { cardId: cards[2].id, folioId: mainFolio.id, occurrence: 3 },
+    ]).createMany(3)
+
+    await CardFolioFactory.merge({
+      cardId: cards[3].id,
+      folioId: secondaryFolio.id,
+      occurrence: 1,
+    }).create()
+
+    const result = await cardFolioService.getAllCardsIdsFromMainFolio(userId)
+
+    assert.equal(result.length, 3)
+
+    const cardIds = result.map((cardFolio) => cardFolio.cardId)
+    assert.includeMembers(cardIds, [cards[0].id, cards[1].id, cards[2].id])
+    assert.notInclude(cardIds, cards[3].id)
+
+    result.forEach((cardFolio) => {
+      assert.property(cardFolio.$attributes, 'cardId')
+      assert.isString(cardFolio.cardId)
+    })
+  })
+
+  test('getAllCardsIdsFromMainFolio - should return empty array when user has no main folio or no cards', async ({
+    assert,
+  }) => {
+    const userId1 = TEST_AUTH_USER_ID
+    const userId2 = 'other-user-id'
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
+    const otherUserMainFolio = await FolioFactory.merge({
+      userId: userId2,
+      isRoot: true,
+    }).create()
+
+    const cards = await CardFactory.createMany(2)
+
+    await CardFolioFactory.merge([
+      { cardId: cards[0].id, folioId: otherUserMainFolio.id, occurrence: 1 },
+      { cardId: cards[1].id, folioId: otherUserMainFolio.id, occurrence: 2 },
+    ]).createMany(2)
+
+    const resultNoMainFolio = await cardFolioService.getAllCardsIdsFromMainFolio(userId1)
+    assert.equal(resultNoMainFolio.length, 0)
+
+    // Empty main folio for user1
+    await FolioFactory.merge({
+      userId: userId1,
+      isRoot: true,
+    }).create()
+
+    const resultEmptyMainFolio = await cardFolioService.getAllCardsIdsFromMainFolio(userId1)
+    assert.equal(resultEmptyMainFolio.length, 0)
+
+    const otherUserResult = await cardFolioService.getAllCardsIdsFromMainFolio(userId2)
+    assert.equal(otherUserResult.length, 2)
+  })
 })
