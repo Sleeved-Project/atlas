@@ -1,10 +1,9 @@
 import Card from '#models/card'
-import Set from '#models/set'
 import { BasicSet, SetCardPriceTrending, SetStatisticsOutputDTO } from '#types/set_type'
 
 export default class SetCardsMapper {
   public static toSetStatisticsOutput(
-    set: Set,
+    basicSet: BasicSet,
     todayCards: Card[],
     yesterdayCards: Card[]
   ): SetStatisticsOutputDTO {
@@ -13,8 +12,6 @@ export default class SetCardsMapper {
 
     const todayTcgPlayerPrice = this.getLowerTcgPlayerMarketPrice(todayCards)
     const yesterdayTcgPlayerPrice = this.getLowerTcgPlayerMarketPrice(yesterdayCards)
-
-    const basicSet = set.toJSON() as BasicSet
 
     return {
       ...basicSet,

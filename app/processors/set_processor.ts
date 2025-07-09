@@ -8,7 +8,7 @@ import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 export default class SetProcessor {
   constructor(private cardService: CardService) {}
 
-  public async processPaginatedSetCardsToBasicSetOuputDTO(
+  public async processPaginatedSetCardsToBasicSetPaginationOutputDTO(
     sets: ModelPaginatorContract<Set>,
     authUserId: string
   ): Promise<BasicSetPaginationOutputDTO> {
@@ -30,5 +30,15 @@ export default class SetProcessor {
     }
 
     return basicSets
+  }
+
+  public async processSetDetailCardsOccurencesToBasicSetOutputDTO(
+    set: Set,
+    authUserId: string
+  ): Promise<BasicSet> {
+    const cardOccurrence = await this.cardService.getAllCardsOccurencesBySetId(set.id, authUserId)
+    const basicSet = set.toJSON() as BasicSet
+    basicSet.nbOwned = cardOccurrence.length
+    return basicSet
   }
 }

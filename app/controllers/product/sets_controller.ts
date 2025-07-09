@@ -28,10 +28,11 @@ export default class SetsController {
     try {
       const filters = await getAllSetsFiltersValidator.validate(request.all())
       const paginatedSets = await this.setService.getAllSets(filters)
-      const basicSets = await this.setProcessor.processPaginatedSetCardsToBasicSetOuputDTO(
-        paginatedSets,
-        authUser?.id || ''
-      )
+      const basicSets =
+        await this.setProcessor.processPaginatedSetCardsToBasicSetPaginationOutputDTO(
+          paginatedSets,
+          authUser?.id
+        )
       return response.ok(basicSets)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
@@ -41,10 +42,14 @@ export default class SetsController {
     }
   }
 
-  async details({ response, request }: HttpContext) {
+  async details({ response, request, authUser }: HttpContext) {
     try {
       const params = await getSetDetailParamsValidator.validate(request.params())
       const set = await this.setService.getSetDetailById(params.id)
+      const basicSet = await this.setProcessor.processSetDetailCardsOccurencesToBasicSetOutputDTO(
+        set,
+        authUser?.id
+      )
       const todaySetCards = await this.cardService.getAllMainSetCardPricesAndOccurrenceByDaysBefore(
         params.id,
         1
@@ -54,7 +59,7 @@ export default class SetsController {
         await this.cardService.getAllMainSetCardPricesAndOccurrenceByDaysBefore(params.id, 2)
 
       const setStatistics = SetCardsMapper.toSetStatisticsOutput(
-        set,
+        basicSet,
         todaySetCards,
         yesterdaySetCards
       )
