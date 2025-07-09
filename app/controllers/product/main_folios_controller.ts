@@ -9,6 +9,7 @@ import ValidationException from '#exceptions/validation_exception'
 import { getAllMainFolioCardsFiltersValidator } from '#validators/card_validator'
 import ConstanteUtils from '#utils/constante_utils'
 import CardFolioMapper from '#mappers/card_folio_mapper'
+import { SuccessOutputDTO } from '#types/success_output_dto_type'
 
 @inject()
 export default class MainFoliosController {
@@ -55,6 +56,21 @@ export default class MainFoliosController {
         yesterdayCardFolios
       )
       return response.ok(folioStatistics)
+    } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async store({ response, authUser }: HttpContext) {
+    try {
+      await this.folioService.createMainFolio(authUser.id)
+      const successResponse: SuccessOutputDTO = {
+        message: 'Folio initialized successfully',
+      }
+      return response.ok(successResponse)
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
