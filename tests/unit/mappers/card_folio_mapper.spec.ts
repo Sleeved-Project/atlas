@@ -25,7 +25,7 @@ test.group('CardFolioMapper', (group) => {
     sandbox.restore()
   })
 
-  test('toFolioStatistics - should return correct statistics for cards with prices', async ({
+  test('toFolioStatisticsOutputDTO - should return correct statistics for cards with prices', async ({
     assert,
   }) => {
     await ArtistFactory.create()
@@ -124,7 +124,7 @@ test.group('CardFolioMapper', (group) => {
 
     const yesterdayCardFolios = [yesterdayCardFolio1, yesterdayCardFolio2]
 
-    const result = CardFolioMapper.toFolioStatistics(todayCardFolios, yesterdayCardFolios)
+    const result = CardFolioMapper.toFolioStatisticsOutputDTO(todayCardFolios, yesterdayCardFolios)
 
     assert.equal(result.totalCardsCount, 3) // 2 + 1 occurrences
     assert.equal(result.cardMarketPrice, '35.00') // (10*2) + (15*1)
@@ -133,8 +133,8 @@ test.group('CardFolioMapper', (group) => {
     assert.equal(result.tcgPlayerTrending, 'up') // 36 > 30 (yesterday: 6*2 + 18*1)
   })
 
-  test('toFolioStatistics - should handle empty card folios', ({ assert }) => {
-    const result = CardFolioMapper.toFolioStatistics([], [])
+  test('toFolioStatisticsOutputDTO - should handle empty card folios', ({ assert }) => {
+    const result = CardFolioMapper.toFolioStatisticsOutputDTO([], [])
 
     assert.equal(result.totalCardsCount, 0)
     assert.equal(result.cardMarketPrice, '0.00')
@@ -143,7 +143,7 @@ test.group('CardFolioMapper', (group) => {
     assert.equal(result.tcgPlayerTrending, 'equal')
   })
 
-  test('toFolioStatistics - should handle cards without prices', async ({ assert }) => {
+  test('toFolioStatisticsOutputDTO - should handle cards without prices', async ({ assert }) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
@@ -160,7 +160,7 @@ test.group('CardFolioMapper', (group) => {
 
     await cardFolio.load('card')
 
-    const result = CardFolioMapper.toFolioStatistics([cardFolio], [cardFolio])
+    const result = CardFolioMapper.toFolioStatisticsOutputDTO([cardFolio], [cardFolio])
 
     assert.equal(result.totalCardsCount, 3)
     assert.equal(result.cardMarketPrice, '0.00')

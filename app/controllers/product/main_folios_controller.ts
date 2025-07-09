@@ -7,6 +7,8 @@ import FolioService from '#services/folio_service'
 import CardFolioService from '#services/card_folio_service'
 import ValidationException from '#exceptions/validation_exception'
 import { getAllMainFolioCardsFiltersValidator } from '#validators/card_validator'
+import ConstanteUtils from '#utils/constante_utils'
+import CardFolioMapper from '#mappers/card_folio_mapper'
 
 @inject()
 export default class MainFoliosController {
@@ -28,6 +30,32 @@ export default class MainFoliosController {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)
       }
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async statistics({ response, authUser }: HttpContext) {
+    try {
+      const mainFolio = await this.folioService.getMainFolioByUserId(authUser.id) // Get the user's main folio of fail
+      const todayCardFolios =
+        await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
+          mainFolio.id,
+          ConstanteUtils.TODAY_DAY_BEFORE_COUNT
+        )
+      const yesterdayCardFolios =
+        await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
+          mainFolio.id,
+          ConstanteUtils.YESTERDAY_DAY_BEFORE_COUNT
+        )
+      const folioStatistics = CardFolioMapper.toFolioStatisticsOutputDTO(
+        todayCardFolios,
+        yesterdayCardFolios
+      )
+      return response.ok(folioStatistics)
+    } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
       }

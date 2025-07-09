@@ -1,4 +1,4 @@
-export type FolioStatistics = {
+export type FolioStatisticsOutputDTO = {
   totalCardsCount: number
   cardMarketPrice: string
   tcgPlayerPrice: string
@@ -32,5 +32,5 @@ export type FoliosDetailsDTO = {
   name: string
   image: string | null
   createdAt: string | null
-  statistics: FolioStatistics
+  statistics: FolioStatisticsOutputDTO
 }

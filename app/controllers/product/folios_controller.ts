@@ -7,8 +7,6 @@ import FolioService from '#services/folio_service'
 import { SuccessOutputDto } from '#types/success_output_dto_type'
 import CardFolioService from '#services/card_folio_service'
 import ValidationException from '#exceptions/validation_exception'
-import CardFolioMapper from '#mappers/card_folio_mapper'
-import { FolioStatistics } from '#types/folio_type'
 import FolioMapper from '#mappers/folio_mapper'
 import ConstanteUtils from '#utils/constante_utils'
 import { childFolioCardsValidator, showValidator } from '#validators/folio_validator'
@@ -29,32 +27,6 @@ export default class FoliosController {
         message: 'Folio initialized successfully',
       }
       return response.ok(successResponse)
-    } catch (error) {
-      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
-        throw new NotFoundException(error)
-      }
-      throw error
-    }
-  }
-
-  async statistics({ response, authUser }: HttpContext) {
-    try {
-      const mainFolio = await this.folioService.getMainFolioByUserId(authUser.id) // Get the user's main folio of fail
-      const todayCardFolios =
-        await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
-          mainFolio.id,
-          ConstanteUtils.TODAY_DAY_BEFORE_COUNT
-        )
-      const yesterdayCardFolios =
-        await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
-          mainFolio.id,
-          ConstanteUtils.YESTERDAY_DAY_BEFORE_COUNT
-        )
-      const folioStatistics: FolioStatistics = CardFolioMapper.toFolioStatistics(
-        todayCardFolios,
-        yesterdayCardFolios
-      )
-      return response.ok(folioStatistics)
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
