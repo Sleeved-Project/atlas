@@ -1,3 +1,4 @@
+import FilterMapper from '#mappers/filter_mapper'
 import ArtistService from '#services/artist_service'
 import RarityService from '#services/rarity_service'
 import SubtypeService from '#services/subtype_service'
@@ -23,13 +24,13 @@ export default class FiltersController {
       this.typeService.getAllTypes(),
     ])
 
-    const cardFilters: FilterCardsOutputDTO = {
+    const filters: FilterCardsOutputDTO = FilterMapper.toNormalizedFilterCardsOutputDTO(
       artists,
       rarities,
       subtypes,
-      types,
-    }
+      types
+    )
 
-    return response.ok(cardFilters)
+    return response.ok(filters)
   }
 }

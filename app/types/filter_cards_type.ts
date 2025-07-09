@@ -1,11 +1,11 @@
-import Artist from '#models/artist'
-import Rarity from '#models/rarity'
-import Subtype from '#models/subtypes'
-import Type from '#models/type'
+export interface FilterItem {
+  id: number
+  value: string
+}
 
 export interface FilterCardsOutputDTO {
-  artists: Artist[]
-  rarities: Rarity[]
-  subtypes: Subtype[]
-  types: Type[]
+  artists: FilterItem[]
+  rarities: FilterItem[]
+  subtypes: FilterItem[]
+  types: FilterItem[]
 }

@@ -56,14 +56,14 @@ test.group('Filters controller', (group) => {
     const result = response.body()
 
     assert.property(result.artists[0], 'id')
-    assert.property(result.artists[0], 'name')
+    assert.property(result.artists[0], 'value')
     assert.isNumber(result.artists[0].id)
-    assert.isString(result.artists[0].name)
+    assert.isString(result.artists[0].value)
 
     assert.property(result.rarities[0], 'id')
-    assert.property(result.rarities[0], 'label')
+    assert.property(result.rarities[0], 'value')
     assert.isNumber(result.rarities[0].id)
-    assert.isString(result.rarities[0].label)
+    assert.isString(result.rarities[0].value)
   })
 
   test('cards - should respond quickly', async ({ client, assert }) => {
