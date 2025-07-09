@@ -10,11 +10,15 @@ import { getAllMainFolioCardsFiltersValidator } from '#validators/card_validator
 import ConstanteUtils from '#utils/constante_utils'
 import CardFolioMapper from '#mappers/card_folio_mapper'
 import { SuccessOutputDTO } from '#types/success_output_dto_type'
+import CardService from '#services/card_service'
+import DuplicateEntryException from '#exceptions/duplicate_entry_exception'
+import { collectValidator } from '#validators/folio_validator'
 
 @inject()
 export default class MainFoliosController {
   constructor(
     private folioService: FolioService,
+    private cardService: CardService,
     private cardFolioService: CardFolioService
   ) {}
 
@@ -72,6 +76,30 @@ export default class MainFoliosController {
       }
       return response.ok(successResponse)
     } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async collect({ request, response, authUser }: HttpContext) {
+    try {
+      const payload = await collectValidator.validate(request.all())
+      const card = await this.cardService.getCardIdById(payload.cardId)
+      const folio = await this.folioService.getMainFolioByUserId(authUser.id)
+      await this.cardFolioService.createCardMainFolio(card.id, folio.id)
+      const successResponse: SuccessOutputDTO = {
+        message: 'Card added to your main folio successfully',
+      }
+      return response.ok(successResponse)
+    } catch (error) {
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new DuplicateEntryException('Card already exists in the folio')
+      }
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
       }

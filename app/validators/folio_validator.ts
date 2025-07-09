@@ -35,3 +35,9 @@ export const createChildFolioValidator = vine.compile(
     ),
   })
 )
+
+export const collectValidator = vine.compile(
+  vine.object({
+    cardId: vine.string(),
+  })
+)
