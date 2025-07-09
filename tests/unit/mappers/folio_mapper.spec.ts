@@ -27,7 +27,7 @@ test.group('FolioMapper', (group) => {
     sandbox.restore()
   })
 
-  test('toFoliosWithStatistics - should return correct statistics for folios with prices', async ({
+  test('toChildFoliosInfosAndStatisticsListOuputDTO - should return correct statistics for folios with prices', async ({
     assert,
   }) => {
     await ArtistFactory.create()
@@ -87,7 +87,7 @@ test.group('FolioMapper', (group) => {
     folio1.cardFolios = [cardFolio1, cardFolio2] as HasMany<typeof CardFolio>
     folio2.cardFolios = [cardFolio3] as HasMany<typeof CardFolio>
 
-    const result = FolioMapper.toFoliosWithStatistics([folio1, folio2])
+    const result = FolioMapper.toChildFoliosInfosAndStatisticsListOuputDTO([folio1, folio2])
 
     assert.lengthOf(result, 2)
 
@@ -108,14 +108,18 @@ test.group('FolioMapper', (group) => {
     assert.equal(result[1].statistics.tcgPlayerPrice, '8.00') // 8*1
   })
 
-  test('toFoliosWithStatistics - should handle empty folios array', ({ assert }) => {
-    const result = FolioMapper.toFoliosWithStatistics([])
+  test('toChildFoliosInfosAndStatisticsListOuputDTO - should handle empty folios array', ({
+    assert,
+  }) => {
+    const result = FolioMapper.toChildFoliosInfosAndStatisticsListOuputDTO([])
 
     assert.lengthOf(result, 0)
     assert.deepEqual(result, [])
   })
 
-  test('toFoliosWithStatistics - should handle folios without card folios', async ({ assert }) => {
+  test('toChildFoliosInfosAndStatisticsListOuputDTO - should handle folios without card folios', async ({
+    assert,
+  }) => {
     const folio = await FolioFactory.merge({
       name: 'Empty Collection',
       image: 'empty.jpg',
@@ -123,7 +127,7 @@ test.group('FolioMapper', (group) => {
 
     folio.cardFolios = [] as unknown as HasMany<typeof CardFolio>
 
-    const result = FolioMapper.toFoliosWithStatistics([folio])
+    const result = FolioMapper.toChildFoliosInfosAndStatisticsListOuputDTO([folio])
 
     assert.lengthOf(result, 1)
     assert.equal(result[0].id, folio.id)
@@ -134,7 +138,7 @@ test.group('FolioMapper', (group) => {
     assert.equal(result[0].statistics.tcgPlayerPrice, '0.00')
   })
 
-  test('toFoliosWithStatistics - should handle folios with cards without prices', async ({
+  test('toChildFoliosInfosAndStatisticsListOuputDTO - should handle folios with cards without prices', async ({
     assert,
   }) => {
     await ArtistFactory.create()
@@ -155,7 +159,7 @@ test.group('FolioMapper', (group) => {
 
     folio.cardFolios = [cardFolio] as HasMany<typeof CardFolio>
 
-    const result = FolioMapper.toFoliosWithStatistics([folio])
+    const result = FolioMapper.toChildFoliosInfosAndStatisticsListOuputDTO([folio])
 
     assert.lengthOf(result, 1)
     assert.equal(result[0].statistics.totalCardsCount, 5)

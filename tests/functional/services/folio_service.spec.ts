@@ -142,7 +142,7 @@ test.group('FolioService', (group) => {
     assert.lengthOf(userFolios, 2)
   })
 
-  test('getAllMyChildFolioWithCardPrices - should return child folios with card prices for user', async ({
+  test('getAllChildFolioWithCardPricesByUserId - should return child folios with card prices for user', async ({
     assert,
   }) => {
     const userId = TEST_AUTH_USER_ID
@@ -195,7 +195,7 @@ test.group('FolioService', (group) => {
       { cardId: cards[1].id, folioId: childFolio2.id, occurrence: 1 },
     ]).createMany(2)
 
-    const result = await folioService.getAllMyChildFolioWithCardPrices(userId, 1)
+    const result = await folioService.getAllChildFolioWithCardPricesByUserId(userId, 1)
 
     assert.lengthOf(result, 2)
     assert.exists(result[0].cardFolios)
@@ -210,7 +210,7 @@ test.group('FolioService', (group) => {
     assert.exists(result[0].cardFolios[0].card.cardMarketPrices)
     assert.exists(result[0].cardFolios[0].card.tcgPlayerReportings)
   })
-  test('getAllMyChildFolioWithCardPrices - should only return child folios, not root folio', async ({
+  test('getAllChildFolioWithCardPricesByUserId - should only return child folios, not root folio', async ({
     assert,
   }) => {
     const userId = TEST_AUTH_USER_ID
@@ -227,13 +227,13 @@ test.group('FolioService', (group) => {
       isRoot: false,
     }).create()
 
-    const result = await folioService.getAllMyChildFolioWithCardPrices(userId, 1)
+    const result = await folioService.getAllChildFolioWithCardPricesByUserId(userId, 1)
 
     assert.lengthOf(result, 1)
     assert.equal(result[0].id, childFolio.id)
   })
 
-  test('getAllMyChildFolioWithCardPrices - should only return folios for specified user', async ({
+  test('getAllChildFolioWithCardPricesByUserId - should only return folios for specified user', async ({
     assert,
   }) => {
     const userId = TEST_AUTH_USER_ID
@@ -251,7 +251,7 @@ test.group('FolioService', (group) => {
       isRoot: false,
     }).create()
 
-    const result = await folioService.getAllMyChildFolioWithCardPrices(userId, 1)
+    const result = await folioService.getAllChildFolioWithCardPricesByUserId(userId, 1)
 
     assert.lengthOf(result, 1)
 

@@ -84,23 +84,6 @@ export default class FoliosController {
     }
   }
 
-  async index({ response, authUser }: HttpContext) {
-    try {
-      const childFolioWithCardPrices = await this.folioService.getAllMyChildFolioWithCardPrices(
-        authUser.id,
-        ConstanteUtils.TODAY_DAY_BEFORE_COUNT
-      )
-      const foliosWithStatistics = FolioMapper.toFoliosWithStatistics(childFolioWithCardPrices)
-
-      return response.ok(foliosWithStatistics)
-    } catch (error) {
-      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
-        throw new NotFoundException(error)
-      }
-      throw error
-    }
-  }
-
   async show({ request, response, authUser }: HttpContext) {
     try {
       const { params } = await request.validateUsing(showValidator)

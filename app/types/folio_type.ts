@@ -6,7 +6,7 @@ export type FolioStatistics = {
   tcgPlayerTrending: PriceTrending
 }
 
-export type FolioListStatistics = {
+export type ChildFolioListStatistics = {
   totalCardsCount: number
   cardMarketPrice: string
   tcgPlayerPrice: string
@@ -18,13 +18,13 @@ export enum PriceTrending {
   EQUAL = 'equal',
 }
 
-export type FoliosInfosAndStatisticsList = FoliosInfosAndStatistics[]
+export type ChildFoliosInfosAndStatisticsListOuputDTO = ChildFoliosInfosAndStatisticsOuputDTO[]
 
-export type FoliosInfosAndStatistics = {
+export type ChildFoliosInfosAndStatisticsOuputDTO = {
   id: string
   name: string
   image: string | null
-  statistics: FolioListStatistics
+  statistics: ChildFolioListStatistics
 }
 
 export type FoliosDetailsDTO = {
