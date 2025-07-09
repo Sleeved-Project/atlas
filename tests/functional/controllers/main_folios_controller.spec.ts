@@ -1065,4 +1065,93 @@ test.group('Main folio controller', (group) => {
       code: 'E_ROW_NOT_FOUND',
     })
   })
+
+  test('removeCard - it should remove a card from user main folio', async ({ client, assert }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    const rootFolio = await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+    const card = await CardFactory.create()
+
+    await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: rootFolio.id,
+      occurrence: 2,
+    }).create()
+
+    const response = await client
+      .delete(`/api/v1/folios/cards/${card.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+    response.assertBodyContains({
+      message: 'Card remove from main folio successfully',
+    })
+
+    const deletedCardFolio = await CardFolio.query()
+      .where('folio_id', rootFolio.id)
+      .where('card_id', card.id)
+      .first()
+
+    assert.isNull(deletedCardFolio)
+  })
+
+  test('removeCard - it should return 404 when card folio does not exist', async ({ client }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+    const card = await CardFactory.create()
+
+    const response = await client
+      .delete(`/api/v1/folios/cards/${card.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
+
+  test('removeCard - it should return 404 for non-existent card', async ({ client }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    const response = await client
+      .delete('/api/v1/folios/cards/non-existente')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      message: 'Card not found',
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
+
+  test('removeCard - it should require authentication', async ({ client }) => {
+    const response = await client.delete('/api/v1/folios/cards/base1-1')
+
+    response.assertStatus(401)
+  })
 })

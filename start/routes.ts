@@ -7,7 +7,6 @@ const CardsController = () => import('#controllers/product/cards_controller')
 const ScanController = () => import('#controllers/product/scan_controller')
 const ChildFoliosController = () => import('#controllers/product/child_folios_controller')
 const MainFoliosController = () => import('#controllers/product/main_folios_controller')
-const CardFoliosController = () => import('#controllers/product/card_folios_controller')
 const SetsController = () => import('#controllers/product/sets_controller')
 const FiltersController = () => import('#controllers/product/filters_controller')
 
@@ -40,7 +39,7 @@ router
             router
               .patch('/cards/:id', [MainFoliosController, 'updateOccurrence'])
               .use(middleware.auth())
-            router.delete('/cards/:id', [CardFoliosController, 'delete']).use(middleware.auth())
+            router.delete('/cards/:id', [MainFoliosController, 'removeCard']).use(middleware.auth())
           })
           .prefix('folios')
         router

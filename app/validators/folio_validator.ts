@@ -50,3 +50,11 @@ export const updateOccurrenceValidator = vine.compile(
     }),
   })
 )
+
+export const removeCardValidator = vine.compile(
+  vine.object({
+    params: vine.object({
+      id: vine.string(),
+    }),
+  })
+)
