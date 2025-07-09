@@ -1,22 +1,13 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import { errors as lucidErrors } from '@adonisjs/lucid'
-import { errors as vineErrors } from '@vinejs/vine'
 import NotFoundException from '#exceptions/not_found_exception'
 import FolioService from '#services/folio_service'
 import { SuccessOutputDto } from '#types/success_output_dto_type'
-import CardFolioService from '#services/card_folio_service'
-import ValidationException from '#exceptions/validation_exception'
-import { childFolioCardsValidator } from '#validators/folio_validator'
-import FolioNotOwnedException from '#exceptions/folio_not_owned_exception'
-import NotChildFolioException from '#exceptions/not_child_folio_exception'
 
 @inject()
 export default class FoliosController {
-  constructor(
-    private folioService: FolioService,
-    private cardFolioService: CardFolioService
-  ) {}
+  constructor(private folioService: FolioService) {}
 
   async init({ response, authUser }: HttpContext) {
     try {
@@ -26,35 +17,6 @@ export default class FoliosController {
       }
       return response.ok(successResponse)
     } catch (error) {
-      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
-        throw new NotFoundException(error)
-      }
-      throw error
-    }
-  }
-
-  async childFolioCards({ request, response, authUser }: HttpContext) {
-    try {
-      const { params, filters } = await childFolioCardsValidator.validate({
-        params: request.params(),
-        filters: request.qs(),
-      })
-
-      const folio = await this.folioService.getFolioByFolioId(params.id)
-      if (folio.userId !== authUser.id) {
-        throw new FolioNotOwnedException(folio.id)
-      }
-      if (folio.isRoot) {
-        throw new NotChildFolioException(folio.id)
-      }
-
-      const childFolioCards = await this.cardFolioService.getAllChildFolioCards(filters, params.id)
-
-      return response.ok(childFolioCards)
-    } catch (error) {
-      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
-        throw new ValidationException(error)
-      }
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
       }

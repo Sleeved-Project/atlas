@@ -34,7 +34,7 @@ router
             router.get('/cards', [MainFoliosController, 'cards']).use(middleware.auth())
             router.get('/statistics', [MainFoliosController, 'statistics']).use(middleware.auth())
             router.get('/:id', [ChildFoliosController, 'show']).use(middleware.auth())
-            router.get('/:id/cards', [FoliosController, 'childFolioCards']).use(middleware.auth())
+            router.get('/:id/cards', [ChildFoliosController, 'cards']).use(middleware.auth())
             router.post('/', [CardFoliosController, 'store']).use(middleware.auth())
             router.post('/init', [FoliosController, 'init']).use(middleware.auth())
             router.post('/cards', [CardFoliosController, 'collect']).use(middleware.auth())
