@@ -1,3 +1,3 @@
-export interface SuccessOutputDto {
+export interface SuccessOutputDTO {
   message: string
 }

@@ -22,3 +22,16 @@ export const childFolioCardsValidator = vine.compile(
     }),
   })
 )
+
+export const createChildFolioValidator = vine.compile(
+  vine.object({
+    imageUrl: vine.string(),
+    name: vine.string().minLength(1).maxLength(100),
+    cards: vine.array(
+      vine.object({
+        id: vine.string(),
+        occurrence: vine.number().min(1).max(1000),
+      })
+    ),
+  })
+)
