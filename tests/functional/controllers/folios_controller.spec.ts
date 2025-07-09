@@ -346,7 +346,7 @@ test.group('Folio controller', (group) => {
     assert.equal(returnedCardFolio.occurrence, 1)
   })
 
-  test('mainFolioCards - should filter cards by rarity when rarity parameter is provided', async ({
+  test('mainFolioCards - should filter cards by rarities when rarities parameter is provided', async ({
     client,
     assert,
   }) => {
@@ -382,7 +382,7 @@ test.group('Folio controller', (group) => {
     ]).createMany(2)
 
     const response = await client
-      .get(`/api/v1/folios/cards?rarity[]=${commonRarity.id}`)
+      .get(`/api/v1/folios/cards?rarities[]=${commonRarity.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
       .qs({ page: 1, limit: 10 })
 
@@ -397,7 +397,7 @@ test.group('Folio controller', (group) => {
     assert.equal(returnedCardFolio.occurrence, 1)
   })
 
-  test('mainFolioCards - should filter cards by artist when artist parameter is provided', async ({
+  test('mainFolioCards - should filter cards by artists when artists parameter is provided', async ({
     client,
     assert,
   }) => {
@@ -431,7 +431,7 @@ test.group('Folio controller', (group) => {
     ]).createMany(2)
 
     const response = await client
-      .get(`/api/v1/folios/cards?artist[]=${artist1.id}`)
+      .get(`/api/v1/folios/cards?artists[]=${artist1.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
       .qs({ page: 1, limit: 10 })
 
@@ -446,7 +446,7 @@ test.group('Folio controller', (group) => {
     assert.equal(returnedCardFolio.occurrence, 1)
   })
 
-  test('mainFolioCards - should filter cards by subtype when subtype parameter is provided', async ({
+  test('mainFolioCards - should filter cards by subtypes when subtypes parameter is provided', async ({
     client,
     assert,
   }) => {
@@ -483,7 +483,7 @@ test.group('Folio controller', (group) => {
     ]).createMany(2)
 
     const response = await client
-      .get(`/api/v1/folios/cards?subtype[]=${basicSubtype.id}`)
+      .get(`/api/v1/folios/cards?subtypes[]=${basicSubtype.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
       .qs({ page: 1, limit: 10 })
 
@@ -498,7 +498,7 @@ test.group('Folio controller', (group) => {
     assert.equal(returnedCardFolio.occurrence, 1)
   })
 
-  test('mainFolioCards - should filter cards by type when type parameter is provided', async ({
+  test('mainFolioCards - should filter cards by types when types parameter is provided', async ({
     client,
     assert,
   }) => {
@@ -535,7 +535,7 @@ test.group('Folio controller', (group) => {
     ]).createMany(2)
 
     const response = await client
-      .get(`/api/v1/folios/cards?type[]=${psychicType.id}`)
+      .get(`/api/v1/folios/cards?types[]=${psychicType.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
       .qs({ page: 1, limit: 10 })
 
@@ -593,7 +593,7 @@ test.group('Folio controller', (group) => {
     ]).createMany(3)
 
     const response = await client
-      .get(`/api/v1/folios/cards?rarity[]=${commonRarity.id}`)
+      .get(`/api/v1/folios/cards?rarities[]=${commonRarity.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
       .qs({
         page: 1,

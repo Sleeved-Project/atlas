@@ -371,7 +371,7 @@ test.group('CardFolioService', (group) => {
     ]).createMany(2)
 
     const result = await cardFolioService.getAllMainFolioCards(
-      { page: 1, limit: 10, rarity: [commonRarity.id.toString()] },
+      { page: 1, limit: 10, rarities: [commonRarity.id.toString()] },
       mainFolio.id
     )
 
@@ -408,7 +408,7 @@ test.group('CardFolioService', (group) => {
     ]).createMany(2)
 
     const result = await cardFolioService.getAllMainFolioCards(
-      { page: 1, limit: 10, artist: [artist1.id.toString()] },
+      { page: 1, limit: 10, artists: [artist1.id.toString()] },
       mainFolio.id
     )
 
@@ -444,7 +444,7 @@ test.group('CardFolioService', (group) => {
     ]).createMany(2)
 
     const result = await cardFolioService.getAllMainFolioCards(
-      { page: 1, limit: 10, subtype: [basicSubtype.id.toString()] },
+      { page: 1, limit: 10, subtypes: [basicSubtype.id.toString()] },
       mainFolio.id
     )
 
@@ -478,7 +478,7 @@ test.group('CardFolioService', (group) => {
     ]).createMany(2)
 
     const result = await cardFolioService.getAllMainFolioCards(
-      { page: 1, limit: 10, type: [psychicType.id.toString()] },
+      { page: 1, limit: 10, types: [psychicType.id.toString()] },
       mainFolio.id
     )
 
@@ -528,7 +528,7 @@ test.group('CardFolioService', (group) => {
         page: 1,
         limit: 10,
         name: 'Pika',
-        rarity: [commonRarity.id.toString()],
+        rarities: [commonRarity.id.toString()],
       },
       mainFolio.id
     )

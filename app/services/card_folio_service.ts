@@ -23,15 +23,15 @@ export default class CardFolioService {
       .join('Set', 'Card.set_id', 'Set.id')
       .join('Rarity', 'Card.rarity_id', 'Rarity.id')
       .join('Artist', 'Card.artist_id', 'Artist.id')
-      .if(filters.subtype && filters.subtype.length > 0, (query) => {
+      .if(filters.subtypes && filters.subtypes.length > 0, (query) => {
         query
           .join('Card_Subtype', 'Card.id', 'Card_Subtype.card_id')
-          .whereIn('Card_Subtype.subtype_id', filters.subtype ? filters.subtype : [])
+          .whereIn('Card_Subtype.subtype_id', filters.subtypes ? filters.subtypes : [])
       })
-      .if(filters.type && filters.type.length > 0, (query) => {
+      .if(filters.types && filters.types.length > 0, (query) => {
         query
           .join('Card_Type', 'Card.id', 'Card_Type.card_id')
-          .whereIn('Card_Type.type_id', filters.type ? filters.type : [])
+          .whereIn('Card_Type.type_id', filters.types ? filters.types : [])
       })
       .where('Card_Folio.folio_id', mainFolioId)
       .preload('card', (cardQuery) => {
@@ -39,11 +39,11 @@ export default class CardFolioService {
       })
       .select('Card_Folio.id', 'Card_Folio.occurrence', 'Card_Folio.card_id', 'Card_Folio.folio_id')
       .if(filters.name, (query) => query.whereILike('Card.name', `%${filters.name}%`))
-      .if(filters.rarity && filters.rarity.length > 0, (query) =>
-        query.whereIn('Rarity.id', filters.rarity ? filters.rarity : [])
+      .if(filters.rarities && filters.rarities.length > 0, (query) =>
+        query.whereIn('Rarity.id', filters.rarities ? filters.rarities : [])
       )
-      .if(filters.artist && filters.artist.length > 0, (query) =>
-        query.whereIn('Artist.id', filters.artist ? filters.artist : [])
+      .if(filters.artists && filters.artists.length > 0, (query) =>
+        query.whereIn('Artist.id', filters.artists ? filters.artists : [])
       )
       .orderBy('Set.release_date', 'asc')
       .orderBy(
