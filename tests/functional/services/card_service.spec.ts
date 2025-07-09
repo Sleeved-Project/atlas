@@ -18,6 +18,7 @@ import { TypeFactory } from '#database/factories/type'
 import { CardFolioFactory } from '#database/factories/card_folio'
 import CardFolio from '#models/card_folio'
 import { FolioFactory } from '#database/factories/folio'
+import { TEST_AUTH_USER_ID } from '#tests/mocks/auth_service_mock'
 
 test.group('CardService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
