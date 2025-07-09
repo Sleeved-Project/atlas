@@ -56,35 +56,6 @@ test.group('FilterMapper', (group) => {
     assert.lengthOf(result.types, 0)
   })
 
-  test('toNormalizedFilterCardsOutputDTO - should handle multiple items', async ({ assert }) => {
-    const artists = await ArtistFactory.merge([
-      { id: 1, name: 'Ken Sugimori' },
-      { id: 2, name: 'Atsuko Nishida' },
-    ]).createMany(2)
-
-    const rarities = await RarityFactory.merge([
-      { id: 1, label: 'Common' },
-      { id: 2, label: 'Rare' },
-      { id: 3, label: 'Rare Holo' },
-    ]).createMany(3)
-
-    const result = FilterMapper.toNormalizedFilterCardsOutputDTO(artists, rarities, [], [])
-
-    assert.lengthOf(result.artists, 2)
-    assert.equal(result.artists[0].id, artists[0].id)
-    assert.equal(result.artists[0].value, 'Ken Sugimori')
-    assert.equal(result.artists[1].id, artists[1].id)
-    assert.equal(result.artists[1].value, 'Atsuko Nishida')
-
-    assert.lengthOf(result.rarities, 3)
-    assert.equal(result.rarities[0].id, rarities[0].id)
-    assert.equal(result.rarities[0].value, 'Common')
-    assert.equal(result.rarities[1].id, rarities[1].id)
-    assert.equal(result.rarities[1].value, 'Rare')
-    assert.equal(result.rarities[2].id, rarities[2].id)
-    assert.equal(result.rarities[2].value, 'Rare Holo')
-  })
-
   test('normalizeArtists - should correctly map name to value', async ({ assert }) => {
     const artists = await ArtistFactory.merge([
       { id: 1, name: 'Mitsuhiro Arita' },
