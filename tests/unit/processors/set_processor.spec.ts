@@ -23,7 +23,7 @@ test.group('SetProcessor', (group) => {
     setProcessor = new SetProcessor(cardService)
   })
 
-  test('processPaginatedSetCardsToBasicSetOuputDTO should return paginated basic Sets', async ({
+  test('processPaginatedSetCardsToBasicSetPaginationOutputDTO should return paginated basic Sets', async ({
     assert,
   }) => {
     const userId = TEST_AUTH_USER_ID
@@ -62,7 +62,7 @@ test.group('SetProcessor', (group) => {
       .select('id', 'imageSymbol', 'imageLogo', 'total')
       .paginate(1, 10)
 
-    const basicSets = await setProcessor.processPaginatedSetCardsToBasicSetOuputDTO(
+    const basicSets = await setProcessor.processPaginatedSetCardsToBasicSetPaginationOutputDTO(
       paginatedSets,
       userId
     )
@@ -70,4 +70,43 @@ test.group('SetProcessor', (group) => {
     assert.properties(basicSets, ['data', 'meta'])
     assert.properties(basicSets.data[0], ['id', 'imageSymbol', 'imageLogo', 'nbOwned', 'total'])
   })
+
+  test('processSetDetailCardsOccurencesToBasicSetOutputDTO should return basic Set details', async ({
+    assert,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    const set = await SetFactory.create()
+    const rootFolio = await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+    const card1 = await CardFactory.merge({ setId: set.id }).create()
+    const card2 = await CardFactory.merge({ setId: set.id }).create()
+
+    await CardFolioFactory.merge({
+      cardId: card1.id,
+      folioId: rootFolio.id,
+      occurrence: 22,
+    }).create()
+
+    await CardFolioFactory.merge({
+      cardId: card2.id,
+      folioId: rootFolio.id,
+      occurrence: 1,
+    }).create()
+
+    const basicSet = await setProcessor.processSetDetailCardsOccurencesToBasicSetOutputDTO(
+      set,
+      userId
+    )
+
+    console.log('basicSet', basicSet)
+
+    assert.properties(basicSet, ['id', 'imageSymbol', 'imageLogo', 'nbOwned', 'total'])
+    assert.equal(basicSet.nbOwned, 2)
+  }).pin()
 })
