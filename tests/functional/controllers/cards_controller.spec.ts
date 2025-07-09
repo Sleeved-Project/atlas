@@ -196,7 +196,7 @@ test.group('Card controller', (group) => {
     assert.equal(body.meta.total, 1)
   })
 
-  test('index - it should filter by rarity when rarity parameter is provided', async ({
+  test('index - it should filter by rarities when rarities parameter is provided', async ({
     client,
     assert,
   }) => {
@@ -220,7 +220,7 @@ test.group('Card controller', (group) => {
     }).create()
 
     const response = await client
-      .get(`/api/v1/cards?page=1&limit=10&rarity[]=${commonRarity.id}`)
+      .get(`/api/v1/cards?page=1&limit=10&rarities[]=${commonRarity.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
@@ -231,7 +231,7 @@ test.group('Card controller', (group) => {
     assert.equal(body.meta.total, 1)
   })
 
-  test('index - it should filter by artist when artist parameter is provided', async ({
+  test('index - it should filter by artists when artists parameter is provided', async ({
     client,
     assert,
   }) => {
@@ -253,7 +253,7 @@ test.group('Card controller', (group) => {
     }).create()
 
     const response = await client
-      .get(`/api/v1/cards?page=1&limit=10&artist[]=${artist1.id}`)
+      .get(`/api/v1/cards?page=1&limit=10&artists[]=${artist1.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
@@ -264,7 +264,7 @@ test.group('Card controller', (group) => {
     assert.equal(body.meta.total, 1)
   })
 
-  test('index - it should filter by subtype when subtype parameter is provided', async ({
+  test('index - it should filter by subtypes when subtypes parameter is provided', async ({
     client,
     assert,
   }) => {
@@ -289,7 +289,7 @@ test.group('Card controller', (group) => {
       .create()
 
     const response = await client
-      .get(`/api/v1/cards?page=1&limit=10&subtype[]=${basicSubtype.id}`)
+      .get(`/api/v1/cards?page=1&limit=10&subtypes[]=${basicSubtype.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
@@ -300,7 +300,7 @@ test.group('Card controller', (group) => {
     assert.equal(body.meta.total, 1)
   })
 
-  test('index - it should filter by type when type parameter is provided', async ({
+  test('index - it should filter by types when types parameter is provided', async ({
     client,
     assert,
   }) => {
@@ -325,7 +325,7 @@ test.group('Card controller', (group) => {
       .create()
 
     const response = await client
-      .get(`/api/v1/cards?page=1&limit=10&type[]=${fireType.id}`)
+      .get(`/api/v1/cards?page=1&limit=10&types[]=${fireType.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
@@ -363,7 +363,7 @@ test.group('Card controller', (group) => {
     }).create()
 
     const response = await client
-      .get(`/api/v1/cards?page=1&limit=10&name=Char&rarity[]=${commonRarity.id}`)
+      .get(`/api/v1/cards?page=1&limit=10&name=Char&rarities[]=${commonRarity.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)

@@ -133,7 +133,7 @@ test.group('CardService', (group) => {
     const result = await cardService.getAllCards({
       page: 1,
       limit: 10,
-      rarity: [commonRarity.id.toString()],
+      rarities: [commonRarity.id.toString()],
     })
 
     assert.equal(result.length, 1)
@@ -162,7 +162,7 @@ test.group('CardService', (group) => {
     const result = await cardService.getAllCards({
       page: 1,
       limit: 10,
-      artist: [artist1.id.toString()],
+      artists: [artist1.id.toString()],
     })
 
     assert.equal(result.length, 1)
@@ -194,7 +194,7 @@ test.group('CardService', (group) => {
     const result = await cardService.getAllCards({
       page: 1,
       limit: 10,
-      subtype: [basicSubtype.id.toString()],
+      subtypes: [basicSubtype.id.toString()],
     })
 
     assert.equal(result.length, 1)
@@ -226,7 +226,7 @@ test.group('CardService', (group) => {
     const result = await cardService.getAllCards({
       page: 1,
       limit: 10,
-      type: [psychicType.id.toString()],
+      types: [psychicType.id.toString()],
     })
 
     assert.equal(result.length, 1)
@@ -268,7 +268,7 @@ test.group('CardService', (group) => {
       page: 1,
       limit: 10,
       name: 'Pika',
-      rarity: [commonRarity.id.toString()],
+      rarities: [commonRarity.id.toString()],
     })
 
     assert.equal(result.length, 1)
@@ -295,7 +295,7 @@ test.group('CardService', (group) => {
       page: 1,
       limit: 10,
       name: 'NonExistentCard',
-      rarity: [commonRarity.id.toString()],
+      rarities: [commonRarity.id.toString()],
     })
 
     assert.equal(result.length, 0)
