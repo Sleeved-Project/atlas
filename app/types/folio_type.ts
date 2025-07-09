@@ -27,7 +27,7 @@ export type ChildFoliosInfosAndStatisticsOuputDTO = {
   statistics: ChildFolioListStatistics
 }
 
-export type FoliosDetailsDTO = {
+export type FoliosDetailsOutputDTO = {
   id: string
   name: string
   image: string | null

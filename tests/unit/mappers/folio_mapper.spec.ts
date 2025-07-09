@@ -167,7 +167,7 @@ test.group('FolioMapper', (group) => {
     assert.equal(result[0].statistics.tcgPlayerPrice, '0.00')
   })
 
-  test('toFolioWithStatistics - should return correct statistics with trending for folio', async ({
+  test('toFoliosDetailsOutputDTO - should return correct statistics with trending for folio', async ({
     assert,
   }) => {
     await ArtistFactory.create()
@@ -257,7 +257,7 @@ test.group('FolioMapper', (group) => {
       cardFolios: [yesterdayCardFolio1, yesterdayCardFolio2],
     } as Folio
 
-    const result = FolioMapper.toFolioWithStatistics(todayFolio, yesterdayFolio)
+    const result = FolioMapper.toFoliosDetailsOutputDTO(todayFolio, yesterdayFolio)
 
     assert.equal(result.id, folio.id)
     assert.equal(result.name, 'My Collection')
@@ -270,7 +270,7 @@ test.group('FolioMapper', (group) => {
     assert.equal(result.statistics.tcgPlayerTrending, 'up') // 36 > 24 (yesterday: 8*2 + 8*1)
   })
 
-  test('toFolioWithStatistics - should handle equal prices between today and yesterday', async ({
+  test('toFoliosDetailsOutputDTO - should handle equal prices between today and yesterday', async ({
     assert,
   }) => {
     await ArtistFactory.create()
@@ -329,13 +329,13 @@ test.group('FolioMapper', (group) => {
     const todayFolio = { ...folio, cardFolios: [todayCardFolio] } as Folio
     const yesterdayFolio = { ...folio, cardFolios: [yesterdayCardFolio] } as Folio
 
-    const result = FolioMapper.toFolioWithStatistics(todayFolio, yesterdayFolio)
+    const result = FolioMapper.toFoliosDetailsOutputDTO(todayFolio, yesterdayFolio)
 
     assert.equal(result.statistics.cardMarketTrending, 'equal')
     assert.equal(result.statistics.tcgPlayerTrending, 'equal')
   })
 
-  test('toFolioWithStatistics - should handle empty card folios', async ({ assert }) => {
+  test('toFoliosDetailsOutputDTO - should handle empty card folios', async ({ assert }) => {
     const folio = await FolioFactory.merge({
       name: 'Empty Collection',
       image: 'empty.jpg',
@@ -344,7 +344,7 @@ test.group('FolioMapper', (group) => {
     const todayFolio = { ...folio, cardFolios: [] } as unknown as Folio
     const yesterdayFolio = { ...folio, cardFolios: [] } as unknown as Folio
 
-    const result = FolioMapper.toFolioWithStatistics(todayFolio, yesterdayFolio)
+    const result = FolioMapper.toFoliosDetailsOutputDTO(todayFolio, yesterdayFolio)
 
     assert.equal(result.id, folio.id)
     assert.equal(result.name, 'Empty Collection')
@@ -356,7 +356,7 @@ test.group('FolioMapper', (group) => {
     assert.equal(result.statistics.tcgPlayerTrending, 'equal')
   })
 
-  test('toFolioWithStatistics - should handle cards without prices', async ({ assert }) => {
+  test('toFoliosDetailsOutputDTO - should handle cards without prices', async ({ assert }) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
@@ -376,7 +376,7 @@ test.group('FolioMapper', (group) => {
     const todayFolio = { ...folio, cardFolios: [cardFolio] } as Folio
     const yesterdayFolio = { ...folio, cardFolios: [cardFolio] } as Folio
 
-    const result = FolioMapper.toFolioWithStatistics(todayFolio, yesterdayFolio)
+    const result = FolioMapper.toFoliosDetailsOutputDTO(todayFolio, yesterdayFolio)
 
     assert.equal(result.statistics.totalCardsCount, 2)
     assert.equal(result.statistics.cardMarketPrice, '0.00')
