@@ -13,13 +13,15 @@ import {
 import CardService from '#services/card_service'
 import SetCardsMapper from '#mappers/set_cards_mapper'
 import SetProcessor from '../../processors/set_processor.js'
+import CardProcessor from '#processors/card_processor'
 
 @inject()
 export default class SetsController {
   constructor(
     private setService: SetService,
     private cardService: CardService,
-    private setProcessor: SetProcessor
+    private setProcessor: SetProcessor,
+    private cardProcessor: CardProcessor
   ) {}
 
   async index({ request, response, authUser }: HttpContext) {
@@ -75,12 +77,12 @@ export default class SetsController {
         params: request.params(),
         filters: request.qs(),
       })
-      const cards = await this.cardService.getAllCardsBySetIdAndPaginate(
+      const paginatedCards = await this.cardService.getAllCardsBySetIdAndPaginate(
         filters,
-        params.id,
-        authUser?.id || ''
+        params.id
       )
-      return response.ok(cards)
+      const result = await this.cardProcessor.processCardsWithOwnership(paginatedCards, authUser.id)
+      return response.ok(result)
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)

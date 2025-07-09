@@ -1,24 +1,24 @@
-import { test } from '@japa/runner'
-import CardService from '#services/card_service'
-import testUtils from '@adonisjs/core/services/test_utils'
-import Set from '#models/set'
-import Subtype from '#models/subtypes'
-import Artist from '#models/artist'
-import Rarity from '#models/rarity'
-import CardMarketPrice from '#models/card_market_price'
-import TcgPlayerReporting from '#models/tcg_player_reporting'
-import TcgPlayerPrice from '#models/tcg_player_price'
-import { CardFactory } from '#database/factories/card'
 import { ArtistFactory } from '#database/factories/artist'
-import { RarityFactory } from '#database/factories/rarity'
+import { CardFactory } from '#database/factories/card'
+import { CardFolioFactory } from '#database/factories/card_folio'
+import { FolioFactory } from '#database/factories/folio'
 import { LegalityFactory } from '#database/factories/legality'
+import { RarityFactory } from '#database/factories/rarity'
 import { SetFactory } from '#database/factories/set'
 import { SubtypeFactory } from '#database/factories/subtype'
 import { TypeFactory } from '#database/factories/type'
-import { CardFolioFactory } from '#database/factories/card_folio'
+import Artist from '#models/artist'
 import CardFolio from '#models/card_folio'
-import { FolioFactory } from '#database/factories/folio'
+import CardMarketPrice from '#models/card_market_price'
+import Rarity from '#models/rarity'
+import Set from '#models/set'
+import Subtype from '#models/subtypes'
+import TcgPlayerPrice from '#models/tcg_player_price'
+import TcgPlayerReporting from '#models/tcg_player_reporting'
+import CardService from '#services/card_service'
 import { TEST_AUTH_USER_ID } from '#tests/mocks/auth_service_mock'
+import testUtils from '@adonisjs/core/services/test_utils'
+import { test } from '@japa/runner'
 
 test.group('CardService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -639,15 +639,12 @@ test.group('CardService', (group) => {
     assert,
   }) => {
     const userId = TEST_AUTH_USER_ID
+
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
     const sets = await SetFactory.createMany(15)
-    const rootFolio = await FolioFactory.merge({
-      userId,
-      name: 'root',
-      isRoot: true,
-    }).create()
+    const rootFolio = await FolioFactory.merge({ userId, name: 'root', isRoot: true }).create()
     const card1 = await CardFactory.merge({ setId: sets[0].id }).create()
     const card2 = await CardFactory.merge({ setId: sets[0].id }).create()
     const card3 = await CardFactory.merge({ setId: sets[2].id }).create()
@@ -679,7 +676,6 @@ test.group('CardService', (group) => {
   test('getAllCardsBySetIdAndPaginate - should return paginated results for a specific set', async ({
     assert,
   }) => {
-    const userId = TEST_AUTH_USER_ID
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
@@ -687,11 +683,7 @@ test.group('CardService', (group) => {
 
     await CardFactory.merge({ setId: 'base1' }).createMany(15)
 
-    const result = await cardService.getAllCardsBySetIdAndPaginate(
-      { page: 1, limit: 10 },
-      'base1',
-      userId
-    )
+    const result = await cardService.getAllCardsBySetIdAndPaginate({ page: 1, limit: 10 }, 'base1')
 
     assert.equal(result.length, 10)
     assert.equal(result.currentPage, 1)
@@ -702,7 +694,6 @@ test.group('CardService', (group) => {
   })
 
   test('getAllCardsBySetIdAndPaginate - should filter by name correctly', async ({ assert }) => {
-    const userId = TEST_AUTH_USER_ID
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
@@ -716,8 +707,7 @@ test.group('CardService', (group) => {
         limit: 10,
         name: 'Pikachu',
       },
-      'base1',
-      userId
+      'base1'
     )
 
     assert.isAtLeast(exactResult.length, 1)
@@ -728,8 +718,7 @@ test.group('CardService', (group) => {
         limit: 10,
         name: 'Pika',
       },
-      'base1',
-      userId
+      'base1'
     )
 
     assert.isAtLeast(partialResult.length, 1)
@@ -740,8 +729,7 @@ test.group('CardService', (group) => {
         limit: 10,
         name: 'pikachu',
       },
-      'base1',
-      userId
+      'base1'
     )
 
     assert.isAtLeast(caseInsensitiveResult.length, 1)
@@ -752,8 +740,7 @@ test.group('CardService', (group) => {
         limit: 10,
         name: 'NonExistentCard',
       },
-      'base1',
-      userId
+      'base1'
     )
 
     assert.equal(noMatchResult.length, 0)
