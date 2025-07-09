@@ -7,6 +7,7 @@ const CardsController = () => import('#controllers/product/cards_controller')
 const ScanController = () => import('#controllers/product/scan_controller')
 const FoliosController = () => import('#controllers/product/folios_controller')
 const ChildFoliosController = () => import('#controllers/product/child_folios_controller')
+const MainFoliosController = () => import('#controllers/product/main_folios_controller')
 const CardFoliosController = () => import('#controllers/product/card_folios_controller')
 const SetsController = () => import('#controllers/product/sets_controller')
 const FiltersController = () => import('#controllers/product/filters_controller')
@@ -30,7 +31,7 @@ router
         router
           .group(() => {
             router.get('/', [ChildFoliosController, 'index']).use(middleware.auth())
-            router.get('/cards', [FoliosController, 'mainFolioCards']).use(middleware.auth())
+            router.get('/cards', [MainFoliosController, 'cards']).use(middleware.auth())
             router.get('/statistics', [FoliosController, 'statistics']).use(middleware.auth())
             router.get('/:id', [FoliosController, 'show']).use(middleware.auth())
             router.get('/:id/cards', [FoliosController, 'childFolioCards']).use(middleware.auth())

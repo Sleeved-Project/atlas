@@ -7,7 +7,6 @@ import FolioService from '#services/folio_service'
 import { SuccessOutputDto } from '#types/success_output_dto_type'
 import CardFolioService from '#services/card_folio_service'
 import ValidationException from '#exceptions/validation_exception'
-import { getAllMainFolioCardsFiltersValidator } from '#validators/card_validator'
 import CardFolioMapper from '#mappers/card_folio_mapper'
 import { FolioStatistics } from '#types/folio_type'
 import FolioMapper from '#mappers/folio_mapper'
@@ -31,26 +30,6 @@ export default class FoliosController {
       }
       return response.ok(successResponse)
     } catch (error) {
-      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
-        throw new NotFoundException(error)
-      }
-      throw error
-    }
-  }
-
-  async mainFolioCards({ request, response, authUser }: HttpContext) {
-    try {
-      const filters = await getAllMainFolioCardsFiltersValidator.validate(request.qs())
-      const mainFolio = await this.folioService.getMainFolioByUserId(authUser.id) // Get the user's main folio of fail
-      const paginatedCardFolios = await this.cardFolioService.getAllMainFolioCards(
-        filters,
-        mainFolio.id
-      )
-      return response.ok(paginatedCardFolios)
-    } catch (error) {
-      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
-        throw new ValidationException(error)
-      }
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
       }
