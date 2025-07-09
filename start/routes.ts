@@ -37,7 +37,9 @@ router
             router.post('/', [ChildFoliosController, 'store']).use(middleware.auth())
             router.post('/init', [MainFoliosController, 'store']).use(middleware.auth())
             router.post('/cards', [MainFoliosController, 'collect']).use(middleware.auth())
-            router.patch('/cards/:id', [CardFoliosController, 'occurrence']).use(middleware.auth())
+            router
+              .patch('/cards/:id', [MainFoliosController, 'updateOccurrence'])
+              .use(middleware.auth())
             router.delete('/cards/:id', [CardFoliosController, 'delete']).use(middleware.auth())
           })
           .prefix('folios')

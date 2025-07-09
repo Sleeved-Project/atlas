@@ -41,3 +41,12 @@ export const collectValidator = vine.compile(
     cardId: vine.string(),
   })
 )
+
+export const updateOccurrenceValidator = vine.compile(
+  vine.object({
+    occurrence: vine.number().min(1).max(1000),
+    params: vine.object({
+      id: vine.string(),
+    }),
+  })
+)
