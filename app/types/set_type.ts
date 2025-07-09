@@ -15,16 +15,6 @@ export interface BasicSet {
   total: number
 }
 
-export interface BasicSetPaginationOutputDTO {
-  data: BasicSet[]
-  meta: {
-    total: number
-    perPage: number
-    currentPage: number
-    lastPage: number
-  }
-}
-
 export interface SetStatisticsOutputDTO extends BasicSet {
   statistics: SetStatistics
 }
