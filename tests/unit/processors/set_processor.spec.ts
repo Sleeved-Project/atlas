@@ -108,5 +108,5 @@ test.group('SetProcessor', (group) => {
 
     assert.properties(basicSet, ['id', 'imageSymbol', 'imageLogo', 'nbOwned', 'total'])
     assert.equal(basicSet.nbOwned, 2)
-  }).pin()
+  })
 })

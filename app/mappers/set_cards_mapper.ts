@@ -1,5 +1,6 @@
 import Card from '#models/card'
-import { BasicSet, SetCardPriceTrending, SetStatisticsOutputDTO } from '#types/set_type'
+import { BasicSet, SetStatisticsOutputDTO } from '#types/set_type'
+import PriceUtils from '#utils/price_utils'
 
 export default class SetCardsMapper {
   public static toSetStatisticsOutput(
@@ -18,19 +19,13 @@ export default class SetCardsMapper {
       statistics: {
         cardMarketPrice: todayCardMarketPrice.toFixed(2).toString(),
         tcgPlayerPrice: todayTcgPlayerPrice.toFixed(2).toString(),
-        cardMarketTrending: this.getPriceTrend(todayCardMarketPrice, yesterdayCardMarketPrice),
-        tcgPlayerTrending: this.getPriceTrend(todayTcgPlayerPrice, yesterdayTcgPlayerPrice),
+        cardMarketTrending: PriceUtils.getPriceTrend(
+          todayCardMarketPrice,
+          yesterdayCardMarketPrice
+        ),
+        tcgPlayerTrending: PriceUtils.getPriceTrend(todayTcgPlayerPrice, yesterdayTcgPlayerPrice),
       },
     }
-  }
-
-  public static getPriceTrend(todayPrice: number, yesterdayPrice: number): SetCardPriceTrending {
-    if (todayPrice > yesterdayPrice) {
-      return SetCardPriceTrending.UP
-    } else if (todayPrice < yesterdayPrice) {
-      return SetCardPriceTrending.DOWN
-    }
-    return SetCardPriceTrending.EQUAL
   }
 
   public static getLowerTcgPlayerMarketPrice(cards: Card[]): number {

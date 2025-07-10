@@ -14,6 +14,7 @@ import CardService from '#services/card_service'
 import SetCardsMapper from '#mappers/set_cards_mapper'
 import SetProcessor from '../../processors/set_processor.js'
 import CardProcessor from '#processors/card_processor'
+import ConstanteUtils from '#utils/constante_utils'
 
 @inject()
 export default class SetsController {
@@ -52,11 +53,14 @@ export default class SetsController {
       )
       const todaySetCards = await this.cardService.getAllMainSetCardPricesAndOccurrenceByDaysBefore(
         params.id,
-        1
+        ConstanteUtils.TODAY_DAY_BEFORE_COUNT
       )
 
       const yesterdaySetCards =
-        await this.cardService.getAllMainSetCardPricesAndOccurrenceByDaysBefore(params.id, 2)
+        await this.cardService.getAllMainSetCardPricesAndOccurrenceByDaysBefore(
+          params.id,
+          ConstanteUtils.YESTERDAY_DAY_BEFORE_COUNT
+        )
 
       const setStatistics = SetCardsMapper.toSetStatisticsOutput(
         basicSet,

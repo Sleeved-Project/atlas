@@ -5,12 +5,12 @@ import Card from '#models/card'
 import CardMarketPrice from '#models/card_market_price'
 import TcgPlayerReporting from '#models/tcg_player_reporting'
 import TcgPlayerPrice from '#models/tcg_player_price'
-import { SetCardPriceTrending } from '#types/set_type'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { ArtistFactory } from '#database/factories/artist'
 import { RarityFactory } from '#database/factories/rarity'
 import { LegalityFactory } from '#database/factories/legality'
 import { SetFactory } from '#database/factories/set'
+import { PriceTrending } from '#types/folio_type'
 
 test.group('SetCardsMapper', (group) => {
   let sandbox: sinon.SinonSandbox
@@ -65,12 +65,6 @@ test.group('SetCardsMapper', (group) => {
     assert.equal(result, 8 + 15)
   })
 
-  test('getPriceTrend should return correct trend', ({ assert }) => {
-    assert.equal(SetCardsMapper.getPriceTrend(10, 5), SetCardPriceTrending.UP)
-    assert.equal(SetCardsMapper.getPriceTrend(5, 10), SetCardPriceTrending.DOWN)
-    assert.equal(SetCardsMapper.getPriceTrend(10, 10), SetCardPriceTrending.EQUAL)
-  })
-
   test('toSetStatistics should return correct statistics', async ({ assert }) => {
     await ArtistFactory.create()
     await RarityFactory.create()
@@ -100,7 +94,7 @@ test.group('SetCardsMapper', (group) => {
     const setStatistics = SetCardsMapper.toSetStatisticsOutput(set, [card1, card2], [card1])
     assert.equal(setStatistics.statistics.cardMarketPrice, '30.00')
     assert.equal(setStatistics.statistics.tcgPlayerPrice, '20.00')
-    assert.equal(setStatistics.statistics.cardMarketTrending, SetCardPriceTrending.UP)
-    assert.equal(setStatistics.statistics.tcgPlayerTrending, SetCardPriceTrending.UP)
+    assert.equal(setStatistics.statistics.cardMarketTrending, PriceTrending.UP)
+    assert.equal(setStatistics.statistics.tcgPlayerTrending, PriceTrending.UP)
   })
 })
