@@ -3,33 +3,19 @@ import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 import db from '@adonisjs/lucid/services/db'
 import { getAllCardsFiltersValidator } from '#validators/card_validator'
 import { Infer } from '@vinejs/vine/types'
+import PriceQueryUtils from '#utils/price_query_utils'
+import ConstanteUtils from '#utils/constante_utils'
+import FilterQueryUtils from '#utils/filter_query_utils'
 
 export default class CardService {
   public async getAllCards(
     filters: Infer<typeof getAllCardsFiltersValidator>
   ): Promise<ModelPaginatorContract<Card>> {
-    return await Card.query()
+    const query = Card.query()
       .join('Set', 'Card.set_id', 'Set.id')
-      .join('Rarity', 'Card.rarity_id', 'Rarity.id')
-      .join('Artist', 'Card.artist_id', 'Artist.id')
       .select('Card.id', 'Card.image_small')
-      .if(filters.name, (query) => query.whereILike('Card.name', `%${filters.name}%`))
-      .if(filters.subtypes && filters.subtypes.length > 0, (query) => {
-        query
-          .join('Card_Subtype', 'Card.id', 'Card_Subtype.card_id')
-          .whereIn('Card_Subtype.subtype_id', filters.subtypes ? filters.subtypes : [])
-      })
-      .if(filters.types && filters.types.length > 0, (query) => {
-        query
-          .join('Card_Type', 'Card.id', 'Card_Type.card_id')
-          .whereIn('Card_Type.type_id', filters.types ? filters.types : [])
-      })
-      .if(filters.rarities && filters.rarities.length > 0, (query) =>
-        query.whereIn('Rarity.id', filters.rarities ? filters.rarities : [])
-      )
-      .if(filters.artists && filters.artists.length > 0, (query) =>
-        query.whereIn('Artist.id', filters.artists ? filters.artists : [])
-      )
+    FilterQueryUtils.applyCardFilters(filters, query)
+    return query
       .orderBy('Set.release_date', 'asc')
       .orderBy(
         db.raw('CAST(NULLIF(REGEXP_REPLACE(Card.number, "[^0-9]", ""), "") AS UNSIGNED)'),
@@ -41,8 +27,6 @@ export default class CardService {
   public async getAllCardsOccurencesBySetId(setId: string, authUserId: string): Promise<Card[]> {
     return await Card.query()
       .join('Set', 'Card.set_id', 'Set.id')
-      .join('Rarity', 'Card.rarity_id', 'Rarity.id')
-      .join('Artist', 'Card.artist_id', 'Artist.id')
       .join('Card_Folio', 'Card.id', 'Card_Folio.card_id')
       .join('Folio', (join) => {
         join
@@ -62,14 +46,13 @@ export default class CardService {
     filters: Infer<typeof getAllCardsFiltersValidator>,
     setId: string
   ): Promise<ModelPaginatorContract<Card>> {
-    return await Card.query()
+    const query = Card.query()
       .join('Set', 'Card.set_id', 'Set.id')
       .select('Card.id', 'Card.image_small')
-      .join('Rarity', 'Card.rarity_id', 'Rarity.id')
-      .join('Artist', 'Card.artist_id', 'Artist.id')
       .where('Card.set_id', setId)
       .select('Card.id', 'Card.image_small')
-      .if(filters.name, (query) => query.whereILike('Card.name', `%${filters.name}%`))
+    FilterQueryUtils.applyCardFilters(filters, query)
+    return query
       .orderBy(
         db.raw('CAST(NULLIF(REGEXP_REPLACE(Card.number, "[^0-9]", ""), "") AS UNSIGNED)'),
         'asc'
@@ -132,65 +115,26 @@ export default class CardService {
   }
 
   public async getTodayCardPricesById(id: string): Promise<Card> {
-    return await Card.query()
-      .preload('cardMarketPrices', (cardMarketPricesQuery) => {
-        cardMarketPricesQuery
-          .select('id', 'trendPrice', 'reverseHoloTrend', 'url')
-          .where('updated_at', '>', db.raw('NOW() - INTERVAL 1 DAY'))
-      })
-      .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
-        tcgPlayerReportings
-          .select('id', 'url')
-          .where('updated_at', '>', db.raw('NOW() - INTERVAL 1 DAY'))
-          .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
-            tcgPlayerPricesQuery.select('id', 'type', 'market')
-          })
-      })
-      .select('id')
-      .where('id', id)
-      .firstOrFail()
+    const query = Card.query().select('id').where('id', id)
+    PriceQueryUtils.buildPricePreloadQuery(ConstanteUtils.TODAY_DAY_BEFORE_COUNT, query)
+    return query.firstOrFail()
   }
 
   public async getCardScanResulInfosById(id: string): Promise<Card> {
-    return await Card.query()
-      .preload('cardMarketPrices', (cardMarketPricesQuery) => {
-        cardMarketPricesQuery
-          .select('id', 'trendPrice', 'reverseHoloTrend', 'url')
-          .where('updated_at', '>', db.raw('NOW() - INTERVAL 1 DAY'))
-      })
-      .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
-        tcgPlayerReportings
-          .select('id', 'url')
-          .where('updated_at', '>', db.raw('NOW() - INTERVAL 1 DAY'))
-          .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
-            tcgPlayerPricesQuery.select('id', 'type', 'market').orderBy('market', 'desc')
-          })
-      })
-      .select('id', 'image_large', 'image_small')
-      .where('id', id)
-      .firstOrFail()
+    const query = Card.query().select('id', 'image_large', 'image_small').where('id', id)
+    PriceQueryUtils.buildPricePreloadQuery(ConstanteUtils.TODAY_DAY_BEFORE_COUNT, query)
+    return query.firstOrFail()
   }
 
   public async getAllMainSetCardPricesAndOccurrenceByDaysBefore(
     setId: string,
     daysBefore: number
   ): Promise<Card[]> {
-    return await Card.query()
+    const query = Card.query()
       .join('Set', 'Card.set_id', 'Set.id')
       .where('Card.set_id', setId)
-      .preload('cardMarketPrices', (cardMarketPricesQuery) => {
-        cardMarketPricesQuery
-          .select('id', 'trendPrice', 'reverseHoloTrend')
-          .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
-      })
-      .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
-        tcgPlayerReportings
-          .select('id', 'url')
-          .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
-          .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
-            tcgPlayerPricesQuery.select('id', 'type', 'market')
-          })
-      })
       .select('Card.id')
+    PriceQueryUtils.buildPricePreloadQuery(daysBefore, query)
+    return await query
   }
 }
