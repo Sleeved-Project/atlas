@@ -1,6 +1,6 @@
 import DuplicateEntryException from '#exceptions/duplicate_entry_exception'
 import Folio from '#models/folio'
-import db from '@adonisjs/lucid/services/db'
+import PriceQueryUtils from '#utils/price_query_utils'
 
 export default class FolioService {
   public async createMainFolio(userId: string): Promise<Folio> {
@@ -43,23 +43,8 @@ export default class FolioService {
       .preload('cardFolios', (cardFolioQuery) => {
         cardFolioQuery
           .preload('card', (cardQuery) => {
-            cardQuery
-              .select('id')
-              .preload('cardMarketPrices', (cardMarketPricesQuery) => {
-                cardMarketPricesQuery
-                  .select('id', 'trendPrice', 'reverseHoloTrend')
-                  .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
-                  .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
-              })
-              .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
-                tcgPlayerReportings
-                  .select('id', 'url')
-                  .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
-                  .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
-                  .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
-                    tcgPlayerPricesQuery.select('id', 'type', 'market')
-                  })
-              })
+            cardQuery.select('id')
+            PriceQueryUtils.buildPricePreloadQuery(daysBefore, cardQuery)
           })
           .select('Card_Folio.id', 'Card_Folio.occurrence', 'Card_Folio.card_id')
       })
@@ -74,23 +59,8 @@ export default class FolioService {
       .preload('cardFolios', (cardFolioQuery) => {
         cardFolioQuery
           .preload('card', (cardQuery) => {
-            cardQuery
-              .select('id')
-              .preload('cardMarketPrices', (cardMarketPricesQuery) => {
-                cardMarketPricesQuery
-                  .select('id', 'trendPrice', 'reverseHoloTrend')
-                  .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
-                  .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
-              })
-              .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
-                tcgPlayerReportings
-                  .select('id', 'url')
-                  .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
-                  .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
-                  .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
-                    tcgPlayerPricesQuery.select('id', 'type', 'market')
-                  })
-              })
+            cardQuery.select('id')
+            PriceQueryUtils.buildPricePreloadQuery(daysBefore, cardQuery)
           })
           .select('Card_Folio.id', 'Card_Folio.occurrence', 'Card_Folio.card_id')
       })

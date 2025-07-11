@@ -1,4 +1,5 @@
 import vine from '@vinejs/vine'
+import { baseParamsSchema, paginationSchema } from './common_validator.js'
 
 /**
  * Validates the folio collect action
@@ -6,7 +7,7 @@ import vine from '@vinejs/vine'
 export const showChildFolioValidator = vine.compile(
   vine.object({
     params: vine.object({
-      id: vine.string(),
+      ...baseParamsSchema.getProperties(),
     }),
   })
 )
@@ -14,11 +15,10 @@ export const showChildFolioValidator = vine.compile(
 export const childFolioCardsValidator = vine.compile(
   vine.object({
     params: vine.object({
-      id: vine.string(),
+      ...baseParamsSchema.getProperties(),
     }),
     filters: vine.object({
-      page: vine.number().positive(),
-      limit: vine.number().positive().max(300),
+      ...paginationSchema.getProperties(),
     }),
   })
 )
@@ -46,7 +46,7 @@ export const updateOccurrenceValidator = vine.compile(
   vine.object({
     occurrence: vine.number().min(1).max(1000),
     params: vine.object({
-      id: vine.string(),
+      ...baseParamsSchema.getProperties(),
     }),
   })
 )
@@ -54,7 +54,7 @@ export const updateOccurrenceValidator = vine.compile(
 export const removeCardValidator = vine.compile(
   vine.object({
     params: vine.object({
-      id: vine.string(),
+      ...baseParamsSchema.getProperties(),
     }),
   })
 )

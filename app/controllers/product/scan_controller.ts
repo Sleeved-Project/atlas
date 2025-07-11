@@ -51,7 +51,6 @@ export default class ScanController {
 
       return response.ok(cardScanResults)
     } catch (error) {
-      console.error('ScanController.analyse error:', error)
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)
       }

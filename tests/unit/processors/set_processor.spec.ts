@@ -104,8 +104,6 @@ test.group('SetProcessor', (group) => {
       userId
     )
 
-    console.log('basicSet', basicSet)
-
     assert.properties(basicSet, ['id', 'imageSymbol', 'imageLogo', 'nbOwned', 'total'])
     assert.equal(basicSet.nbOwned, 2)
   })

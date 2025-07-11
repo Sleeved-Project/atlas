@@ -1,31 +1,31 @@
 import vine from '@vinejs/vine'
+import { baseParamsSchema, paginationSchema } from './common_validator.js'
 
-/**
- * Validates the cards fetch action
- */
+export const setsFiltersSchema = vine.object({
+  name: vine.string().optional(),
+})
+
 export const getAllSetsFiltersValidator = vine.compile(
   vine.object({
-    page: vine.number().positive(),
-    limit: vine.number().positive().max(300),
-    name: vine.string().optional(),
+    ...paginationSchema.getProperties(),
+    ...setsFiltersSchema.getProperties(),
   })
 )
 
 export const getSetDetailParamsValidator = vine.compile(
   vine.object({
-    id: vine.string(),
+    ...baseParamsSchema.getProperties(),
   })
 )
 
 export const getSetCardsValidator = vine.compile(
   vine.object({
     params: vine.object({
-      id: vine.string(),
+      ...baseParamsSchema.getProperties(),
     }),
     filters: vine.object({
-      page: vine.number().positive(),
-      limit: vine.number().positive().max(300),
-      name: vine.string().optional(),
+      ...paginationSchema.getProperties(),
+      ...setsFiltersSchema.getProperties(),
     }),
   })
 )

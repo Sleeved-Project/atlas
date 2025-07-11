@@ -4,6 +4,8 @@ import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 import { Infer } from '@vinejs/vine/types'
 import db from '@adonisjs/lucid/services/db'
 import { childFolioCardsValidator } from '#validators/folio_validator'
+import PriceQueryUtils from '#utils/price_query_utils'
+import FilterQueryUtils from '#utils/filter_query_utils'
 
 export default class CardFolioService {
   public async createCardMainFolio(cardId: string, folioId: string): Promise<CardFolio> {
@@ -18,33 +20,18 @@ export default class CardFolioService {
     filters: Infer<typeof getAllMainFolioCardsFiltersValidator>,
     mainFolioId: string
   ): Promise<ModelPaginatorContract<CardFolio>> {
-    return await CardFolio.query()
+    const query = CardFolio.query()
       .join('Card', 'Card_Folio.card_id', 'Card.id')
       .join('Set', 'Card.set_id', 'Set.id')
-      .join('Rarity', 'Card.rarity_id', 'Rarity.id')
-      .join('Artist', 'Card.artist_id', 'Artist.id')
-      .if(filters.subtypes && filters.subtypes.length > 0, (query) => {
-        query
-          .join('Card_Subtype', 'Card.id', 'Card_Subtype.card_id')
-          .whereIn('Card_Subtype.subtype_id', filters.subtypes ? filters.subtypes : [])
-      })
-      .if(filters.types && filters.types.length > 0, (query) => {
-        query
-          .join('Card_Type', 'Card.id', 'Card_Type.card_id')
-          .whereIn('Card_Type.type_id', filters.types ? filters.types : [])
-      })
       .where('Card_Folio.folio_id', mainFolioId)
       .preload('card', (cardQuery) => {
         cardQuery.select('id', 'image_small')
       })
       .select('Card_Folio.id', 'Card_Folio.occurrence', 'Card_Folio.card_id', 'Card_Folio.folio_id')
-      .if(filters.name, (query) => query.whereILike('Card.name', `%${filters.name}%`))
-      .if(filters.rarities && filters.rarities.length > 0, (query) =>
-        query.whereIn('Rarity.id', filters.rarities ? filters.rarities : [])
-      )
-      .if(filters.artists && filters.artists.length > 0, (query) =>
-        query.whereIn('Artist.id', filters.artists ? filters.artists : [])
-      )
+
+    FilterQueryUtils.applyCardFilters(filters, query)
+
+    return query
       .orderBy('Set.release_date', 'asc')
       .orderBy(
         db.raw('CAST(NULLIF(REGEXP_REPLACE(Card.number, "[^0-9]", ""), "") AS UNSIGNED)'),
@@ -81,23 +68,8 @@ export default class CardFolioService {
       .join('Card', 'Card_Folio.card_id', 'Card.id')
       .where('Card_Folio.folio_id', mainFolioId)
       .preload('card', (cardQuery) => {
-        cardQuery
-          .select('id', 'image_small')
-          .preload('cardMarketPrices', (cardMarketPricesQuery) => {
-            cardMarketPricesQuery
-              .select('id', 'trendPrice', 'reverseHoloTrend')
-              .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
-              .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
-          })
-          .preload('tcgPlayerReportings', (tcgPlayerReportings) => {
-            tcgPlayerReportings
-              .select('id', 'url')
-              .where('updated_at', '>', db.raw('NOW() - INTERVAL ? DAY', daysBefore))
-              .andWhere('updated_at', '<=', db.raw('NOW() - INTERVAL ? DAY', daysBefore - 1))
-              .preload('tcgPlayerPrices', (tcgPlayerPricesQuery) => {
-                tcgPlayerPricesQuery.select('id', 'type', 'market')
-              })
-          })
+        cardQuery.select('id', 'image_small')
+        PriceQueryUtils.buildPricePreloadQuery(daysBefore, cardQuery)
       })
       .select('Card_Folio.id', 'Card_Folio.occurrence', 'Card_Folio.card_id', 'Card_Folio.folio_id')
   }
