@@ -27,7 +27,7 @@ test.group('FolioMapper', (group) => {
     sandbox.restore()
   })
 
-  test('toFoliosWithStatistics - should return correct statistics for folios with prices', async ({
+  test('toChildFoliosInfosAndStatisticsListOuputDTO - should return correct statistics for folios with prices', async ({
     assert,
   }) => {
     await ArtistFactory.create()
@@ -87,7 +87,7 @@ test.group('FolioMapper', (group) => {
     folio1.cardFolios = [cardFolio1, cardFolio2] as HasMany<typeof CardFolio>
     folio2.cardFolios = [cardFolio3] as HasMany<typeof CardFolio>
 
-    const result = FolioMapper.toFoliosWithStatistics([folio1, folio2])
+    const result = FolioMapper.toChildFoliosInfosAndStatisticsListOuputDTO([folio1, folio2])
 
     assert.lengthOf(result, 2)
 
@@ -108,14 +108,18 @@ test.group('FolioMapper', (group) => {
     assert.equal(result[1].statistics.tcgPlayerPrice, '8.00') // 8*1
   })
 
-  test('toFoliosWithStatistics - should handle empty folios array', ({ assert }) => {
-    const result = FolioMapper.toFoliosWithStatistics([])
+  test('toChildFoliosInfosAndStatisticsListOuputDTO - should handle empty folios array', ({
+    assert,
+  }) => {
+    const result = FolioMapper.toChildFoliosInfosAndStatisticsListOuputDTO([])
 
     assert.lengthOf(result, 0)
     assert.deepEqual(result, [])
   })
 
-  test('toFoliosWithStatistics - should handle folios without card folios', async ({ assert }) => {
+  test('toChildFoliosInfosAndStatisticsListOuputDTO - should handle folios without card folios', async ({
+    assert,
+  }) => {
     const folio = await FolioFactory.merge({
       name: 'Empty Collection',
       image: 'empty.jpg',
@@ -123,7 +127,7 @@ test.group('FolioMapper', (group) => {
 
     folio.cardFolios = [] as unknown as HasMany<typeof CardFolio>
 
-    const result = FolioMapper.toFoliosWithStatistics([folio])
+    const result = FolioMapper.toChildFoliosInfosAndStatisticsListOuputDTO([folio])
 
     assert.lengthOf(result, 1)
     assert.equal(result[0].id, folio.id)
@@ -134,7 +138,7 @@ test.group('FolioMapper', (group) => {
     assert.equal(result[0].statistics.tcgPlayerPrice, '0.00')
   })
 
-  test('toFoliosWithStatistics - should handle folios with cards without prices', async ({
+  test('toChildFoliosInfosAndStatisticsListOuputDTO - should handle folios with cards without prices', async ({
     assert,
   }) => {
     await ArtistFactory.create()
@@ -155,7 +159,7 @@ test.group('FolioMapper', (group) => {
 
     folio.cardFolios = [cardFolio] as HasMany<typeof CardFolio>
 
-    const result = FolioMapper.toFoliosWithStatistics([folio])
+    const result = FolioMapper.toChildFoliosInfosAndStatisticsListOuputDTO([folio])
 
     assert.lengthOf(result, 1)
     assert.equal(result[0].statistics.totalCardsCount, 5)
@@ -163,7 +167,7 @@ test.group('FolioMapper', (group) => {
     assert.equal(result[0].statistics.tcgPlayerPrice, '0.00')
   })
 
-  test('toFolioWithStatistics - should return correct statistics with trending for folio', async ({
+  test('toFoliosDetailsOutputDTO - should return correct statistics with trending for folio', async ({
     assert,
   }) => {
     await ArtistFactory.create()
@@ -253,7 +257,7 @@ test.group('FolioMapper', (group) => {
       cardFolios: [yesterdayCardFolio1, yesterdayCardFolio2],
     } as Folio
 
-    const result = FolioMapper.toFolioWithStatistics(todayFolio, yesterdayFolio)
+    const result = FolioMapper.toFoliosDetailsOutputDTO(todayFolio, yesterdayFolio)
 
     assert.equal(result.id, folio.id)
     assert.equal(result.name, 'My Collection')
@@ -266,7 +270,7 @@ test.group('FolioMapper', (group) => {
     assert.equal(result.statistics.tcgPlayerTrending, 'up') // 36 > 24 (yesterday: 8*2 + 8*1)
   })
 
-  test('toFolioWithStatistics - should handle equal prices between today and yesterday', async ({
+  test('toFoliosDetailsOutputDTO - should handle equal prices between today and yesterday', async ({
     assert,
   }) => {
     await ArtistFactory.create()
@@ -325,13 +329,13 @@ test.group('FolioMapper', (group) => {
     const todayFolio = { ...folio, cardFolios: [todayCardFolio] } as Folio
     const yesterdayFolio = { ...folio, cardFolios: [yesterdayCardFolio] } as Folio
 
-    const result = FolioMapper.toFolioWithStatistics(todayFolio, yesterdayFolio)
+    const result = FolioMapper.toFoliosDetailsOutputDTO(todayFolio, yesterdayFolio)
 
     assert.equal(result.statistics.cardMarketTrending, 'equal')
     assert.equal(result.statistics.tcgPlayerTrending, 'equal')
   })
 
-  test('toFolioWithStatistics - should handle empty card folios', async ({ assert }) => {
+  test('toFoliosDetailsOutputDTO - should handle empty card folios', async ({ assert }) => {
     const folio = await FolioFactory.merge({
       name: 'Empty Collection',
       image: 'empty.jpg',
@@ -340,7 +344,7 @@ test.group('FolioMapper', (group) => {
     const todayFolio = { ...folio, cardFolios: [] } as unknown as Folio
     const yesterdayFolio = { ...folio, cardFolios: [] } as unknown as Folio
 
-    const result = FolioMapper.toFolioWithStatistics(todayFolio, yesterdayFolio)
+    const result = FolioMapper.toFoliosDetailsOutputDTO(todayFolio, yesterdayFolio)
 
     assert.equal(result.id, folio.id)
     assert.equal(result.name, 'Empty Collection')
@@ -352,7 +356,7 @@ test.group('FolioMapper', (group) => {
     assert.equal(result.statistics.tcgPlayerTrending, 'equal')
   })
 
-  test('toFolioWithStatistics - should handle cards without prices', async ({ assert }) => {
+  test('toFoliosDetailsOutputDTO - should handle cards without prices', async ({ assert }) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
@@ -372,7 +376,7 @@ test.group('FolioMapper', (group) => {
     const todayFolio = { ...folio, cardFolios: [cardFolio] } as Folio
     const yesterdayFolio = { ...folio, cardFolios: [cardFolio] } as Folio
 
-    const result = FolioMapper.toFolioWithStatistics(todayFolio, yesterdayFolio)
+    const result = FolioMapper.toFoliosDetailsOutputDTO(todayFolio, yesterdayFolio)
 
     assert.equal(result.statistics.totalCardsCount, 2)
     assert.equal(result.statistics.cardMarketPrice, '0.00')

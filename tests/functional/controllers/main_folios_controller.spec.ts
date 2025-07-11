@@ -9,12 +9,12 @@ import { ArtistFactory } from '#database/factories/artist'
 import { RarityFactory } from '#database/factories/rarity'
 import { LegalityFactory } from '#database/factories/legality'
 import { SetFactory } from '#database/factories/set'
-import { DateTime } from 'luxon'
 import { SubtypeFactory } from '#database/factories/subtype'
 import { TypeFactory } from '#database/factories/type'
-import Folio from '#models/folio'
+import { DateTime } from 'luxon'
+import CardFolio from '#models/card_folio'
 
-test.group('Folio controller', (group) => {
+test.group('Main folio controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
 
   group.setup(() => {
@@ -25,34 +25,6 @@ test.group('Folio controller', (group) => {
 
   group.teardown(() => {
     wardenApiClientStub.restore()
-  })
-
-  test('init - it should create a main folio for a user', async ({ client, assert }) => {
-    const response = await client
-      .post('/api/v1/folios/init')
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(200)
-    assert.properties(response.body(), ['message'])
-  })
-
-  test('init - it should not create duplicate main folio', async ({ client, assert }) => {
-    await FolioFactory.merge({
-      userId: '123',
-      isRoot: true,
-    }).create()
-
-    const response = await client
-      .post('/api/v1/folios/init')
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(409)
-    assert.properties(response.body(), ['code', 'message'])
-  })
-
-  test('init - it should require authentication', async ({ client }) => {
-    const response = await client.post('/api/v1/folios/init')
-    response.assertStatus(401)
   })
 
   test('mainFolioCards - should return paginated cards from user main folio', async ({
@@ -855,331 +827,300 @@ test.group('Folio controller', (group) => {
     assert.equal(statistics.cardMarketPrice, '50.00') // 5 cards × 10.0 each
   })
 
-  test('index - should return all child folios with statistics', async ({ client, assert }) => {
+  test('init - it should create a main folio for a user', async ({ client, assert }) => {
+    const response = await client
+      .post('/api/v1/folios/init')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+    assert.properties(response.body(), ['message'])
+  })
+
+  test('init - it should not create duplicate main folio', async ({ client, assert }) => {
+    await FolioFactory.merge({
+      userId: '123',
+      isRoot: true,
+    }).create()
+
+    const response = await client
+      .post('/api/v1/folios/init')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(409)
+    assert.properties(response.body(), ['code', 'message'])
+  })
+
+  test('init - it should require authentication', async ({ client }) => {
+    const response = await client.post('/api/v1/folios/init')
+    response.assertStatus(401)
+  })
+
+  test('collect - it should add a card to user main folio', async ({ client, assert }) => {
     const userId = TEST_AUTH_USER_ID
+
+    const rootFolio = await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
 
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
     await SetFactory.merge({ id: 'base1' }).create()
-
-    const childFolio1 = await FolioFactory.merge({
-      userId,
-      name: 'Collection 1',
-      image: 'image1.jpg',
-      isRoot: false,
-    }).create()
-
-    const childFolio2 = await FolioFactory.merge({
-      userId,
-      name: 'Collection 2',
-      image: 'image2.jpg',
-      isRoot: false,
-    }).create()
-
-    const cards = await CardFactory.with('cardMarketPrices', 1, (cardMarketPrices) =>
-      cardMarketPrices.merge({
-        trendPrice: 10.0,
-        updatedAt: DateTime.now(),
-      })
-    )
-      .with('tcgPlayerReportings', 1, (tcgPlayerReportings) =>
-        tcgPlayerReportings
-          .merge({ updatedAt: DateTime.now() })
-          .with('tcgPlayerPrices', 1, (tcgPlayerPrices) =>
-            tcgPlayerPrices.merge({ type: 'normal', market: 8.0 })
-          )
-      )
-      .createMany(3)
-
-    await CardFolioFactory.merge([
-      { cardId: cards[0].id, folioId: childFolio1.id, occurrence: 2 },
-      { cardId: cards[1].id, folioId: childFolio1.id, occurrence: 1 },
-      { cardId: cards[2].id, folioId: childFolio2.id, occurrence: 3 },
-    ]).createMany(3)
+    const card = await CardFactory.create()
 
     const response = await client
-      .get('/api/v1/folios')
+      .post('/api/v1/folios/cards')
       .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({ cardId: card.id })
 
     response.assertStatus(200)
+    response.assertBodyContains({
+      message: 'Card added to your main folio successfully',
+    })
 
-    const folios = response.body()
-    assert.isArray(folios)
-    assert.lengthOf(folios, 2)
+    const cardFolio = await CardFolio.query()
+      .where('folio_id', rootFolio.id)
+      .where('card_id', card.id)
+      .first()
 
-    const folio1 = folios.find((f: Folio) => f.name === childFolio1.name)
-    const folio2 = folios.find((f: Folio) => f.name === childFolio2.name)
-
-    assert.exists(folio1)
-    assert.exists(folio2)
-
-    assert.properties(folio1, ['id', 'name', 'image', 'statistics'])
-    assert.properties(folio1.statistics, ['totalCardsCount', 'cardMarketPrice', 'tcgPlayerPrice'])
-
-    assert.equal(folio1.name, 'Collection 1')
-    assert.equal(folio1.image, 'image1.jpg')
-    assert.equal(folio1.statistics.totalCardsCount, 3) // 2 + 1 occurrences
-    assert.equal(folio1.statistics.cardMarketPrice, '30.00') // (10*2) + (10*1)
-    assert.equal(folio1.statistics.tcgPlayerPrice, '24.00') // (8*2) + (8*1)
-
-    assert.equal(folio2.statistics.totalCardsCount, 3) // 3 occurrences
-    assert.equal(folio2.statistics.cardMarketPrice, '30.00') // 10*3
-    assert.equal(folio2.statistics.tcgPlayerPrice, '24.00') // 8*3
+    assert.exists(cardFolio)
+    assert.equal(cardFolio?.folioId, rootFolio.id)
+    assert.equal(cardFolio?.cardId, card.id)
+    assert.equal(cardFolio?.occurrence, 1)
   })
 
-  test('index - should return empty array when user has no child folios', async ({
+  test('collect - it should return conflict same card again', async ({ client, assert }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    const rootFolio = await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+    const card = await CardFactory.create()
+
+    await CardFolioFactory.merge({ cardId: card.id, folioId: rootFolio.id, occurrence: 1 }).create()
+
+    const response = await client
+      .post('/api/v1/folios/cards')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({ cardId: card.id })
+
+    response.assertStatus(409)
+
+    const cardFolio = await CardFolio.query()
+      .where('folio_id', rootFolio.id)
+      .where('card_id', card.id)
+      .first()
+
+    assert.exists(cardFolio)
+    assert.equal(cardFolio?.occurrence, 1)
+  })
+
+  test('collect - it should return 404 for non-existent card', async ({ client }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    const response = await client
+      .post('/api/v1/folios/cards')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({ cardId: 'non-existent-card-id' })
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      message: 'Card not found',
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
+
+  test('collect - it should validate the request payload', async ({ client }) => {
+    const response = await client
+      .post('/api/v1/folios/cards')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({})
+
+    response.assertStatus(422)
+  })
+
+  test('collect - it should require authentication', async ({ client }) => {
+    const response = await client.post('/api/v1/folios/cards').json({ cardId: 'base1-1' })
+    response.assertStatus(401)
+  })
+
+  test('updateOccurrence - it should update card occurrence in user main folio', async ({
     client,
     assert,
   }) => {
     const userId = TEST_AUTH_USER_ID
 
-    // Create only main folio
+    const rootFolio = await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+    const card = await CardFactory.create()
+
+    await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: rootFolio.id,
+      occurrence: 2,
+    }).create()
+
+    const response = await client
+      .patch(`/api/v1/folios/cards/${card.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({ occurrence: 5 })
+
+    response.assertStatus(200)
+    response.assertBodyContains({
+      message: 'Card occurrence updated successfully',
+    })
+
+    const updatedCardFolio = await CardFolio.query()
+      .where('folio_id', rootFolio.id)
+      .where('card_id', card.id)
+      .first()
+
+    assert.exists(updatedCardFolio)
+    assert.equal(updatedCardFolio?.occurrence, 5)
+  })
+
+  test('updateOccurrence - it should return 404 when card folio does not exist', async ({
+    client,
+  }) => {
+    const userId = TEST_AUTH_USER_ID
+
     await FolioFactory.merge({
       userId,
       name: 'root',
       isRoot: true,
     }).create()
 
-    const response = await client
-      .get('/api/v1/folios')
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(200)
-
-    const folios = response.body()
-    assert.isArray(folios)
-    assert.lengthOf(folios, 0)
-  })
-
-  test('index - should only return child folios, not main folio', async ({ client, assert }) => {
-    const userId = TEST_AUTH_USER_ID
-
-    await FolioFactory.merge({
-      userId,
-      name: 'root',
-      isRoot: true,
-    }).create()
-
-    await FolioFactory.merge({
-      userId,
-      name: 'Custom Collection',
-      isRoot: false,
-    }).create()
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+    const card = await CardFactory.create()
 
     const response = await client
-      .get('/api/v1/folios')
+      .patch(`/api/v1/folios/cards/${card.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({ occurrence: 3 })
 
-    response.assertStatus(200)
-
-    const folios = response.body()
-    assert.isArray(folios)
-    assert.lengthOf(folios, 1)
-    assert.equal(folios[0].name, 'Custom Collection')
+    response.assertStatus(404)
+    response.assertBodyContains({
+      code: 'E_ROW_NOT_FOUND',
+    })
   })
 
-  test('index - should only return folios for authenticated user', async ({ client, assert }) => {
-    const userId = TEST_AUTH_USER_ID
-    const otherUserId = 'other-user-id'
-
-    await FolioFactory.merge({
-      userId,
-      name: 'My Collection',
-      isRoot: false,
-    }).create()
-
-    await FolioFactory.merge({
-      userId: otherUserId,
-      name: 'Other User Collection',
-      isRoot: false,
-    }).create()
-
+  test('updateOccurrence - it should validate the request payload', async ({ client }) => {
     const response = await client
-      .get('/api/v1/folios')
+      .patch(`/api/v1/folios/cards/base1-1`)
       .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({})
 
-    response.assertStatus(200)
-
-    const folios = response.body()
-    assert.isArray(folios)
-    assert.lengthOf(folios, 1)
-    assert.equal(folios[0].name, 'My Collection')
+    response.assertStatus(422)
   })
 
-  test('index - should handle folios without cards', async ({ client, assert }) => {
-    const userId = TEST_AUTH_USER_ID
-
-    await FolioFactory.merge({
-      userId,
-      name: 'Empty Collection',
-      image: 'empty.jpg',
-      isRoot: false,
-    }).create()
-
-    const response = await client
-      .get('/api/v1/folios')
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(200)
-
-    const folios = response.body()
-    assert.isArray(folios)
-    assert.lengthOf(folios, 1)
-
-    const folio = folios[0]
-    assert.equal(folio.name, 'Empty Collection')
-    assert.equal(folio.image, 'empty.jpg')
-    assert.equal(folio.statistics.totalCardsCount, 0)
-    assert.equal(folio.statistics.cardMarketPrice, '0.00')
-    assert.equal(folio.statistics.tcgPlayerPrice, '0.00')
-  })
-
-  test('index - should return folios ordered by creation date desc', async ({ client, assert }) => {
-    const userId = TEST_AUTH_USER_ID
-
-    await FolioFactory.merge({
-      userId,
-      name: 'First Collection',
-      isRoot: false,
-      createdAt: DateTime.now().minus({ days: 1 }),
-    }).create()
-
-    await FolioFactory.merge({
-      userId,
-      name: 'Second Collection',
-      isRoot: false,
-      createdAt: DateTime.now(),
-    }).create()
-
-    const response = await client
-      .get('/api/v1/folios')
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(200)
-
-    const folios = response.body()
-    assert.isArray(folios)
-    assert.lengthOf(folios, 2)
-
-    assert.equal(folios[0].name, 'Second Collection')
-    assert.equal(folios[1].name, 'First Collection')
-  })
-
-  test('index - should require authentication', async ({ client }) => {
-    const response = await client.get('/api/v1/folios')
+  test('updateOccurrence - it should require authentication', async ({ client }) => {
+    const response = await client.patch(`/api/v1/folios/cards/base1-1`).json({ occurrence: 3 })
 
     response.assertStatus(401)
   })
 
-  test('show - should return folio details with statistics and trending', async ({
-    client,
-    assert,
-  }) => {
+  test('updateOccurrence - it should return 404 for non-existent card', async ({ client }) => {
     const userId = TEST_AUTH_USER_ID
 
-    await ArtistFactory.create()
-    await RarityFactory.create()
-    await LegalityFactory.create()
-    await SetFactory.merge({ id: 'base1' }).create()
-
-    const childFolio = await FolioFactory.merge({
-      userId,
-      name: 'My Custom Collection',
-      image: 'custom.jpg',
-      isRoot: false,
-    }).create()
-
-    const todayCards = await CardFactory.with('cardMarketPrices', 1, (cardMarketPrices) =>
-      cardMarketPrices.merge({
-        trendPrice: 15.0,
-        updatedAt: DateTime.now(),
-      })
-    )
-      .with('tcgPlayerReportings', 1, (tcgPlayerReportings) =>
-        tcgPlayerReportings
-          .merge({ updatedAt: DateTime.now() })
-          .with('tcgPlayerPrices', 1, (tcgPlayerPrices) =>
-            tcgPlayerPrices.merge({ type: 'normal', market: 12.0 })
-          )
-      )
-      .createMany(2)
-
-    await CardFolioFactory.merge([
-      { cardId: todayCards[0].id, folioId: childFolio.id, occurrence: 2 },
-      { cardId: todayCards[1].id, folioId: childFolio.id, occurrence: 1 },
-    ]).createMany(2)
-
-    const response = await client
-      .get(`/api/v1/folios/${childFolio.id}`)
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(200)
-
-    const folio = response.body()
-    assert.properties(folio, ['id', 'name', 'image', 'createdAt', 'statistics'])
-    assert.properties(folio.statistics, [
-      'totalCardsCount',
-      'cardMarketPrice',
-      'tcgPlayerPrice',
-      'cardMarketTrending',
-      'tcgPlayerTrending',
-    ])
-
-    assert.equal(folio.id, childFolio.id)
-    assert.equal(folio.name, 'My Custom Collection')
-    assert.equal(folio.image, 'custom.jpg')
-    assert.exists(folio.createdAt)
-    assert.equal(folio.statistics.totalCardsCount, 3) // 2 + 1 occurrences
-    assert.equal(folio.statistics.cardMarketPrice, '45.00') // (15*2) + (15*1)
-    assert.equal(folio.statistics.tcgPlayerPrice, '36.00') // (12*2) + (12*1)
-    assert.oneOf(folio.statistics.cardMarketTrending, ['up', 'down', 'equal'])
-    assert.oneOf(folio.statistics.tcgPlayerTrending, ['up', 'down', 'equal'])
-  })
-
-  test('show - should return 403 when folio is not owned by user', async ({ client }) => {
-    const otherUserId = 'other-user-id'
-
-    const otherUserFolio = await FolioFactory.merge({
-      userId: otherUserId,
-      name: 'Other User Collection',
-      isRoot: false,
-    }).create()
-
-    const response = await client
-      .get(`/api/v1/folios/${otherUserFolio.id}`)
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(403)
-    response.assertBodyContains({
-      code: 'E_FOLIO_NOT_OWNED',
-    })
-  })
-
-  test('show - should return 422 when trying to access main folio', async ({ client }) => {
-    const userId = TEST_AUTH_USER_ID
-
-    const mainFolio = await FolioFactory.merge({
+    await FolioFactory.merge({
       userId,
       name: 'root',
       isRoot: true,
     }).create()
 
     const response = await client
-      .get(`/api/v1/folios/${mainFolio.id}`)
+      .patch(`/api/v1/folios/cards/no-existent`)
       .header('Authorization', 'Bearer fake-token-for-testing')
+      .json({ occurrence: 3 })
 
-    response.assertStatus(422)
+    response.assertStatus(404)
     response.assertBodyContains({
-      code: 'E_NOT_CHILD_FOLIO',
+      message: 'Card not found',
+      code: 'E_ROW_NOT_FOUND',
     })
   })
 
-  test('show - should return 404 when folio does not exist', async ({ client }) => {
-    const nonExistentFolioId = 'non-existent-folio-id'
+  test('removeCard - it should remove a card from user main folio', async ({ client, assert }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    const rootFolio = await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+    const card = await CardFactory.create()
+
+    await CardFolioFactory.merge({
+      cardId: card.id,
+      folioId: rootFolio.id,
+      occurrence: 2,
+    }).create()
 
     const response = await client
-      .get(`/api/v1/folios/${nonExistentFolioId}`)
+      .delete(`/api/v1/folios/cards/${card.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+    response.assertBodyContains({
+      message: 'Card remove from main folio successfully',
+    })
+
+    const deletedCardFolio = await CardFolio.query()
+      .where('folio_id', rootFolio.id)
+      .where('card_id', card.id)
+      .first()
+
+    assert.isNull(deletedCardFolio)
+  })
+
+  test('removeCard - it should return 404 when card folio does not exist', async ({ client }) => {
+    const userId = TEST_AUTH_USER_ID
+
+    await FolioFactory.merge({
+      userId,
+      name: 'root',
+      isRoot: true,
+    }).create()
+
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+    const card = await CardFactory.create()
+
+    const response = await client
+      .delete(`/api/v1/folios/cards/${card.id}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(404)
@@ -1188,218 +1129,29 @@ test.group('Folio controller', (group) => {
     })
   })
 
-  test('show - should handle folio without cards', async ({ client, assert }) => {
+  test('removeCard - it should return 404 for non-existent card', async ({ client }) => {
     const userId = TEST_AUTH_USER_ID
 
-    const emptyFolio = await FolioFactory.merge({
-      userId,
-      name: 'Empty Collection',
-      image: 'empty.jpg',
-      isRoot: false,
-    }).create()
-
-    const response = await client
-      .get(`/api/v1/folios/${emptyFolio.id}`)
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(200)
-
-    const folio = response.body()
-    assert.equal(folio.id, emptyFolio.id)
-    assert.equal(folio.name, 'Empty Collection')
-    assert.equal(folio.image, 'empty.jpg')
-    assert.equal(folio.statistics.totalCardsCount, 0)
-    assert.equal(folio.statistics.cardMarketPrice, '0.00')
-    assert.equal(folio.statistics.tcgPlayerPrice, '0.00')
-    assert.equal(folio.statistics.cardMarketTrending, 'equal')
-    assert.equal(folio.statistics.tcgPlayerTrending, 'equal')
-  })
-
-  test('show - should require authentication', async ({ client }) => {
-    const folio = await FolioFactory.merge({
-      isRoot: false,
-    }).create()
-
-    const response = await client.get(`/api/v1/folios/${folio.id}`)
-
-    response.assertStatus(401)
-  })
-
-  test('show - should include trending comparison with yesterday prices', async ({
-    client,
-    assert,
-  }) => {
-    const userId = TEST_AUTH_USER_ID
-
-    await ArtistFactory.create()
-    await RarityFactory.create()
-    await LegalityFactory.create()
-    await SetFactory.merge({ id: 'base1' }).create()
-
-    const childFolio = await FolioFactory.merge({
-      userId,
-      name: 'Trending Collection',
-      isRoot: false,
-    }).create()
-
-    // Today: higher prices
-    const todayCard = await CardFactory.with('cardMarketPrices', 1, (cardMarketPrices) =>
-      cardMarketPrices.merge({
-        trendPrice: 20.0,
-        updatedAt: DateTime.now(),
-      })
-    )
-      .with('tcgPlayerReportings', 1, (tcgPlayerReportings) =>
-        tcgPlayerReportings
-          .merge({ updatedAt: DateTime.now() })
-          .with('tcgPlayerPrices', 1, (tcgPlayerPrices) =>
-            tcgPlayerPrices.merge({ type: 'normal', market: 15.0 })
-          )
-      )
-      .create()
-
-    // Yesterday: lower prices
-    const yesterdayCard = await CardFactory.with('cardMarketPrices', 1, (cardMarketPrices) =>
-      cardMarketPrices.merge({
-        trendPrice: 10.0,
-        updatedAt: DateTime.now().minus({ days: 1 }),
-      })
-    )
-      .with('tcgPlayerReportings', 1, (tcgPlayerReportings) =>
-        tcgPlayerReportings
-          .merge({ updatedAt: DateTime.now().minus({ days: 1 }) })
-          .with('tcgPlayerPrices', 1, (tcgPlayerPrices) =>
-            tcgPlayerPrices.merge({ type: 'normal', market: 8.0 })
-          )
-      )
-      .create()
-
-    await CardFolioFactory.merge([
-      { cardId: todayCard.id, folioId: childFolio.id, occurrence: 1 },
-      { cardId: yesterdayCard.id, folioId: childFolio.id, occurrence: 1 },
-    ]).createMany(2)
-
-    const response = await client
-      .get(`/api/v1/folios/${childFolio.id}`)
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(200)
-
-    const folio = response.body()
-    assert.equal(folio.statistics.cardMarketTrending, 'up') // 20 > 10
-    assert.equal(folio.statistics.tcgPlayerTrending, 'up') // 15 > 8
-  })
-
-  test('childFolioCards - should return paginated cards from specific child folio', async ({
-    client,
-    assert,
-  }) => {
-    const userId = TEST_AUTH_USER_ID
-
-    await ArtistFactory.create()
-    await RarityFactory.create()
-    await LegalityFactory.create()
-    await SetFactory.merge({ id: 'base1' }).create()
-
-    const childFolio = await FolioFactory.merge({
-      userId,
-      name: 'My Custom Collection',
-      isRoot: false,
-    }).create()
-
-    const otherChildFolio = await FolioFactory.merge({
-      userId,
-      name: 'Other Collection',
-      isRoot: false,
-    }).create()
-
-    const cards = await CardFactory.createMany(3)
-
-    // Add cards to target child folio
-    await CardFolioFactory.merge([
-      { cardId: cards[0].id, folioId: childFolio.id, occurrence: 2 },
-      { cardId: cards[1].id, folioId: childFolio.id, occurrence: 1 },
-    ]).createMany(2)
-
-    // Add card to other folio (should not be returned)
-    await CardFolioFactory.merge({
-      cardId: cards[2].id,
-      folioId: otherChildFolio.id,
-      occurrence: 3,
-    }).create()
-
-    const response = await client
-      .get(`/api/v1/folios/${childFolio.id}/cards`)
-      .header('Authorization', 'Bearer fake-token-for-testing')
-      .qs({ page: 1, limit: 10 })
-
-    response.assertStatus(200)
-
-    const body = response.body()
-    assert.properties(body, ['meta', 'data'])
-    assert.properties(body.meta, ['total', 'currentPage', 'perPage'])
-    assert.equal(body.meta.total, 2)
-    assert.equal(body.meta.currentPage, 1)
-
-    assert.isArray(body.data)
-    assert.lengthOf(body.data, 2)
-
-    const firstCardFolio = body.data[0]
-    assert.properties(firstCardFolio, ['id', 'occurrence', 'card'])
-    assert.properties(firstCardFolio.card, ['id', 'imageSmall'])
-
-    const cardIds = body.data.map((cardFolio: any) => cardFolio.card.id)
-    assert.includeMembers(cardIds, [cards[0].id, cards[1].id])
-    assert.notInclude(cardIds, cards[2].id) // Should not include card from other folio
-
-    const cardFolioWithOccurrence2 = body.data.find((cf: any) => cf.card.id === cards[0].id)
-    const cardFolioWithOccurrence1 = body.data.find((cf: any) => cf.card.id === cards[1].id)
-
-    assert.equal(cardFolioWithOccurrence2.occurrence, 2)
-    assert.equal(cardFolioWithOccurrence1.occurrence, 1)
-  })
-
-  test('childFolioCards - should return 403 when folio is not owned by user', async ({
-    client,
-  }) => {
-    const otherUserId = 'other-user-id'
-
-    const otherUserFolio = await FolioFactory.merge({
-      userId: otherUserId,
-      name: 'Other User Collection',
-      isRoot: false,
-    }).create()
-
-    const response = await client
-      .get(`/api/v1/folios/${otherUserFolio.id}/cards`)
-      .header('Authorization', 'Bearer fake-token-for-testing')
-      .qs({ page: 1, limit: 10 })
-
-    response.assertStatus(403)
-    response.assertBodyContains({
-      code: 'E_FOLIO_NOT_OWNED',
-    })
-  })
-
-  test('childFolioCards - should return 422 when trying to access main folio cards', async ({
-    client,
-  }) => {
-    const userId = TEST_AUTH_USER_ID
-
-    const mainFolio = await FolioFactory.merge({
+    await FolioFactory.merge({
       userId,
       name: 'root',
       isRoot: true,
     }).create()
 
     const response = await client
-      .get(`/api/v1/folios/${mainFolio.id}/cards`)
+      .delete('/api/v1/folios/cards/non-existente')
       .header('Authorization', 'Bearer fake-token-for-testing')
-      .qs({ page: 1, limit: 10 })
 
-    response.assertStatus(422)
+    response.assertStatus(404)
     response.assertBodyContains({
-      code: 'E_NOT_CHILD_FOLIO',
+      message: 'Card not found',
+      code: 'E_ROW_NOT_FOUND',
     })
+  })
+
+  test('removeCard - it should require authentication', async ({ client }) => {
+    const response = await client.delete('/api/v1/folios/cards/base1-1')
+
+    response.assertStatus(401)
   })
 })

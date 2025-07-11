@@ -1,8 +1,10 @@
+import { PriceTrending } from './folio_type.js'
+
 export interface SetStatistics {
   cardMarketPrice: string
   tcgPlayerPrice: string
-  cardMarketTrending: SetCardPriceTrending
-  tcgPlayerTrending: SetCardPriceTrending
+  cardMarketTrending: PriceTrending
+  tcgPlayerTrending: PriceTrending
 }
 
 export interface BasicSet {
@@ -17,10 +19,4 @@ export interface BasicSet {
 
 export interface SetStatisticsOutputDTO extends BasicSet {
   statistics: SetStatistics
-}
-
-export enum SetCardPriceTrending {
-  UP = 'up',
-  DOWN = 'down',
-  EQUAL = 'equal',
 }

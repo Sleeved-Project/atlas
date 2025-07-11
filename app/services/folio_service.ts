@@ -35,7 +35,7 @@ export default class FolioService {
     return await Folio.findOrFail(folioId)
   }
 
-  public async getAllMyChildFolioWithCardPrices(
+  public async getAllChildFolioWithCardPricesByUserId(
     userId: string,
     daysBefore: number
   ): Promise<Folio[]> {

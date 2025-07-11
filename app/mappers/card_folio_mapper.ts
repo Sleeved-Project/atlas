@@ -1,12 +1,12 @@
 import CardFolio from '#models/card_folio'
-import { FolioStatistics } from '#types/folio_type'
+import { FolioStatisticsOutputDTO } from '#types/folio_type'
 import PriceUtils from '#utils/price_utils'
 
 export default class CardFolioMapper {
-  public static toFolioStatistics(
+  public static toFolioStatisticsOutputDTO(
     todayCardFolios: CardFolio[],
     yesterdayCardFolios: CardFolio[]
-  ): FolioStatistics {
+  ): FolioStatisticsOutputDTO {
     const totalCardsCount = todayCardFolios.reduce((acc, cardFolio) => {
       return acc + (cardFolio.occurrence || 0)
     }, 0)

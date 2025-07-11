@@ -1,12 +1,15 @@
 import Folio from '#models/folio'
-import { FoliosDetailsDTO, FoliosInfosAndStatisticsList } from '#types/folio_type'
+import {
+  ChildFoliosInfosAndStatisticsListOuputDTO,
+  FoliosDetailsOutputDTO,
+} from '#types/folio_type'
 import PriceUtils from '#utils/price_utils'
 
 export default class FolioMapper {
-  public static toFoliosWithStatistics(
+  public static toChildFoliosInfosAndStatisticsListOuputDTO(
     foliosWithTodayCardsPrices: Folio[]
-  ): FoliosInfosAndStatisticsList {
-    const foliosWithStatistics: FoliosInfosAndStatisticsList = []
+  ): ChildFoliosInfosAndStatisticsListOuputDTO {
+    const foliosWithStatistics: ChildFoliosInfosAndStatisticsListOuputDTO = []
 
     foliosWithTodayCardsPrices.forEach((folio) => {
       const cardFolios = folio.cardFolios || []
@@ -33,10 +36,10 @@ export default class FolioMapper {
     return foliosWithStatistics
   }
 
-  public static toFolioWithStatistics(
+  public static toFoliosDetailsOutputDTO(
     foliosWithTodayCardsPrices: Folio,
     foliosWithYesterdayCardsPrices: Folio
-  ): FoliosDetailsDTO {
+  ): FoliosDetailsOutputDTO {
     const todayCardFolios = foliosWithTodayCardsPrices.cardFolios || []
     const yesterdayCardFolios = foliosWithYesterdayCardsPrices.cardFolios || []
 
