@@ -3,7 +3,8 @@ import ArtistService from '#services/artist_service'
 import RarityService from '#services/rarity_service'
 import SubtypeService from '#services/subtype_service'
 import TypeService from '#services/type_service'
-import { FilterCardsOutputDTO } from '#types/filter_cards_type'
+import { PaginatedFilterCardsOutputDTO } from '#types/filter_cards_type'
+import { getAllArtistFiltersValidator } from '#validators/filter_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 
@@ -16,15 +17,17 @@ export default class FiltersController {
     private typeService: TypeService
   ) {}
 
-  async cards({ response }: HttpContext): Promise<void> {
+  async cards({ request, response }: HttpContext): Promise<void> {
+    const artistFilters = await getAllArtistFiltersValidator.validate(request.all())
+
     const [artists, rarities, subtypes, types] = await Promise.all([
-      this.artistService.getAllArtists(),
+      this.artistService.getAllArtists(artistFilters),
       this.rarityService.getAllRarities(),
       this.subtypeService.getAllSubtypes(),
       this.typeService.getAllTypes(),
     ])
 
-    const filters: FilterCardsOutputDTO = FilterMapper.toNormalizedFilterCardsOutputDTO(
+    const filters: PaginatedFilterCardsOutputDTO = FilterMapper.toPaginatedFilterCardsOutputDTO(
       artists,
       rarities,
       subtypes,

@@ -21,13 +21,14 @@ test.group('Filters controller', (group) => {
   })
 
   test('cards - should return all filter types', async ({ client, assert }) => {
-    await ArtistFactory.create()
+    await ArtistFactory.merge({ name: 'Cacaccaca' }).create()
+    await ArtistFactory.merge({ id: 2, name: 'akagi' }).create()
     await RarityFactory.create()
     await SubtypeFactory.create()
     await TypeFactory.create()
 
     const response = await client
-      .get('/api/v1/filters/cards')
+      .get(`/api/v1/filters/cards?page=1&limit=30&name=${'aka'}`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
@@ -48,7 +49,7 @@ test.group('Filters controller', (group) => {
     await RarityFactory.create()
 
     const response = await client
-      .get('/api/v1/filters/cards')
+      .get(`/api/v1/filters/cards?page=1&limit=10`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
@@ -73,7 +74,7 @@ test.group('Filters controller', (group) => {
     const start = Date.now()
 
     const response = await client
-      .get('/api/v1/filters/cards')
+      .get(`/api/v1/filters/cards?page=1&limit=10`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     const duration = Date.now() - start

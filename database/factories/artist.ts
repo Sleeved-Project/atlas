@@ -7,3 +7,10 @@ export const ArtistFactory = Factory.define(Artist, () => {
     name: `Artist name`,
   }
 }).build()
+
+export const PaginatedArtistFactory = Factory.define(Artist, ({ faker }) => {
+  return {
+    id: faker.number.int({ min: 2, max: 1000 }),
+    name: faker.person.fullName(),
+  }
+}).build()
