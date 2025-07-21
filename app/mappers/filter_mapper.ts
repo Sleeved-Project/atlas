@@ -2,34 +2,21 @@ import Artist from '#models/artist'
 import Rarity from '#models/rarity'
 import Subtype from '#models/subtypes'
 import Type from '#models/type'
-import {
-  FilterCardsOutputDTO,
-  FilterItem,
-  PaginatedFilterCardsOutputDTO,
-} from '#types/filter_cards_type'
+import { FilterItem, PaginatedFilterCardsOutputDTO } from '#types/filter_cards_type'
 import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 
 export default class FilterMapper {
-  public static toPaginatedFilterCardsOutputDTO(
+  public static toNormalizedPaginatedFilterCardsOutputDTO(
     paginatedArtists: ModelPaginatorContract<Artist>,
     rarities: Rarity[],
     subtypes: Subtype[],
     types: Type[]
   ): PaginatedFilterCardsOutputDTO {
     return {
-      ...this.toNormalizedFilterCardsOutputDTO(paginatedArtists, rarities, subtypes, types),
-      meta: paginatedArtists.getMeta(),
-    }
-  }
-
-  public static toNormalizedFilterCardsOutputDTO(
-    paginatedArtists: ModelPaginatorContract<Artist>,
-    rarities: Rarity[],
-    subtypes: Subtype[],
-    types: Type[]
-  ): FilterCardsOutputDTO {
-    return {
-      artists: this.normalizeArtists(paginatedArtists),
+      paginatedArtists: {
+        data: this.normalizeArtists(paginatedArtists),
+        meta: paginatedArtists.getMeta(),
+      },
       rarities: this.normalizeRarities(rarities),
       subtypes: this.normalizeSubtypes(subtypes),
       types: this.normalizeTypes(types),

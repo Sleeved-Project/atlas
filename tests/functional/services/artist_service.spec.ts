@@ -16,7 +16,7 @@ test.group('ArtistService', (group) => {
   test('getAllArtists - should return all artists ordered by name', async ({ assert }) => {
     await ArtistFactory.create()
 
-    const result = await artistService.getAllArtists({ page: 1, limit: 10 })
+    const result = await artistService.getAllArtists({ artists: { page: 1, limit: 10 } })
 
     assert.equal(result.length, 1)
     assert.equal(result[0].name, 'Artist name')
@@ -24,7 +24,7 @@ test.group('ArtistService', (group) => {
   })
 
   test('getAllArtists - should return empty array when no artists exist', async ({ assert }) => {
-    const result = await artistService.getAllArtists({ page: 1, limit: 10 })
+    const result = await artistService.getAllArtists({ artists: { page: 1, limit: 10 } })
 
     assert.equal(result.length, 0)
     assert.isArray(result)
@@ -33,7 +33,7 @@ test.group('ArtistService', (group) => {
   test('getAllArtists - should return Artist model instances', async ({ assert }) => {
     await ArtistFactory.create()
 
-    const result = await artistService.getAllArtists({ page: 1, limit: 10 })
+    const result = await artistService.getAllArtists({ artists: { page: 1, limit: 10 } })
 
     assert.equal(result.length, 1)
     assert.instanceOf(result[0], Artist)

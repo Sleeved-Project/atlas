@@ -5,13 +5,9 @@ export interface FilterItem {
   value: string
 }
 
-export interface FilterCardsOutputDTO {
-  artists: FilterItem[]
+export interface PaginatedFilterCardsOutputDTO {
+  paginatedArtists: { data: FilterItem[]; meta: PaginateOutputDTO }
   rarities: FilterItem[]
   subtypes: FilterItem[]
   types: FilterItem[]
-}
-
-export interface PaginatedFilterCardsOutputDTO extends FilterCardsOutputDTO {
-  meta: PaginateOutputDTO
 }

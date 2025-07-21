@@ -1,10 +1,15 @@
 import vine from '@vinejs/vine'
 import { paginationSchema } from './common_validator.js'
-import { setsFiltersSchema } from './set_validator.js'
 
-export const getAllArtistFiltersValidator = vine.compile(
+export const artistFiltersSchema = vine.object({
+  name: vine.string().optional(),
+})
+
+export const getAllFiltersValidator = vine.compile(
   vine.object({
-    ...paginationSchema.getProperties(),
-    ...setsFiltersSchema.getProperties(),
+    artists: vine.object({
+      ...paginationSchema.getProperties(),
+      ...artistFiltersSchema.getProperties(),
+    }),
   })
 )
