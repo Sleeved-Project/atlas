@@ -213,4 +213,45 @@ test.group('Set controller', (group) => {
     const firstCard = body.data[0]
     assert.properties(firstCard, ['id', 'imageSmall'])
   })
+  test('cards - it should return filtered cards for a set', async ({ client, assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.merge({ id: 1, label: 'Common' }).create()
+    await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
+    await RarityFactory.merge({ id: 3, label: 'Not That Great Honestly' }).create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
+    await CardFactory.merge([
+      { rarityId: 1 },
+      { rarityId: 2 },
+      { rarityId: 2 },
+      { rarityId: 2 },
+      { rarityId: 3 },
+    ]).createMany(5)
+
+    const response = await client
+      .get('/api/v1/sets/base1/cards')
+      .qs({ page: 1, limit: 10, rarities: [1, 3] })
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    const body = response.body()
+    assert.properties(body, ['meta', 'data'])
+
+    assert.properties(body.meta, [
+      'total',
+      'perPage',
+      'currentPage',
+      'lastPage',
+      'firstPage',
+      'firstPageUrl',
+      'lastPageUrl',
+      'nextPageUrl',
+      'previousPageUrl',
+    ])
+
+    assert.equal(body.data.length, 2)
+
+    const firstCard = body.data[0]
+    assert.properties(firstCard, ['id', 'imageSmall'])
+  })
 })
