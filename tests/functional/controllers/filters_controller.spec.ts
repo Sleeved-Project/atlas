@@ -21,23 +21,26 @@ test.group('Filters controller', (group) => {
   })
 
   test('cards - should return all filter types', async ({ client, assert }) => {
-    await ArtistFactory.create()
+    await ArtistFactory.merge([
+      { id: 1, name: 'akagi' },
+      { id: 2, name: 'rumplestiltskin' },
+    ]).createMany(2)
     await RarityFactory.create()
     await SubtypeFactory.create()
     await TypeFactory.create()
 
     const response = await client
-      .get('/api/v1/filters/cards')
+      .get(`/api/v1/filters/cards?page=1&limit=30&name=aka`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
 
     const result = response.body()
 
-    assert.properties(result, ['artists', 'rarities', 'subtypes', 'types'])
+    assert.properties(result, ['paginatedArtists', 'rarities', 'subtypes', 'types'])
 
-    assert.isArray(result.artists)
-    assert.isAtLeast(result.artists.length, 1)
+    assert.isArray(result.paginatedArtists.data)
+    assert.isAtLeast(result.paginatedArtists.data.length, 1)
     assert.isAtLeast(result.rarities.length, 1)
     assert.isAtLeast(result.subtypes.length, 1)
     assert.isAtLeast(result.types.length, 1)
@@ -48,17 +51,17 @@ test.group('Filters controller', (group) => {
     await RarityFactory.create()
 
     const response = await client
-      .get('/api/v1/filters/cards')
+      .get(`/api/v1/filters/cards?page=1&limit=10`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
 
     const result = response.body()
 
-    assert.property(result.artists[0], 'id')
-    assert.property(result.artists[0], 'value')
-    assert.isNumber(result.artists[0].id)
-    assert.isString(result.artists[0].value)
+    assert.property(result.paginatedArtists.data[0], 'id')
+    assert.property(result.paginatedArtists.data[0], 'value')
+    assert.isNumber(result.paginatedArtists.data[0].id)
+    assert.isString(result.paginatedArtists.data[0].value)
 
     assert.property(result.rarities[0], 'id')
     assert.property(result.rarities[0], 'value')
@@ -73,7 +76,7 @@ test.group('Filters controller', (group) => {
     const start = Date.now()
 
     const response = await client
-      .get('/api/v1/filters/cards')
+      .get(`/api/v1/filters/cards?page=1&limit=10`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     const duration = Date.now() - start

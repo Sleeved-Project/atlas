@@ -20,21 +20,3 @@ export const SetFactory = Factory.define(Set, ({ faker }) => {
 })
   .relation('legality', () => LegalityFactory)
   .build()
-
-export const SetPaginationFactory = Factory.define(Set, ({ faker }) => {
-  return {
-    id: faker.string.uuid(),
-    name: `Base Set`,
-    series: `Base`,
-    printedTotal: 120,
-    total: 120,
-    ptcgoCode: `BASE`,
-    releaseDate: DateTime.fromJSDate(new Date('1996-01-09')),
-    updatedAt: DateTime.now(),
-    imageSymbol: `https://images.pokemontcg.io/symbols/base1-1.png`,
-    imageLogo: `https://images.pokemontcg.io/logos/base1-1.png`,
-    legalityId: 1,
-  }
-})
-  .relation('legality', () => LegalityFactory)
-  .build()
