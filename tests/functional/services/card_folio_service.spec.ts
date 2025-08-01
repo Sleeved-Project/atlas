@@ -683,7 +683,7 @@ test.group('CardFolioService', (group) => {
 
     const result = await cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
       mainFolio.id,
-      ConstanteUtils.TODAY_DAY_BEFORE_COUNT
+      ConstanteUtils.DAY_BEFORE_DEFAULT_COUNT
     )
 
     assert.equal(result.length, 3)
@@ -797,7 +797,7 @@ test.group('CardFolioService', (group) => {
     }).create()
 
     const recentDate = DateTime.now()
-    const oldDate = DateTime.now().minus({ days: ConstanteUtils.TODAY_DAY_BEFORE_COUNT })
+    const oldDate = DateTime.now().minus({ days: ConstanteUtils.DAY_BEFORE_LAST_DAY_COUNT })
 
     const card = await CardFactory.with('cardMarketPrices', 2, (cardMarketPrices) =>
       cardMarketPrices.merge([
@@ -821,7 +821,7 @@ test.group('CardFolioService', (group) => {
 
     const result = await cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
       mainFolio.id,
-      ConstanteUtils.TODAY_DAY_BEFORE_COUNT
+      ConstanteUtils.DAY_BEFORE_DEFAULT_COUNT
     )
 
     assert.equal(result.length, 1)

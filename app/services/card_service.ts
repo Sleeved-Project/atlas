@@ -114,15 +114,15 @@ export default class CardService {
       .firstOrFail()
   }
 
-  public async getTodayCardPricesById(id: string): Promise<Card> {
+  public async getLastCardPricesById(id: string): Promise<Card> {
     const query = Card.query().select('id').where('id', id)
-    PriceQueryUtils.buildPricePreloadQuery(ConstanteUtils.TODAY_DAY_BEFORE_COUNT, query)
+    PriceQueryUtils.buildPricePreloadQuery(ConstanteUtils.DAY_BEFORE_DEFAULT_COUNT, query)
     return query.firstOrFail()
   }
 
   public async getCardScanResulInfosById(id: string): Promise<Card> {
     const query = Card.query().select('id', 'image_large', 'image_small').where('id', id)
-    PriceQueryUtils.buildPricePreloadQuery(ConstanteUtils.TODAY_DAY_BEFORE_COUNT, query)
+    PriceQueryUtils.buildPricePreloadQuery(ConstanteUtils.DAY_BEFORE_DEFAULT_COUNT, query)
     return query.firstOrFail()
   }
 

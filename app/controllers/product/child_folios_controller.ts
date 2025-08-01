@@ -30,11 +30,14 @@ export default class ChildFoliosController {
       const childFolioWithCardPrices =
         await this.folioService.getAllChildFolioWithCardPricesByUserId(
           authUser.id,
-          ConstanteUtils.TODAY_DAY_BEFORE_COUNT
+          ConstanteUtils.DAY_BEFORE_DEFAULT_COUNT
         )
+
+      console.log('CHIL FOLIO WITH PRICES', childFolioWithCardPrices)
       const childFoliosInfosAndStatisticsList =
         FolioMapper.toChildFoliosInfosAndStatisticsListOuputDTO(childFolioWithCardPrices)
 
+      console.log('CHIL FOLIO WITH PRICES MAPPED', childFoliosInfosAndStatisticsList)
       return response.ok(childFoliosInfosAndStatisticsList)
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
@@ -56,18 +59,18 @@ export default class ChildFoliosController {
         throw new NotChildFolioException(folio.id)
       }
 
-      const childFolioWithTodayCardPrices = await this.folioService.getMyChildFolioWithCardPrices(
+      const childFolioWithLastCardPrices = await this.folioService.getMyChildFolioWithCardPrices(
         folio.id,
-        ConstanteUtils.TODAY_DAY_BEFORE_COUNT
+        ConstanteUtils.DAY_BEFORE_DEFAULT_COUNT
       )
       const childFolioWithYesterdayCardPrices =
         await this.folioService.getMyChildFolioWithCardPrices(
           folio.id,
-          ConstanteUtils.YESTERDAY_DAY_BEFORE_COUNT
+          ConstanteUtils.DAY_BEFORE_LAST_DAY_COUNT
         )
 
       const folioWithStatistics = FolioMapper.toFoliosDetailsOutputDTO(
-        childFolioWithTodayCardPrices,
+        childFolioWithLastCardPrices,
         childFolioWithYesterdayCardPrices
       )
       return response.ok(folioWithStatistics)

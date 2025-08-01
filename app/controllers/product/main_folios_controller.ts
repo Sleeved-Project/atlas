@@ -49,19 +49,19 @@ export default class MainFoliosController {
   async statistics({ response, authUser }: HttpContext) {
     try {
       const mainFolio = await this.folioService.getMainFolioByUserId(authUser.id) // Get the user's main folio of fail
-      const todayCardFolios =
+      const lastCardFolios =
         await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
           mainFolio.id,
-          ConstanteUtils.TODAY_DAY_BEFORE_COUNT
+          ConstanteUtils.DAY_BEFORE_DEFAULT_COUNT
         )
-      const yesterdayCardFolios =
+      const dayBeforeLastCardFolios =
         await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
           mainFolio.id,
-          ConstanteUtils.YESTERDAY_DAY_BEFORE_COUNT
+          ConstanteUtils.DAY_BEFORE_LAST_DAY_COUNT
         )
       const folioStatistics = CardFolioMapper.toFolioStatisticsOutputDTO(
-        todayCardFolios,
-        yesterdayCardFolios
+        lastCardFolios,
+        dayBeforeLastCardFolios
       )
       return response.ok(folioStatistics)
     } catch (error) {

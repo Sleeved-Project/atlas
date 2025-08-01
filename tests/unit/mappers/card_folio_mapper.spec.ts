@@ -79,7 +79,7 @@ test.group('CardFolioMapper', (group) => {
       { type: 'normal', market: 20.0 },
     ] as HasMany<typeof TcgPlayerPrice>
 
-    const todayCardFolios = [todayCardFolio1, todayCardFolio2]
+    const lastCardFolios = [todayCardFolio1, todayCardFolio2]
 
     const yesterdayCards = await CardFactory.with('cardMarketPrices', 1, (cardMarketPrices) =>
       cardMarketPrices.merge({
@@ -122,9 +122,12 @@ test.group('CardFolioMapper', (group) => {
       { type: 'normal', market: 18.0 },
     ] as HasMany<typeof TcgPlayerPrice>
 
-    const yesterdayCardFolios = [yesterdayCardFolio1, yesterdayCardFolio2]
+    const dayBeforeLastCardFolios = [yesterdayCardFolio1, yesterdayCardFolio2]
 
-    const result = CardFolioMapper.toFolioStatisticsOutputDTO(todayCardFolios, yesterdayCardFolios)
+    const result = CardFolioMapper.toFolioStatisticsOutputDTO(
+      lastCardFolios,
+      dayBeforeLastCardFolios
+    )
 
     assert.equal(result.totalCardsCount, 3) // 2 + 1 occurrences
     assert.equal(result.cardMarketPrice, '35.00') // (10*2) + (15*1)

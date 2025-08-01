@@ -587,6 +587,8 @@ test.group('Card controller', (group) => {
 
     assert.equal(cardPrices.id, 'base1-1')
 
+    console.log(cardPrices)
+
     assert.properties(cardPrices, ['cardMarketReporting'])
     assert.properties(cardPrices.cardMarketReporting, ['id', 'url', 'cardMarketPrices'])
     assert.isArray(cardPrices.cardMarketReporting.cardMarketPrices)

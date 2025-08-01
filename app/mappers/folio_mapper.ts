@@ -40,18 +40,18 @@ export default class FolioMapper {
     foliosWithTodayCardsPrices: Folio,
     foliosWithYesterdayCardsPrices: Folio
   ): FoliosDetailsOutputDTO {
-    const todayCardFolios = foliosWithTodayCardsPrices.cardFolios || []
-    const yesterdayCardFolios = foliosWithYesterdayCardsPrices.cardFolios || []
+    const lastCardFolios = foliosWithTodayCardsPrices.cardFolios || []
+    const dayBeforeLastCardFolios = foliosWithYesterdayCardsPrices.cardFolios || []
 
-    const totalCardsCount = todayCardFolios.reduce((acc, cardFolio) => {
+    const totalCardsCount = lastCardFolios.reduce((acc, cardFolio) => {
       return acc + (cardFolio.occurrence || 0)
     }, 0)
 
-    const todayCardMarketPrice = PriceUtils.getCardMarketTrendPrice(todayCardFolios)
-    const yesterdayCardMarketPrice = PriceUtils.getCardMarketTrendPrice(yesterdayCardFolios)
+    const todayCardMarketPrice = PriceUtils.getCardMarketTrendPrice(lastCardFolios)
+    const yesterdayCardMarketPrice = PriceUtils.getCardMarketTrendPrice(dayBeforeLastCardFolios)
 
-    const todayTcgPlayerPrice = PriceUtils.getLowerTcgPlayerMarketPrice(todayCardFolios)
-    const yesterdayTcgPlayerPrice = PriceUtils.getLowerTcgPlayerMarketPrice(yesterdayCardFolios)
+    const todayTcgPlayerPrice = PriceUtils.getLowerTcgPlayerMarketPrice(lastCardFolios)
+    const yesterdayTcgPlayerPrice = PriceUtils.getLowerTcgPlayerMarketPrice(dayBeforeLastCardFolios)
 
     const folioDetailStatistics = {
       totalCardsCount,

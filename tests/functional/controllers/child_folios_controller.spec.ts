@@ -88,6 +88,8 @@ test.group('Child Folio controller', (group) => {
     assert.properties(folio1, ['id', 'name', 'image', 'statistics'])
     assert.properties(folio1.statistics, ['totalCardsCount', 'cardMarketPrice', 'tcgPlayerPrice'])
 
+    console.log(folio1)
+
     assert.equal(folio1.name, 'Collection 1')
     assert.equal(folio1.image, 'image1.jpg')
     assert.equal(folio1.statistics.totalCardsCount, 3) // 2 + 1 occurrences

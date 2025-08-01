@@ -51,21 +51,21 @@ export default class SetsController {
         set,
         authUser?.id
       )
-      const todaySetCards = await this.cardService.getAllMainSetCardPricesAndOccurrenceByDaysBefore(
+      const lastSetCards = await this.cardService.getAllMainSetCardPricesAndOccurrenceByDaysBefore(
         params.id,
-        ConstanteUtils.TODAY_DAY_BEFORE_COUNT
+        ConstanteUtils.DAY_BEFORE_DEFAULT_COUNT
       )
 
-      const yesterdaySetCards =
+      const dayBeforeLastSetCards =
         await this.cardService.getAllMainSetCardPricesAndOccurrenceByDaysBefore(
           params.id,
-          ConstanteUtils.YESTERDAY_DAY_BEFORE_COUNT
+          ConstanteUtils.DAY_BEFORE_LAST_DAY_COUNT
         )
 
       const setStatistics = SetCardsMapper.toSetStatisticsOutput(
         basicSet,
-        todaySetCards,
-        yesterdaySetCards
+        lastSetCards,
+        dayBeforeLastSetCards
       )
 
       return response.ok(setStatistics)

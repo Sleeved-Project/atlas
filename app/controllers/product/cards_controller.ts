@@ -74,7 +74,7 @@ export default class CardsController {
   async prices({ response, request }: HttpContext) {
     try {
       const params = await getCardPriceParamsValidator.validate(request.params())
-      const card = await this.cardService.getTodayCardPricesById(params.id)
+      const card = await this.cardService.getLastCardPricesById(params.id)
       const cardPriceMapped = CardMapper.toCardPricesOutputDTO(card)
       return response.ok(cardPriceMapped)
     } catch (error) {
