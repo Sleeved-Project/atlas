@@ -9,7 +9,7 @@ import CardFolioService from '#services/card_folio_service'
 import CardService from '#services/card_service'
 import FolioService from '#services/folio_service'
 import { SuccessOutputDTO } from '#types/success_output_dto_type'
-import ConstanteUtils from '#utils/constante_utils'
+import ConstantUtils from '#utils/constant_utils'
 import { createChildFolioValidator } from '#validators/folio_validator'
 import { childFolioCardsValidator, showChildFolioValidator } from '#validators/folio_validator'
 import { inject } from '@adonisjs/core'
@@ -30,11 +30,10 @@ export default class ChildFoliosController {
       const childFolioWithCardPrices =
         await this.folioService.getAllChildFolioWithCardPricesByUserId(
           authUser.id,
-          ConstanteUtils.TODAY_DAY_BEFORE_COUNT
+          ConstantUtils.DAY_BEFORE_DEFAULT_COUNT
         )
       const childFoliosInfosAndStatisticsList =
         FolioMapper.toChildFoliosInfosAndStatisticsListOuputDTO(childFolioWithCardPrices)
-
       return response.ok(childFoliosInfosAndStatisticsList)
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
@@ -56,18 +55,18 @@ export default class ChildFoliosController {
         throw new NotChildFolioException(folio.id)
       }
 
-      const childFolioWithTodayCardPrices = await this.folioService.getMyChildFolioWithCardPrices(
+      const childFolioWithLastCardPrices = await this.folioService.getMyChildFolioWithCardPrices(
         folio.id,
-        ConstanteUtils.TODAY_DAY_BEFORE_COUNT
+        ConstantUtils.DAY_BEFORE_DEFAULT_COUNT
       )
       const childFolioWithYesterdayCardPrices =
         await this.folioService.getMyChildFolioWithCardPrices(
           folio.id,
-          ConstanteUtils.YESTERDAY_DAY_BEFORE_COUNT
+          ConstantUtils.DAY_BEFORE_LAST_DAY_COUNT
         )
 
       const folioWithStatistics = FolioMapper.toFoliosDetailsOutputDTO(
-        childFolioWithTodayCardPrices,
+        childFolioWithLastCardPrices,
         childFolioWithYesterdayCardPrices
       )
       return response.ok(folioWithStatistics)

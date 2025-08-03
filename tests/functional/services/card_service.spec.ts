@@ -567,7 +567,7 @@ test.group('CardService', (group) => {
     assert.notProperty(card.$attributes, 'convertedRetreatCost')
   })
 
-  test('getTodayCardPricesById - should return a card with price data', async ({ assert }) => {
+  test('getLastCardPricesById - should return a card with price data', async ({ assert }) => {
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
@@ -599,7 +599,7 @@ test.group('CardService', (group) => {
       )
       .create()
 
-    const card = await cardService.getTodayCardPricesById(cardMock.id)
+    const card = await cardService.getLastCardPricesById(cardMock.id)
 
     assert.property(card.$attributes, 'id')
     assert.equal(card.$attributes.id, 'base1-1')
@@ -626,11 +626,11 @@ test.group('CardService', (group) => {
     assert.properties(tcgPlayerPrices[0].$attributes, ['id', 'type', 'market'])
   })
 
-  test('getTodayCardPricesById - should throw NotFoundException for non-existent card', async ({
+  test('getLastCardPricesById - should throw NotFoundException for non-existent card', async ({
     assert,
   }) => {
     await assert.rejects(
-      () => cardService.getTodayCardPricesById('non-existent-id'),
+      () => cardService.getLastCardPricesById('non-existent-id'),
       'Row not found'
     )
   })

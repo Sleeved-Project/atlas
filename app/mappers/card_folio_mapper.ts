@@ -4,18 +4,18 @@ import PriceUtils from '#utils/price_utils'
 
 export default class CardFolioMapper {
   public static toFolioStatisticsOutputDTO(
-    todayCardFolios: CardFolio[],
-    yesterdayCardFolios: CardFolio[]
+    lastCardFolios: CardFolio[],
+    dayBeforeLastCardFolios: CardFolio[]
   ): FolioStatisticsOutputDTO {
-    const totalCardsCount = todayCardFolios.reduce((acc, cardFolio) => {
+    const totalCardsCount = lastCardFolios.reduce((acc, cardFolio) => {
       return acc + (cardFolio.occurrence || 0)
     }, 0)
 
-    const todayCardMarketPrice = PriceUtils.getCardMarketTrendPrice(todayCardFolios)
-    const yesterdayCardMarketPrice = PriceUtils.getCardMarketTrendPrice(yesterdayCardFolios)
+    const todayCardMarketPrice = PriceUtils.getCardMarketTrendPrice(lastCardFolios)
+    const yesterdayCardMarketPrice = PriceUtils.getCardMarketTrendPrice(dayBeforeLastCardFolios)
 
-    const todayTcgPlayerPrice = PriceUtils.getLowerTcgPlayerMarketPrice(todayCardFolios)
-    const yesterdayTcgPlayerPrice = PriceUtils.getLowerTcgPlayerMarketPrice(yesterdayCardFolios)
+    const todayTcgPlayerPrice = PriceUtils.getLowerTcgPlayerMarketPrice(lastCardFolios)
+    const yesterdayTcgPlayerPrice = PriceUtils.getLowerTcgPlayerMarketPrice(dayBeforeLastCardFolios)
 
     return {
       totalCardsCount,
