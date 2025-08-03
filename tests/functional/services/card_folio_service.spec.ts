@@ -18,7 +18,7 @@ import TcgPlayerPrice from '#models/tcg_player_price'
 import { DateTime } from 'luxon'
 import { SubtypeFactory } from '#database/factories/subtype'
 import { TypeFactory } from '#database/factories/type'
-import ConstanteUtils from '#utils/constante_utils'
+import ConstantUtils from '#utils/constant_utils'
 
 test.group('CardFolioService', (group) => {
   let cardFolioService: CardFolioService
@@ -683,7 +683,7 @@ test.group('CardFolioService', (group) => {
 
     const result = await cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
       mainFolio.id,
-      ConstanteUtils.DAY_BEFORE_DEFAULT_COUNT
+      ConstantUtils.DAY_BEFORE_DEFAULT_COUNT
     )
 
     assert.equal(result.length, 3)
@@ -797,7 +797,7 @@ test.group('CardFolioService', (group) => {
     }).create()
 
     const recentDate = DateTime.now()
-    const oldDate = DateTime.now().minus({ days: ConstanteUtils.DAY_BEFORE_LAST_DAY_COUNT })
+    const oldDate = DateTime.now().minus({ days: ConstantUtils.DAY_BEFORE_LAST_DAY_COUNT })
 
     const card = await CardFactory.with('cardMarketPrices', 2, (cardMarketPrices) =>
       cardMarketPrices.merge([
@@ -821,7 +821,7 @@ test.group('CardFolioService', (group) => {
 
     const result = await cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
       mainFolio.id,
-      ConstanteUtils.DAY_BEFORE_DEFAULT_COUNT
+      ConstantUtils.DAY_BEFORE_DEFAULT_COUNT
     )
 
     assert.equal(result.length, 1)

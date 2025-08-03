@@ -4,7 +4,7 @@ import db from '@adonisjs/lucid/services/db'
 import { getAllCardsFiltersValidator } from '#validators/card_validator'
 import { Infer } from '@vinejs/vine/types'
 import PriceQueryUtils from '#utils/price_query_utils'
-import ConstanteUtils from '#utils/constante_utils'
+import ConstantUtils from '#utils/constant_utils'
 import FilterQueryUtils from '#utils/filter_query_utils'
 
 export default class CardService {
@@ -116,13 +116,13 @@ export default class CardService {
 
   public async getLastCardPricesById(id: string): Promise<Card> {
     const query = Card.query().select('id').where('id', id)
-    PriceQueryUtils.buildPricePreloadQuery(ConstanteUtils.DAY_BEFORE_DEFAULT_COUNT, query)
+    PriceQueryUtils.buildPricePreloadQuery(ConstantUtils.DAY_BEFORE_DEFAULT_COUNT, query)
     return query.firstOrFail()
   }
 
   public async getCardScanResulInfosById(id: string): Promise<Card> {
     const query = Card.query().select('id', 'image_large', 'image_small').where('id', id)
-    PriceQueryUtils.buildPricePreloadQuery(ConstanteUtils.DAY_BEFORE_DEFAULT_COUNT, query)
+    PriceQueryUtils.buildPricePreloadQuery(ConstantUtils.DAY_BEFORE_DEFAULT_COUNT, query)
     return query.firstOrFail()
   }
 

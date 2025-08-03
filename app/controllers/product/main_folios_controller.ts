@@ -7,7 +7,7 @@ import FolioService from '#services/folio_service'
 import CardFolioService from '#services/card_folio_service'
 import ValidationException from '#exceptions/validation_exception'
 import { getAllMainFolioCardsFiltersValidator } from '#validators/card_validator'
-import ConstanteUtils from '#utils/constante_utils'
+import ConstantUtils from '#utils/constant_utils'
 import CardFolioMapper from '#mappers/card_folio_mapper'
 import { SuccessOutputDTO } from '#types/success_output_dto_type'
 import CardService from '#services/card_service'
@@ -52,12 +52,12 @@ export default class MainFoliosController {
       const lastCardFolios =
         await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
           mainFolio.id,
-          ConstanteUtils.DAY_BEFORE_DEFAULT_COUNT
+          ConstantUtils.DAY_BEFORE_DEFAULT_COUNT
         )
       const dayBeforeLastCardFolios =
         await this.cardFolioService.getAllMainFolioCardPricesAndOccurrenceByDaysBefore(
           mainFolio.id,
-          ConstanteUtils.DAY_BEFORE_LAST_DAY_COUNT
+          ConstantUtils.DAY_BEFORE_LAST_DAY_COUNT
         )
       const folioStatistics = CardFolioMapper.toFolioStatisticsOutputDTO(
         lastCardFolios,
