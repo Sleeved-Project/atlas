@@ -827,34 +827,6 @@ test.group('Main folio controller', (group) => {
     assert.equal(statistics.cardMarketPrice, '50.00') // 5 cards × 10.0 each
   })
 
-  test('init - it should create a main folio for a user', async ({ client, assert }) => {
-    const response = await client
-      .post('/api/v1/folios/init')
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(200)
-    assert.properties(response.body(), ['message'])
-  })
-
-  test('init - it should not create duplicate main folio', async ({ client, assert }) => {
-    await FolioFactory.merge({
-      userId: '123',
-      isRoot: true,
-    }).create()
-
-    const response = await client
-      .post('/api/v1/folios/init')
-      .header('Authorization', 'Bearer fake-token-for-testing')
-
-    response.assertStatus(409)
-    assert.properties(response.body(), ['code', 'message'])
-  })
-
-  test('init - it should require authentication', async ({ client }) => {
-    const response = await client.post('/api/v1/folios/init')
-    response.assertStatus(401)
-  })
-
   test('collect - it should add a card to user main folio', async ({ client, assert }) => {
     const userId = TEST_AUTH_USER_ID
 

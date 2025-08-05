@@ -18,7 +18,7 @@ test.group('AuthMiddleware', (group) => {
   const mockUser: AuthUser = {
     id: 'user-123',
     email: 'test@example.com',
-    fullname: 'Test User',
+    username: 'Test User',
   }
 
   const validToken = 'valid-token-123'
@@ -135,7 +135,7 @@ test.group('AuthMiddleware', (group) => {
     const customUser: AuthUser = {
       id: 'user-456',
       email: 'other@example.com',
-      fullname: 'Other User',
+      username: 'Other User',
     }
 
     mockRequest.header.withArgs('authorization').returns(`Bearer ${customToken}`)

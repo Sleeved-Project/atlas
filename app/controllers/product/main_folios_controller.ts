@@ -72,21 +72,6 @@ export default class MainFoliosController {
     }
   }
 
-  async store({ response, authUser }: HttpContext) {
-    try {
-      await this.folioService.createMainFolio(authUser.id)
-      const successResponse: SuccessOutputDTO = {
-        message: 'Folio initialized successfully',
-      }
-      return response.ok(successResponse)
-    } catch (error) {
-      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
-        throw new NotFoundException(error)
-      }
-      throw error
-    }
-  }
-
   async collect({ request, response, authUser }: HttpContext) {
     try {
       const payload = await collectValidator.validate(request.all())

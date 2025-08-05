@@ -3,6 +3,7 @@ import { middleware } from './kernel.js'
 const HealthCheckController = () => import('#controllers/system/health_check_controller')
 const RootController = () => import('#controllers/system/root_controller')
 const ApiInfoController = () => import('#controllers/system/api_info_controller')
+const UserController = () => import('#controllers/product/user_controller')
 const CardsController = () => import('#controllers/product/cards_controller')
 const ScanController = () => import('#controllers/product/scan_controller')
 const ChildFoliosController = () => import('#controllers/product/child_folios_controller')
@@ -20,6 +21,11 @@ router
         router.get('/', [ApiInfoController])
         router
           .group(() => {
+            router.post('/init', [UserController, 'store']).use(middleware.auth())
+          })
+          .prefix('user')
+        router
+          .group(() => {
             router.get('/', [CardsController, 'index']).use(middleware.auth())
             router.get('/:id', [CardsController, 'show']).use(middleware.auth())
             router.get('/:id/details', [CardsController, 'details'])
@@ -34,7 +40,6 @@ router
             router.get('/:id', [ChildFoliosController, 'show']).use(middleware.auth())
             router.get('/:id/cards', [ChildFoliosController, 'cards']).use(middleware.auth())
             router.post('/', [ChildFoliosController, 'store']).use(middleware.auth())
-            router.post('/init', [MainFoliosController, 'store']).use(middleware.auth())
             router.post('/cards', [MainFoliosController, 'collect']).use(middleware.auth())
             router
               .patch('/cards/:id', [MainFoliosController, 'updateOccurrence'])
