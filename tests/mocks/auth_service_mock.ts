@@ -3,6 +3,7 @@ import WardenApiClient from '#clients/warden_api_client'
 import { AuthUser } from '#types/auth_user_type'
 
 export const TEST_AUTH_USER_ID = '123'
+export const TEST_AUTH_USER_USERNAME = 'Test'
 
 export default class AuthServiceMock {
   /**
@@ -15,7 +16,7 @@ export default class AuthServiceMock {
     const mockUser: AuthUser = {
       id: TEST_AUTH_USER_ID,
       email: 'test@example.com',
-      fullname: 'Test',
+      username: TEST_AUTH_USER_USERNAME,
     }
 
     wardenApiClientStub.resolves(mockUser)

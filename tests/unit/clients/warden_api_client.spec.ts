@@ -23,7 +23,7 @@ test.group('WardenApiClient', (group) => {
     const mockUserResponse: AuthUser = {
       id: 'user-123',
       email: 'test@example.com',
-      fullname: 'Test User',
+      username: 'Test User',
     }
 
     fetchStub.resolves({

@@ -14,7 +14,7 @@ test.group('AuthService', (group) => {
   const mockUser: AuthUser = {
     id: 'user-123',
     email: 'test@example.com',
-    fullname: 'Test User',
+    username: 'Test User',
   }
 
   group.each.setup(() => {
@@ -78,7 +78,7 @@ test.group('AuthService', (group) => {
     const detailedMockUser: AuthUser = {
       id: 'user-456',
       email: 'detailed@example.com',
-      fullname: 'Detailed User',
+      username: 'Detailed User',
     }
     wardenApiClientStub.resolves(detailedMockUser)
 
@@ -86,6 +86,6 @@ test.group('AuthService', (group) => {
 
     assert.equal(result.id, detailedMockUser.id)
     assert.equal(result.email, detailedMockUser.email)
-    assert.equal(result.fullname, detailedMockUser.fullname)
+    assert.equal(result.username, detailedMockUser.username)
   })
 })
