@@ -1,7 +1,7 @@
 import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
-import UserAddress from './user_address.js'
+import Folio from './folio.js'
 
 export default class User extends BaseModel {
   /**
@@ -27,6 +27,9 @@ export default class User extends BaseModel {
   @column()
   declare description: string | null
 
+  @column()
+  declare profilePictureUrl: string | null
+
   @column.dateTime({ columnName: 'created_at', autoCreate: true })
   declare createdAt: DateTime
 
@@ -36,6 +39,6 @@ export default class User extends BaseModel {
   @column.dateTime({ columnName: 'deleted_at', autoCreate: false })
   declare deletedAt: DateTime | null
 
-  @hasMany(() => UserAddress)
-  declare addresses: HasMany<typeof UserAddress>
+  @hasMany(() => Folio)
+  declare folios: HasMany<typeof Folio>
 }

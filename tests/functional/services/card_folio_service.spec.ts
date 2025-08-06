@@ -19,6 +19,7 @@ import { DateTime } from 'luxon'
 import { SubtypeFactory } from '#database/factories/subtype'
 import { TypeFactory } from '#database/factories/type'
 import ConstantUtils from '#utils/constant_utils'
+import { UserFactory } from '#database/factories/user'
 
 test.group('CardFolioService', (group) => {
   let cardFolioService: CardFolioService
@@ -160,6 +161,11 @@ test.group('CardFolioService', (group) => {
   }) => {
     const userId1 = TEST_AUTH_USER_ID
     const userId2 = 'other-user-id'
+
+    await UserFactory.merge({
+      id: userId2,
+      username: 'other-test-user',
+    }).create()
 
     await ArtistFactory.create()
     await RarityFactory.create()
@@ -544,6 +550,11 @@ test.group('CardFolioService', (group) => {
     const userId1 = TEST_AUTH_USER_ID
     const userId2 = 'other-user-id'
 
+    await UserFactory.merge({
+      id: userId2,
+      username: 'other-test-user',
+    }).create()
+
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()
@@ -716,6 +727,11 @@ test.group('CardFolioService', (group) => {
   }) => {
     const userId1 = TEST_AUTH_USER_ID
     const userId2 = 'other-user-id'
+
+    await UserFactory.merge({
+      id: userId2,
+      username: 'other-test-user',
+    }).create()
 
     await ArtistFactory.create()
     await RarityFactory.create()
@@ -1368,6 +1384,11 @@ test.group('CardFolioService', (group) => {
   }) => {
     const userId1 = TEST_AUTH_USER_ID
     const userId2 = 'other-user-id'
+
+    await UserFactory.merge({
+      id: userId2,
+      username: 'other-test-user',
+    }).create()
 
     await ArtistFactory.create()
     await RarityFactory.create()

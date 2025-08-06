@@ -13,6 +13,7 @@ import { SetFactory } from '#database/factories/set'
 import { TypeFactory } from '#database/factories/type'
 import { SubtypeFactory } from '#database/factories/subtype'
 import { DateTime } from 'luxon'
+import { UserFactory } from '#database/factories/user'
 
 test.group('FolioService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -87,6 +88,11 @@ test.group('FolioService', (group) => {
     assert,
   }) => {
     const userId = 'user-without-root-folio'
+
+    await UserFactory.merge({
+      id: userId,
+      username: 'user-without-root-folio',
+    }).create()
 
     await FolioFactory.merge({
       userId,
@@ -243,6 +249,11 @@ test.group('FolioService', (group) => {
       userId,
       name: 'My Collection',
       isRoot: false,
+    }).create()
+
+    await UserFactory.merge({
+      id: otherUserId,
+      username: 'other-test-user',
     }).create()
 
     await FolioFactory.merge({
