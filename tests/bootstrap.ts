@@ -5,6 +5,7 @@ import type { Config } from '@japa/runner/types'
 import { pluginAdonisJS } from '@japa/plugin-adonisjs'
 import testUtils from '@adonisjs/core/services/test_utils'
 import logger from '@adonisjs/core/services/logger'
+import { createTestUser } from './helpers/auth_user_helper.js'
 
 /**
  * This file is imported by the "bin/test.ts" entrypoint file
@@ -27,6 +28,10 @@ export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
   setup: [
     () => {
       logger.level = 'silent'
+    },
+    () => testUtils.db().truncate(),
+    async () => {
+      await createTestUser()
     },
   ],
   teardown: [],

@@ -7,6 +7,7 @@ import { RarityFactory } from '#database/factories/rarity'
 import { SetFactory } from '#database/factories/set'
 import { SubtypeFactory } from '#database/factories/subtype'
 import { TypeFactory } from '#database/factories/type'
+import { UserFactory } from '#database/factories/user'
 import Artist from '#models/artist'
 import CardFolio from '#models/card_folio'
 import CardMarketPrice from '#models/card_market_price'
@@ -457,6 +458,11 @@ test.group('CardService', (group) => {
 
     const userId1 = '123'
     const userId2 = '456'
+    await UserFactory.merge({
+      id: userId2,
+      username: 'other-test-user',
+    }).create()
+
     const card = await CardFactory.merge({ id: 'base1-12' }).create()
 
     // Créer des folios pour les deux utilisateurs

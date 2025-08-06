@@ -36,4 +36,16 @@ export default class UserController {
       throw error
     }
   }
+
+  async show({ response, params }: HttpContext) {
+    try {
+      const user = await this.userService.getUserById(params.id)
+      return response.ok(user)
+    } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
 }

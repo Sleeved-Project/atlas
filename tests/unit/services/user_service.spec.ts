@@ -38,4 +38,23 @@ test.group('UserService', (group) => {
     assert.equal(savedUser?.id, authUser.id)
     assert.equal(savedUser?.username, authUser.username)
   })
+
+  test('getUserById returns a user by ID', async ({ assert }) => {
+    const userId = 'test-user-id'
+    const username = 'testuser'
+
+    await User.create({
+      id: userId,
+      username: username,
+    })
+
+    const user = await userService.getUserById(userId)
+
+    assert.equal(user.id, userId)
+    assert.equal(user.username, username)
+  })
+
+  test('getUserById throws exception for non-existent user', async ({ assert }) => {
+    await assert.rejects(() => userService.getUserById('non-existent-id'), 'Row not found')
+  })
 })
