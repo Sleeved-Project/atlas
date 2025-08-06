@@ -13,6 +13,7 @@ import { SubtypeFactory } from '#database/factories/subtype'
 import { TypeFactory } from '#database/factories/type'
 import { DateTime } from 'luxon'
 import CardFolio from '#models/card_folio'
+import { UserFactory } from '#database/factories/user'
 
 test.group('Main folio controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
@@ -692,6 +693,11 @@ test.group('Main folio controller', (group) => {
   test('statistics - should only include cards from main folio', async ({ client, assert }) => {
     const userId1 = TEST_AUTH_USER_ID
     const userId2 = 'other-user-id'
+
+    await UserFactory.merge({
+      id: userId2,
+      username: 'other-test-user',
+    }).create()
 
     await ArtistFactory.create()
     await RarityFactory.create()

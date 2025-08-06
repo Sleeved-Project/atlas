@@ -15,6 +15,13 @@ test.group('User controller', (group) => {
     wardenApiClientStub = AuthServiceMock.setupWardenApiClientStub()
   })
 
+  group.each.setup(async () => {
+    await testUtils.db().withGlobalTransaction()
+    // Assurons-nous que l'utilisateur test n'existe pas au début du test
+    await User.query().where('id', TEST_AUTH_USER_ID).delete()
+    await Folio.query().where('userId', TEST_AUTH_USER_ID).delete()
+  })
+
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
   group.teardown(() => {
@@ -25,9 +32,6 @@ test.group('User controller', (group) => {
     const response = await client
       .post('/api/v1/user/init')
       .header('Authorization', 'Bearer fake-token-for-testing')
-
-    console.log('Response status:', response.status())
-    console.log('Response body:', JSON.stringify(response.body(), null, 2))
 
     response.assertStatus(201)
 

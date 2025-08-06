@@ -5,6 +5,7 @@ import { FolioFactory } from '#database/factories/folio'
 import { LegalityFactory } from '#database/factories/legality'
 import { RarityFactory } from '#database/factories/rarity'
 import { SetFactory } from '#database/factories/set'
+import { UserFactory } from '#database/factories/user'
 import Card from '#models/card'
 import CardProcessor from '#processors/card_processor'
 import CardFolioService from '#services/card_folio_service'
@@ -148,6 +149,11 @@ test.group('CardService', (group) => {
   }) => {
     const userId1 = TEST_AUTH_USER_ID
     const userId2 = 'other-user-id'
+
+    await UserFactory.merge({
+      id: userId2,
+      username: 'other-test-user',
+    }).create()
 
     await ArtistFactory.create()
     await RarityFactory.create()

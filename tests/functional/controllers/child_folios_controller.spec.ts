@@ -12,6 +12,7 @@ import { SetFactory } from '#database/factories/set'
 import { DateTime } from 'luxon'
 import Folio from '#models/folio'
 import CardFolio from '#models/card_folio'
+import { UserFactory } from '#database/factories/user'
 
 test.group('Child Folio controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
@@ -153,6 +154,11 @@ test.group('Child Folio controller', (group) => {
   test('index - should only return folios for authenticated user', async ({ client, assert }) => {
     const userId = TEST_AUTH_USER_ID
     const otherUserId = 'other-user-id'
+
+    await UserFactory.merge({
+      id: otherUserId,
+      username: 'other-test-user',
+    }).create()
 
     await FolioFactory.merge({
       userId,
@@ -310,6 +316,11 @@ test.group('Child Folio controller', (group) => {
 
   test('show - should return 403 when folio is not owned by user', async ({ client }) => {
     const otherUserId = 'other-user-id'
+
+    await UserFactory.merge({
+      id: otherUserId,
+      username: 'other-test-user',
+    }).create()
 
     const otherUserFolio = await FolioFactory.merge({
       userId: otherUserId,
@@ -532,6 +543,11 @@ test.group('Child Folio controller', (group) => {
 
   test('cards - should return 403 when folio is not owned by user', async ({ client }) => {
     const otherUserId = 'other-user-id'
+
+    await UserFactory.merge({
+      id: otherUserId,
+      username: 'other-test-user',
+    }).create()
 
     const otherUserFolio = await FolioFactory.merge({
       userId: otherUserId,
