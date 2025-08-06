@@ -63,4 +63,30 @@ test.group('User controller', (group) => {
     assert.properties(response.body(), ['code', 'message'])
     assert.include(response.body().message, 'already initialized')
   })
+
+  test('show - it should return user info by ID', async ({ client, assert }) => {
+    await User.create({
+      id: TEST_AUTH_USER_ID,
+      username: TEST_AUTH_USER_USERNAME,
+    })
+
+    const response = await client
+      .get(`/api/v1/user/${TEST_AUTH_USER_ID}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+    assert.equal(response.body().id, TEST_AUTH_USER_ID)
+    assert.equal(response.body().username, TEST_AUTH_USER_USERNAME)
+  })
+
+  test('show - it should return 404 when user does not exist', async ({ client }) => {
+    const response = await client
+      .get('/api/v1/user/non-existent-id')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
 })

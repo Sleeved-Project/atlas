@@ -8,4 +8,7 @@ export default class UserService {
       username: authUser.username,
     })
   }
+  async getUserById(id: string) {
+    return await User.findOrFail(id)
+  }
 }
