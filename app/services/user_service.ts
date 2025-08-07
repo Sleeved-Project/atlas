@@ -11,4 +11,12 @@ export default class UserService {
   async getUserById(id: string) {
     return await User.findOrFail(id)
   }
+
+  async updateUser(id: string, data: Partial<User>) {
+    const user = await User.findOrFail(id)
+    user.merge(data)
+    await user.save()
+
+    return user
+  }
 }

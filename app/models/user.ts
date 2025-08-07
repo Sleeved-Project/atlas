@@ -27,7 +27,7 @@ export default class User extends BaseModel {
   @column()
   declare description: string | null
 
-  @column()
+  @column({ columnName: 'profile_picture_url' })
   declare profilePictureUrl: string | null
 
   @column.dateTime({ columnName: 'created_at', autoCreate: true })

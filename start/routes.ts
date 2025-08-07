@@ -22,7 +22,8 @@ router
         router
           .group(() => {
             router.post('/init', [UserController, 'store']).use(middleware.auth())
-            router.get('/:id', [UserController, 'show']).use(middleware.auth())
+            router.get('/', [UserController, 'show']).use(middleware.auth())
+            router.patch('/', [UserController, 'update']).use(middleware.auth())
           })
           .prefix('user')
         router
