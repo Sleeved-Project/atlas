@@ -4,7 +4,7 @@ import sinon from 'sinon'
 import AuthServiceMock from '#tests/mocks/auth_service_mock'
 import { CardConditionFactory } from '#database/factories/card_condition'
 
-test.group('Card controller', (group) => {
+test.group('Card conditions controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
 
   group.setup(() => {
