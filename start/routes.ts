@@ -11,6 +11,7 @@ const MainFoliosController = () => import('#controllers/product/main_folios_cont
 const SetsController = () => import('#controllers/product/sets_controller')
 const FiltersController = () => import('#controllers/product/filters_controller')
 const CardConditionsController = () => import('#controllers/product/card_conditions_controller')
+const CardFinishesController = () => import('#controllers/product/card_finishes_controller')
 
 router.get('/', [RootController])
 router.get('/health', [HealthCheckController])
@@ -30,6 +31,7 @@ router
           .group(() => {
             router.get('/', [CardsController, 'index']).use(middleware.auth())
             router.get('/conditions', [CardConditionsController, 'index']).use(middleware.auth())
+            router.get('/finishes', [CardFinishesController, 'index']).use(middleware.auth())
             router.get('/:id', [CardsController, 'show']).use(middleware.auth())
             router.get('/:id/details', [CardsController, 'details'])
             router.get('/:id/prices', [CardsController, 'prices'])
