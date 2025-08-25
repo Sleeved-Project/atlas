@@ -1,0 +1,72 @@
+import { test } from '@japa/runner'
+import sinon from 'sinon'
+import PaymentService from '#services/payment_service'
+import StripeApiClient from '#clients/stripe_api_client'
+
+test.group('Payment service', (group) => {
+  let createStripeAccountStub: sinon.SinonStub
+  let linkStripeAccountStub: sinon.SinonStub
+
+  group.each.setup(() => {
+    createStripeAccountStub = sinon.stub(StripeApiClient.prototype, 'createStripeAccount')
+    linkStripeAccountStub = sinon.stub(StripeApiClient.prototype, 'linkStripeAccount')
+  })
+
+  group.each.teardown(() => {
+    createStripeAccountStub.restore()
+    linkStripeAccountStub.restore()
+  })
+
+  test('createAccount - should create account and link successfully', async ({ assert }) => {
+    createStripeAccountStub.resolves('acct_12345')
+    linkStripeAccountStub.resolves({ url: 'https://stripe.com/linking-url' })
+
+    const service = new PaymentService()
+    const result = await service.createAccount()
+
+    assert.deepEqual(result, {
+      accountId: 'acct_12345',
+      linkingUrl: 'https://stripe.com/linking-url',
+    })
+
+    assert.isTrue(createStripeAccountStub.calledOnce)
+    assert.isTrue(
+      linkStripeAccountStub.calledOnceWith(
+        'acct_12345',
+        'https://192.168.0.33/--/sell/success/',
+        'https://192.168.0.33/--/sell/refresh/'
+      )
+    )
+  })
+
+  test('createAccount - should throw if createStripeAccount fails', async ({ assert }) => {
+    createStripeAccountStub.rejects(new Error('Stripe create error'))
+
+    const service = new PaymentService()
+
+    try {
+      await service.createAccount()
+      assert.fail('Expected createAccount to throw')
+    } catch (err: any) {
+      assert.isTrue(createStripeAccountStub.calledOnce)
+      assert.isTrue(linkStripeAccountStub.notCalled)
+      assert.include(err.message, 'Stripe create error')
+    }
+  })
+
+  test('createAccount - should throw if linkStripeAccount fails', async ({ assert }) => {
+    createStripeAccountStub.resolves('acct_12345')
+    linkStripeAccountStub.rejects(new Error('Stripe link error'))
+
+    const service = new PaymentService()
+
+    try {
+      await service.createAccount()
+      assert.fail('Expected createAccount to throw')
+    } catch (err: any) {
+      assert.isTrue(createStripeAccountStub.calledOnce)
+      assert.isTrue(linkStripeAccountStub.calledOnce)
+      assert.include(err.message, 'Stripe link error')
+    }
+  })
+})
