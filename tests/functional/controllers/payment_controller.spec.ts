@@ -79,7 +79,6 @@ test.group('Payment controller', (group) => {
     response.assertStatus(500)
 
     const body = response.body()
-    console.log('body', body)
     assert.equal(body.message, 'Unknown error occured with Stripe')
     assert.equal(body.code, 'E_STRIPE_EXCEPTION')
   })

@@ -1,5 +1,4 @@
 import NotFoundException from '#exceptions/not_found_exception'
-import { StripeException } from '#exceptions/payment_exception'
 import PaymentService from '#services/payment_service'
 import UserService from '#services/user_service'
 import { inject } from '@adonisjs/core'
@@ -25,9 +24,7 @@ export default class PaymentController {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
       }
-      if (error instanceof StripeException) {
-        throw new StripeException()
-      }
+      throw error
     }
   }
 }
