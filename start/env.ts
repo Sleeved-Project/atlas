@@ -19,4 +19,5 @@ export default await Env.create(new URL('../', import.meta.url), {
   LOG_LEVEL: Env.schema.string(),
   WARDEN_API_BASE_URL: Env.schema.string(),
   IRIS_API_BASE_URL: Env.schema.string(),
+  STRIPE_SECRET_KEY: Env.schema.string(),
 })

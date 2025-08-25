@@ -12,6 +12,7 @@ const SetsController = () => import('#controllers/product/sets_controller')
 const FiltersController = () => import('#controllers/product/filters_controller')
 const CardConditionsController = () => import('#controllers/product/card_conditions_controller')
 const CardFinishesController = () => import('#controllers/product/card_finishes_controller')
+const PaymentController = () => import('#controllers/product/payment_controller')
 
 router.get('/', [RootController])
 router.get('/health', [HealthCheckController])
@@ -65,6 +66,11 @@ router
             router.get('/cards', [FiltersController, 'cards'])
           })
           .prefix('filters')
+        router
+          .group(() => {
+            router.post('/account/', [PaymentController, 'createAccount']).use(middleware.auth())
+          })
+          .prefix('payment')
         router.post('/scan/analyze', [ScanController, 'analyze'])
       })
       .prefix('v1')

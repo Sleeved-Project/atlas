@@ -27,6 +27,9 @@ export default class User extends BaseModel {
   @column()
   declare description: string | null
 
+  @column()
+  declare stripeId: string | null
+
   @column({ columnName: 'profile_picture_url' })
   declare profilePictureUrl: string | null
 

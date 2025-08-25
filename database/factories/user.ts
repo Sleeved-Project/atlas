@@ -11,6 +11,7 @@ export const UserFactory = Factory.define(User, async ({ faker }) => {
     phone: faker.phone.number(),
     description: faker.lorem.paragraph(),
     profilePictureUrl: faker.image.avatar(),
+    stripeId: null,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
     deletedAt: null,
