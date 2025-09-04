@@ -1,6 +1,6 @@
 import NotFoundException from '#exceptions/not_found_exception'
 import PaymentService from '#services/payment_service'
-import UserService from '#services/user_service'
+import UserService from '#services/me_service'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { errors as lucidErrors } from '@adonisjs/lucid'
