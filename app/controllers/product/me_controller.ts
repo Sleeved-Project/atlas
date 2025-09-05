@@ -8,7 +8,7 @@ import DuplicateEntryException from '#exceptions/duplicate_entry_exception'
 import FolioService from '#services/folio_service'
 import { SuccessOutputDTO } from '#types/success_output_dto_type'
 import MeService from '#services/me_service'
-import { updateUserValidator } from '#validators/user_validator'
+import { updateUserValidator } from '#validators/me_validator'
 
 @inject()
 export default class MeController {
