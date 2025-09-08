@@ -1,16 +1,25 @@
 import { test } from '@japa/runner'
 import UserService from '#services/user_service'
+import MediaStorageService from '#services/media_storage_service'
 import User from '#models/user'
 import sinon from 'sinon'
 import testUtils from '@adonisjs/core/services/test_utils'
 
 test.group('UserService', (group) => {
   let userService: UserService
+  let mediaStorageStub: sinon.SinonStubbedInstance<MediaStorageService>
   let sandbox: sinon.SinonSandbox
 
   group.each.setup(() => {
-    userService = new UserService()
     sandbox = sinon.createSandbox()
+
+    mediaStorageStub = {
+      uploadBuffer: sandbox.stub(),
+      deleteImage: sandbox.stub(),
+      getPublicIdFromUrl: sandbox.stub(),
+    } as unknown as sinon.SinonStubbedInstance<MediaStorageService>
+
+    userService = new UserService(mediaStorageStub as unknown as MediaStorageService)
   })
 
   group.each.setup(() => testUtils.db().withGlobalTransaction())

@@ -8,13 +8,16 @@ import DuplicateEntryException from '#exceptions/duplicate_entry_exception'
 import FolioService from '#services/folio_service'
 import { SuccessOutputDTO } from '#types/success_output_dto_type'
 import UserService from '#services/user_service'
+import FileService from '#services/file_service'
 import { updateUserValidator } from '#validators/user_validator'
+import type { UserUpdateData } from '#types/user_type'
 
 @inject()
 export default class UserController {
   constructor(
     private folioService: FolioService,
-    private userService: UserService
+    private userService: UserService,
+    private fileService: FileService
   ) {}
 
   async store({ response, authUser }: HttpContext) {
@@ -51,11 +54,34 @@ export default class UserController {
       throw error
     }
   }
+
   async update({ request, response, authUser }: HttpContext) {
     try {
       const validatedData = await request.validateUsing(updateUserValidator)
-      const updatedUser = await this.userService.updateUser(authUser.id, validatedData)
 
+      const dataToUpdate: UserUpdateData = { ...validatedData }
+
+      const profilePicture = request.file('profilePicture', {
+        size: '5mb',
+        extnames: ['jpg', 'png', 'jpeg', 'webp'],
+      })
+
+      if (profilePicture) {
+        try {
+          const buffer = await this.fileService.readFileToBuffer(profilePicture)
+          if (buffer) {
+            dataToUpdate.profilePictureBuffer = buffer
+          }
+
+          // Cleanup the temporary file after reading to prevent resource leaks
+          await this.fileService.cleanupTempFile(profilePicture)
+        } catch (error) {
+          await this.fileService.cleanupTempFile(profilePicture)
+          throw error
+        }
+      }
+
+      const updatedUser = await this.userService.updateUser(authUser.id, dataToUpdate)
       return response.ok(updatedUser)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {

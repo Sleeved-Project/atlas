@@ -33,6 +33,8 @@ export default class User extends BaseModel {
   @column({ columnName: 'profile_picture_url' })
   declare profilePictureUrl: string | null
 
+  declare profilePictureBuffer?: Buffer
+
   @column.dateTime({ columnName: 'created_at', autoCreate: true })
   declare createdAt: DateTime
 
