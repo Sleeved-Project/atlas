@@ -33,8 +33,8 @@ test.group('Payment service', (group) => {
     assert.isTrue(
       linkStripeAccountStub.calledOnceWith(
         'acct_12345',
-        'https://192.168.0.33/--/sell/success/',
-        'https://192.168.0.33/--/sell/refresh/'
+        `${process.env.ATLAS_BASE_URL}/payment/account/success`,
+        `${process.env.ATLAS_BASE_URL}/payment/account/refresh`
       )
     )
   })

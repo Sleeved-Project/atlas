@@ -27,4 +27,12 @@ export default class PaymentController {
       throw error
     }
   }
+
+  async stripeAccountLinkSuccess({ response }: HttpContext) {
+    response.redirect('folio://sell-form')
+  }
+
+  async stripeAccountLinkRefresh({ response }: HttpContext) {
+    response.redirect('folio://')
+  }
 }

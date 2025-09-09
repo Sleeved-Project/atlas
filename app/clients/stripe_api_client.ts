@@ -22,6 +22,13 @@ export default class StripeApiClient {
             payments: 'application',
           },
         },
+        business_type: 'individual',
+        // We are setting the business profile to comply with Stripe's requirements
+        business_profile: {
+          mcc: '5945',
+          product_description: 'Selling trading cards via Folio',
+          url: 'https://sleeved.fr',
+        },
       })
       return account.id
     } catch (error) {

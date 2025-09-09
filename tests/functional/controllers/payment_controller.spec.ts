@@ -37,7 +37,7 @@ test.group('Payment controller', (group) => {
     userServiceStub.resolves({ id: TEST_AUTH_USER_ID, stripeId: 'acct_12345' })
 
     const response = await client
-      .post('/api/v1/payment/account')
+      .get('/api/v1/payment/account')
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
@@ -55,7 +55,7 @@ test.group('Payment controller', (group) => {
     userServiceStub.rejects(new lucidErrors.E_ROW_NOT_FOUND())
 
     const response = await client
-      .post('/api/v1/payment/account')
+      .get('/api/v1/payment/account')
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(404)
@@ -73,7 +73,7 @@ test.group('Payment controller', (group) => {
     userServiceStub.resolves() // not called
 
     const response = await client
-      .post('/api/v1/payment/account')
+      .get('/api/v1/payment/account')
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(500)
