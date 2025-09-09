@@ -61,10 +61,7 @@ test.group('Users controller', (group) => {
   })
 
   test('search - it should handle pagination parameters', async ({ client, assert }) => {
-    // Create 5 test users
-    for (let i = 1; i <= 5; i++) {
-      await UserFactory.merge({ username: `user_${i}` }).create()
-    }
+    await UserFactory.createMany(5)
 
     const response = await client
       .get('/api/v1/users')
