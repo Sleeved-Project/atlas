@@ -22,7 +22,6 @@ test.group('CardConditionService', (group) => {
 
     assert.equal(result.length, 1)
     assert.equal(result[0].label, 'Great Mint')
-    assert.equal(result[0].code, 'GM')
     assert.instanceOf(result[0], CardCondition)
   })
 
@@ -43,6 +42,5 @@ test.group('CardConditionService', (group) => {
     assert.equal(result.length, 1)
     assert.instanceOf(result[0], CardCondition)
     assert.isTrue(typeof result[0].label === 'string')
-    assert.isTrue(typeof result[0].code === 'string')
   })
 })

@@ -42,7 +42,9 @@ tasks:
   db:rollback:
     desc: Rollback the last migration
     cmds:
-      - docker compose exec api node ace migration:rollback
+      - docker compose exec api node ace migration:rollback {{.CLI_ARGS}}
+    options:
+      vars: [CLI_ARGS]
 
   db:migration:
     desc: Create a new migration

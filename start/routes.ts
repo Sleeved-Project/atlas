@@ -14,6 +14,7 @@ const CardConditionsController = () => import('#controllers/product/card_conditi
 const CardFinishesController = () => import('#controllers/product/card_finishes_controller')
 const PaymentController = () => import('#controllers/product/payment_controller')
 const UsersController = () => import('#controllers/product/users_controller')
+const AdsController = () => import('#controllers/product/ads_controller')
 
 router.get('/', [RootController])
 router.get('/health', [HealthCheckController])
@@ -68,6 +69,11 @@ router
             router.get('/:id/cards', [SetsController, 'cards']).use(middleware.auth())
           })
           .prefix('sets')
+        router
+          .group(() => {
+            router.post('/', [AdsController, 'store']).use(middleware.auth())
+          })
+          .prefix('ads')
         router
           .group(() => {
             router.get('/cards', [FiltersController, 'cards'])

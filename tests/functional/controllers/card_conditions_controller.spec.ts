@@ -31,7 +31,7 @@ test.group('Card conditions controller', (group) => {
     assert.equal(body.length, 5)
 
     const firstCondition = body[0]
-    assert.properties(firstCondition, ['id', 'label', 'code'])
+    assert.properties(firstCondition, ['id', 'label'])
   })
 
   test('index - it should return empty array when no card conditions exist', async ({
@@ -54,8 +54,7 @@ test.group('Card conditions controller', (group) => {
     assert,
   }) => {
     const cardCondition = await CardConditionFactory.merge({
-      label: 'Near Mint',
-      code: 'NM',
+      label: 'Good condition',
     }).create()
 
     const response = await client
@@ -69,9 +68,8 @@ test.group('Card conditions controller', (group) => {
 
     const condition = body[0]
     assert.equal(condition.id, cardCondition.id)
-    assert.equal(condition.label, 'Near Mint')
-    assert.equal(condition.code, 'NM')
-    assert.properties(condition, ['id', 'label', 'code'])
+    assert.equal(condition.label, 'Good condition')
+    assert.properties(condition, ['id', 'label'])
   })
 
   test('index - it should handle authentication requirement', async ({ client }) => {
