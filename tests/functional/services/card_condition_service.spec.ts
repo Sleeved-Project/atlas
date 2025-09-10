@@ -21,7 +21,7 @@ test.group('CardConditionService', (group) => {
     const result = await cardConditionService.getAllCardConditions()
 
     assert.equal(result.length, 1)
-    assert.equal(result[0].label, 'Great Mint')
+    assert.equal(result[0].label, 'Good Condition')
     assert.instanceOf(result[0], CardCondition)
   })
 
