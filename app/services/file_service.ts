@@ -1,6 +1,7 @@
 import { MultipartFile } from '@adonisjs/core/bodyparser'
 import { cuid } from '@adonisjs/core/helpers'
 import app from '@adonisjs/core/services/app'
+import env from '#start/env'
 import { inject } from '@adonisjs/core'
 import fs from 'node:fs'
 import { FileUploadException } from '#exceptions/file_upload_exception'
@@ -11,7 +12,7 @@ export default class FileService {
   private filesToClean: Set<string>
 
   constructor() {
-    this.uploadDir = 'storage/uploads'
+    this.uploadDir = env.get('UPLOAD_DIR')
     this.filesToClean = new Set()
   }
 
