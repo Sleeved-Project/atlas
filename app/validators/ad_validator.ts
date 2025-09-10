@@ -25,3 +25,10 @@ export const createAdValidator = vine.compile(
     ...adFilesSchema.getProperties(),
   })
 )
+
+export const listAdsValidator = vine.compile(
+  vine.object({
+    page: vine.number().min(1).optional(),
+    limit: vine.number().min(1).max(100).optional(),
+  })
+)
