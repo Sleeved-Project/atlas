@@ -54,6 +54,9 @@ jobs:
       - name: Run migrations
         run: docker compose -f docker-compose.test.yml exec api-test node ace migration:run
 
+      - name: Truncate database
+        run: docker compose -f docker-compose.test.yml exec api-test node ace db:truncate
+
       - name: Run tests
         run: docker compose -f docker-compose.test.yml exec api-test npm test
 
