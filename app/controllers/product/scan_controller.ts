@@ -2,9 +2,11 @@ import { FileUploadException } from '#exceptions/file_upload_exception'
 import NotFoundException from '#exceptions/not_found_exception'
 import ValidationException from '#exceptions/validation_exception'
 import CardMapper from '#mappers/card_mapper'
+import IrisMapper from '#mappers/iris_mapper'
 import CardService from '#services/card_service'
 import ScanService from '#services/scan_service'
 import { CardScanResultOutputDTO } from '#types/card_dto_type'
+import { gradingValidator } from '#validators/grade_validator'
 import { scanAnalyzeValidator } from '#validators/scan_validator'
 import { inject } from '@adonisjs/core'
 import { MultipartFile } from '@adonisjs/core/bodyparser'
@@ -50,6 +52,43 @@ export default class ScanController {
       }
 
       return response.ok(cardScanResults)
+    } catch (error) {
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    } finally {
+      if (file && file.filePath) {
+        fs.rmSync(file.filePath)
+      }
+    }
+  }
+
+  async grade({ response, request }: HttpContext) {
+    let file: MultipartFile | undefined
+    try {
+      ;({ file } = await request.validateUsing(gradingValidator))
+
+      await file.move(app.makePath('storage/uploads'), {
+        name: `${cuid()}.${file.extname}`,
+      })
+
+      if (!file.filePath) {
+        throw new FileUploadException()
+      }
+
+      const gradingResponse = await this.scanService.getGradingResults(
+        file.filePath,
+        file.clientName,
+        file.headers['content-type']
+      )
+
+      const gradingResultsDTO = IrisMapper.gradingIrisResponseToDTO(gradingResponse)
+
+      return response.ok(gradingResultsDTO)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)

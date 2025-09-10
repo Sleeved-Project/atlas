@@ -49,7 +49,7 @@ test.group('Scan controller', (group) => {
         }
       }
     } catch (error) {
-      console.error('Erreur lors du nettoyage des fichiers de test:', error)
+      console.error('Error while cleaning test files:', error)
     }
   })
 
@@ -57,7 +57,7 @@ test.group('Scan controller', (group) => {
     client,
     assert,
   }) => {
-    const mockScanResults = [{ id: 'base1-1', similarity: 0.95 }] // 'similarity' au lieu de 'confidence'
+    const mockScanResults = [{ id: 'base1-1', similarity: 0.95 }] // using 'similarity' instead of 'confidence'
 
     const mockCardInfo = {
       id: 'base1-1',
@@ -239,7 +239,7 @@ test.group('Scan controller', (group) => {
     client,
     assert,
   }) => {
-    scanServiceStub.rejects(new Error('Erreur de service simulée'))
+    scanServiceStub.rejects(new Error('Simulated service error'))
 
     rmSyncStub.reset()
 
@@ -252,12 +252,157 @@ test.group('Scan controller', (group) => {
 
     response.assertStatus(500)
 
-    assert.isTrue(rmSyncStub.called, 'rmSync devrait être appelé pour supprimer le fichier')
+    assert.isTrue(rmSyncStub.called, 'rmSync should be called to delete the file')
 
     const filePath = rmSyncStub.firstCall.args[0]
     assert.isTrue(
       filePath.startsWith(app.makePath('storage/uploads')),
-      `Le fichier supprimé devrait être dans le répertoire uploads`
+      `The deleted file should be inside the uploads directory`
+    )
+  })
+})
+
+test.group('Scan controller - grade', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  let scanServiceStub: sinon.SinonStub
+  let rmSyncStub: sinon.SinonStub
+  let testImagePath: string
+
+  group.each.setup(async () => {
+    rmSyncStub = sinon.stub(fs, 'rmSync')
+
+    const uploadsPath = app.makePath('storage/uploads')
+    await fs.promises.mkdir(uploadsPath, { recursive: true })
+
+    const fixturesPath = app.makePath('tests/fixtures')
+    await fs.promises.mkdir(fixturesPath, { recursive: true })
+
+    testImagePath = app.makePath('tests/fixtures/test-image.png')
+
+    scanServiceStub = sinon.stub(ScanService.prototype, 'getGradingResults')
+  })
+
+  group.each.teardown(async () => {
+    sinon.restore()
+    const uploadsPath = app.makePath('storage/uploads')
+    try {
+      const files = await fs.promises.readdir(uploadsPath)
+      for (const file of files) {
+        if (file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg')) {
+          await fs.promises.unlink(`${uploadsPath}/${file}`)
+        }
+      }
+    } catch (error) {
+      console.error('Error while cleaning test files:', error)
+    }
+  })
+
+  test('grade - should return grading results', async ({ client, assert }) => {
+    const mockGradingResponse = {
+      message: 'Grading completed. Score: 9',
+      cards: [
+        {
+          average_card_score: 9,
+          surface_score: 8.9,
+          contour_score: 9.2,
+          corner_score: 9.1,
+          center_score: 8.8,
+          top_class_matchs: [
+            { card_class: 'PSA_9', confidence: 64.25 },
+            { card_class: 'PSA_10', confidence: 27.69 },
+          ],
+        },
+      ],
+    }
+
+    scanServiceStub.resolves(mockGradingResponse)
+
+    const response = await client
+      .post('/api/v1/scan/grade')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+
+    response.assertStatus(200)
+
+    const results = response.body()
+    assert.isArray(results)
+    assert.lengthOf(results, 1)
+
+    const firstResult = results[0]
+
+    // Check main properties
+    assert.properties(firstResult, ['averageScore', 'label', 'topClass', 'confidence', 'details'])
+    assert.equal(firstResult.averageScore, 9)
+    assert.equal(firstResult.topClass, 'PSA_9')
+    assert.equal(firstResult.confidence, 64.25)
+
+    // Check sub-scores without enforcing exact values
+    assert.properties(firstResult.details, ['surface', 'contour', 'corner', 'center'])
+    Object.values(firstResult.details).forEach((value) => {
+      assert.typeOf(value, 'number')
+    })
+
+    // Check that the average of sub-scores ≈ averageScore
+    const values = Object.values(firstResult.details) as number[]
+    const avg = values.reduce((a, b) => a + b, 0) / values.length
+    assert.closeTo(avg, firstResult.averageScore, 0.1) // tolerance ±0.1
+  })
+
+  test('grade - should handle file upload error', async ({ client }) => {
+    scanServiceStub.rejects(new FileUploadException('Failed to upload file'))
+
+    const response = await client
+      .post('/api/v1/scan/grade')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+
+    response.assertStatus(422)
+  })
+
+  test('grade - should handle not found error', async ({ client }) => {
+    const notFoundError = new lucidErrors.E_ROW_NOT_FOUND()
+    scanServiceStub.rejects(notFoundError)
+
+    const response = await client
+      .post('/api/v1/scan/grade')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      message: 'Row not found',
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
+
+  test('grade - should always delete the file, even in case of error', async ({
+    client,
+    assert,
+  }) => {
+    scanServiceStub.rejects(new Error('Simulated service error'))
+    rmSyncStub.reset()
+
+    const response = await client
+      .post('/api/v1/scan/grade')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+
+    response.assertStatus(500)
+
+    assert.isTrue(rmSyncStub.called, 'rmSync should be called to delete the file')
+    const filePath = rmSyncStub.firstCall.args[0]
+    assert.isTrue(
+      filePath.startsWith(app.makePath('storage/uploads')),
+      `The deleted file should be inside the uploads directory`
     )
   })
 })

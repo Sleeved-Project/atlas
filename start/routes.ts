@@ -87,7 +87,12 @@ router
             router.get('/account/refresh', [PaymentController, 'stripeAccountLinkRefresh'])
           })
           .prefix('payment')
-        router.post('/scan/analyze', [ScanController, 'analyze'])
+        router
+          .group(() => {
+            router.post('/analyze', [ScanController, 'analyze'])
+            router.post('/grade', [ScanController, 'grade'])
+          })
+          .prefix('scan')
       })
       .prefix('v1')
   })

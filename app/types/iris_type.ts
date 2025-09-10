@@ -1,3 +1,7 @@
+// Interfaces for Iris API responses and DTOs
+// -------------------------------
+// New interface : scan & analyse
+// -------------------------------
 export interface ScanAnalyseIrisResponse {
   message: string
   cards: ScanAnalyseIrisCard[]
@@ -23,4 +27,23 @@ export interface ScanAnalyseIrisCardMatch {
 export interface ScanCardInfoDTO {
   id: string
   similarity: number
+}
+
+export interface GradingIrisResponse {
+  message: string
+  cards: GradingIrisCard[]
+}
+
+export interface GradingIrisCard {
+  average_card_score: number
+  top_class_matchs: GradingIrisClassMatch[]
+  surface_score: number
+  contour_score: number
+  corner_score: number
+  center_score: number
+}
+
+export interface GradingIrisClassMatch {
+  card_class: string
+  confidence: number
 }

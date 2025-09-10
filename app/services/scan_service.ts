@@ -1,4 +1,4 @@
-import { ScanCardInfoDTO } from '#types/iris_type'
+import { ScanCardInfoDTO, GradingIrisResponse } from '#types/iris_type'
 import fs from 'node:fs'
 import IrisApiClient from '../clients/iris_api_client.js'
 import IrisMapper from '#mappers/iris_mapper'
@@ -9,6 +9,7 @@ export default class ScanService {
   constructor() {
     this.irisApiClient = new IrisApiClient()
   }
+
   public async getAnalyseResults(
     filePath: string,
     fileName: string,
@@ -16,7 +17,6 @@ export default class ScanService {
   ): Promise<ScanCardInfoDTO[]> {
     try {
       const formData = new FormData()
-
       const fileStream = fs.readFileSync(filePath)
       const localFile = new File([fileStream], fileName, {
         type: fileType || 'application/octet-stream',
@@ -27,6 +27,28 @@ export default class ScanService {
       const scanAnalyseResponse = await this.irisApiClient.scanCard(formData)
 
       return IrisMapper.scanAnalyseIrisResponseToScanCardInfoDTO(scanAnalyseResponse)
+    } catch (error) {
+      throw error
+    }
+  }
+
+  public async getGradingResults(
+    filePath: string,
+    fileName: string,
+    fileType: string | undefined
+  ): Promise<GradingIrisResponse> {
+    try {
+      const formData = new FormData()
+      const fileStream = fs.readFileSync(filePath)
+      const localFile = new File([fileStream], fileName, {
+        type: fileType || 'application/octet-stream',
+      })
+
+      formData.append('file', localFile)
+
+      const gradingResponse = await this.irisApiClient.gradeCard(formData)
+
+      return gradingResponse
     } catch (error) {
       throw error
     }
