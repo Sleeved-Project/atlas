@@ -3,19 +3,19 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import sinon from 'sinon'
 import AuthServiceMock, { TEST_AUTH_USER_ID } from '#tests/mocks/auth_service_mock'
 import PaymentService from '#services/payment_service'
-import UserService from '#services/user_service'
+import MeService from '#services/me_service'
 import { errors as lucidErrors } from '@adonisjs/lucid'
 import { StripeException } from '#exceptions/payment_exception'
 
 test.group('Payment controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
   let paymentServiceStub: sinon.SinonStub
-  let userServiceStub: sinon.SinonStub
+  let meServiceStub: sinon.SinonStub
 
   group.setup(() => {
     wardenApiClientStub = AuthServiceMock.setupWardenApiClientStub()
     paymentServiceStub = sinon.stub(PaymentService.prototype, 'createAccount')
-    userServiceStub = sinon.stub(UserService.prototype, 'updateUser')
+    meServiceStub = sinon.stub(MeService.prototype, 'updateUser')
   })
 
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -23,7 +23,7 @@ test.group('Payment controller', (group) => {
   group.teardown(() => {
     wardenApiClientStub.restore()
     paymentServiceStub.restore()
-    userServiceStub.restore()
+    meServiceStub.restore()
   })
 
   test('createAccount - should create Stripe account and update user', async ({
@@ -34,7 +34,7 @@ test.group('Payment controller', (group) => {
       linkingUrl: 'https://stripe.com/linking-url',
       accountId: 'acct_12345',
     })
-    userServiceStub.resolves({ id: TEST_AUTH_USER_ID, stripeId: 'acct_12345' })
+    meServiceStub.resolves({ id: TEST_AUTH_USER_ID, stripeId: 'acct_12345' })
 
     const response = await client
       .get('/api/v1/payment/account')
@@ -44,7 +44,7 @@ test.group('Payment controller', (group) => {
     response.assertBodyContains({ linkingUrl: 'https://stripe.com/linking-url' })
 
     assert.isTrue(paymentServiceStub.calledOnce)
-    assert.isTrue(userServiceStub.calledWith(TEST_AUTH_USER_ID, { stripeId: 'acct_12345' }))
+    assert.isTrue(meServiceStub.calledWith(TEST_AUTH_USER_ID, { stripeId: 'acct_12345' }))
   })
 
   test('createAccount - should return 404 if user is not found', async ({ client }) => {
@@ -52,7 +52,7 @@ test.group('Payment controller', (group) => {
       linkingUrl: 'https://stripe.com/linking-url',
       accountId: 'acct_12345',
     })
-    userServiceStub.rejects(new lucidErrors.E_ROW_NOT_FOUND())
+    meServiceStub.rejects(new lucidErrors.E_ROW_NOT_FOUND())
 
     const response = await client
       .get('/api/v1/payment/account')
@@ -70,7 +70,7 @@ test.group('Payment controller', (group) => {
     assert,
   }) => {
     paymentServiceStub.rejects(new StripeException())
-    userServiceStub.resolves() // not called
+    meServiceStub.resolves() // not called
 
     const response = await client
       .get('/api/v1/payment/account')

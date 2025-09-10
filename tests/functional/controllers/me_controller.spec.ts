@@ -28,7 +28,7 @@ test.group('User controller', (group) => {
 
   test('init - it should create a user and a main folio', async ({ client, assert }) => {
     const response = await client
-      .post('/api/v1/user/init')
+      .post('/api/v1/me/init')
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(201)
@@ -59,7 +59,7 @@ test.group('User controller', (group) => {
     }).create()
 
     const response = await client
-      .post('/api/v1/user/init')
+      .post('/api/v1/me/init')
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(409)
@@ -79,7 +79,7 @@ test.group('User controller', (group) => {
     }).create()
 
     const response = await client
-      .get(`/api/v1/user`)
+      .get(`/api/v1/me`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
@@ -94,7 +94,7 @@ test.group('User controller', (group) => {
 
   test('show - it should return 404 when user does not exist', async ({ client }) => {
     const response = await client
-      .get('/api/v1/user')
+      .get('/api/v1/me')
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(404)
@@ -120,7 +120,7 @@ test.group('User controller', (group) => {
     }
 
     const response = await client
-      .patch(`/api/v1/user`)
+      .patch(`/api/v1/me`)
       .header('Authorization', 'Bearer fake-token-for-testing')
       .json(updateData)
 
@@ -156,7 +156,7 @@ test.group('User controller', (group) => {
     }
 
     const response = await client
-      .patch(`/api/v1/user`)
+      .patch(`/api/v1/me`)
       .header('Authorization', 'Bearer fake-token-for-testing')
       .json(updateData)
 
@@ -169,7 +169,7 @@ test.group('User controller', (group) => {
   })
 
   test('update - it should require authentication', async ({ client }) => {
-    const response = await client.patch(`/api/v1/user`).json({ firstname: 'John' })
+    const response = await client.patch(`/api/v1/me`).json({ firstname: 'John' })
     response.assertStatus(401)
   })
 
@@ -180,7 +180,7 @@ test.group('User controller', (group) => {
     }).create()
 
     const response = await client
-      .patch(`/api/v1/user`)
+      .patch(`/api/v1/me`)
       .header('Authorization', 'Bearer fake-token-for-testing')
       .json({
         firstname: 'A'.repeat(100),

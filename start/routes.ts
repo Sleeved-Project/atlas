@@ -3,7 +3,7 @@ import { middleware } from './kernel.js'
 const HealthCheckController = () => import('#controllers/system/health_check_controller')
 const RootController = () => import('#controllers/system/root_controller')
 const ApiInfoController = () => import('#controllers/system/api_info_controller')
-const UserController = () => import('#controllers/product/user_controller')
+const MeController = () => import('#controllers/product/me_controller')
 const CardsController = () => import('#controllers/product/cards_controller')
 const ScanController = () => import('#controllers/product/scan_controller')
 const ChildFoliosController = () => import('#controllers/product/child_folios_controller')
@@ -13,6 +13,7 @@ const FiltersController = () => import('#controllers/product/filters_controller'
 const CardConditionsController = () => import('#controllers/product/card_conditions_controller')
 const CardFinishesController = () => import('#controllers/product/card_finishes_controller')
 const PaymentController = () => import('#controllers/product/payment_controller')
+const UsersController = () => import('#controllers/product/users_controller')
 
 router.get('/', [RootController])
 router.get('/health', [HealthCheckController])
@@ -24,12 +25,18 @@ router
         router.get('/', [ApiInfoController])
         router
           .group(() => {
-            router.post('/init', [UserController, 'store']).use(middleware.auth())
-            router.get('/', [UserController, 'show']).use(middleware.auth())
-            router.patch('/', [UserController, 'update']).use(middleware.auth())
-            router.get('/stripe', [UserController, 'hasStripeAccount']).use(middleware.auth())
+            router.post('/init', [MeController, 'store']).use(middleware.auth())
+            router.get('/', [MeController, 'show']).use(middleware.auth())
+            router.patch('/', [MeController, 'update']).use(middleware.auth())
+            router.get('/stripe', [MeController, 'hasStripeAccount']).use(middleware.auth())
           })
-          .prefix('user')
+          .prefix('me')
+        router
+          .group(() => {
+            router.get('/', [UsersController, 'search']).use(middleware.auth())
+            router.get('/:id', [UsersController, 'show']).use(middleware.auth())
+          })
+          .prefix('/users')
         router
           .group(() => {
             router.get('/', [CardsController, 'index']).use(middleware.auth())

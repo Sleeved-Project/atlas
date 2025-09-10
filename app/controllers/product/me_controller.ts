@@ -7,19 +7,19 @@ import NotFoundException from '#exceptions/not_found_exception'
 import DuplicateEntryException from '#exceptions/duplicate_entry_exception'
 import FolioService from '#services/folio_service'
 import { SuccessOutputDTO } from '#types/success_output_dto_type'
-import UserService from '#services/user_service'
-import { updateUserValidator } from '#validators/user_validator'
+import MeService from '#services/me_service'
+import { updateUserValidator } from '#validators/me_validator'
 
 @inject()
-export default class UserController {
+export default class MeController {
   constructor(
     private folioService: FolioService,
-    private userService: UserService
+    private meService: MeService
   ) {}
 
   async store({ response, authUser }: HttpContext) {
     try {
-      await this.userService.createUser(authUser)
+      await this.meService.createUser(authUser)
 
       // Initialize the user's main folio
       await this.folioService.createMainFolio(authUser.id)
@@ -42,7 +42,7 @@ export default class UserController {
 
   async show({ response, authUser }: HttpContext) {
     try {
-      const user = await this.userService.getUserById(authUser.id)
+      const user = await this.meService.getUserById(authUser.id)
       return response.ok(user)
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
@@ -54,7 +54,7 @@ export default class UserController {
   async update({ request, response, authUser }: HttpContext) {
     try {
       const validatedData = await request.validateUsing(updateUserValidator)
-      const updatedUser = await this.userService.updateUser(authUser.id, validatedData)
+      const updatedUser = await this.meService.updateUser(authUser.id, validatedData)
 
       return response.ok(updatedUser)
     } catch (error) {
@@ -70,7 +70,7 @@ export default class UserController {
 
   async hasStripeAccount({ response, authUser }: HttpContext) {
     try {
-      const user = await this.userService.getUserById(authUser.id)
+      const user = await this.meService.getUserById(authUser.id)
       const hasAccount = user.stripeId ? true : false
       return response.ok({ hasStripeAccount: hasAccount })
     } catch (error) {
