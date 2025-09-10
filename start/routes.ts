@@ -28,6 +28,7 @@ router
             router.post('/init', [MeController, 'store']).use(middleware.auth())
             router.get('/', [MeController, 'show']).use(middleware.auth())
             router.patch('/', [MeController, 'update']).use(middleware.auth())
+            router.get('/stripe', [MeController, 'hasStripeAccount']).use(middleware.auth())
           })
           .prefix('me')
         router
@@ -75,7 +76,9 @@ router
           .prefix('filters')
         router
           .group(() => {
-            router.post('/account/', [PaymentController, 'createAccount']).use(middleware.auth())
+            router.get('/account/', [PaymentController, 'createAccount']).use(middleware.auth())
+            router.get('/account/success', [PaymentController, 'stripeAccountLinkSuccess'])
+            router.get('/account/refresh', [PaymentController, 'stripeAccountLinkRefresh'])
           })
           .prefix('payment')
         router.post('/scan/analyze', [ScanController, 'analyze'])

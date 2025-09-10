@@ -67,4 +67,17 @@ export default class MeController {
       throw error
     }
   }
+
+  async hasStripeAccount({ response, authUser }: HttpContext) {
+    try {
+      const user = await this.meService.getUserById(authUser.id)
+      const hasAccount = user.stripeId ? true : false
+      return response.ok({ hasStripeAccount: hasAccount })
+    } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
 }
