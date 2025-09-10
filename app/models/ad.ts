@@ -54,13 +54,19 @@ export default class Ad extends BaseModel {
   @belongsTo(() => Card)
   declare card: BelongsTo<typeof Card>
 
-  @belongsTo(() => AdStatus)
+  @belongsTo(() => AdStatus, {
+    foreignKey: 'statusId',
+  })
   declare status: BelongsTo<typeof AdStatus>
 
-  @belongsTo(() => CardCondition)
+  @belongsTo(() => CardCondition, {
+    foreignKey: 'conditionId',
+  })
   declare condition: BelongsTo<typeof CardCondition>
 
-  @belongsTo(() => CardFinish)
+  @belongsTo(() => CardFinish, {
+    foreignKey: 'finishId',
+  })
   declare finish: BelongsTo<typeof CardFinish>
 
   @belongsTo(() => User, {
