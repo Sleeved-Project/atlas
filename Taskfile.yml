@@ -42,7 +42,9 @@ tasks:
   db:rollback:
     desc: Rollback the last migration
     cmds:
-      - docker compose exec api node ace migration:rollback
+      - docker compose exec api node ace migration:rollback {{.CLI_ARGS}}
+    options:
+      vars: [CLI_ARGS]
 
   db:migration:
     desc: Create a new migration
@@ -147,6 +149,7 @@ tasks:
       - docker compose -f docker-compose.test.yml up -d --build
       - sleep 10
       - docker compose -f docker-compose.test.yml exec api-test node ace migration:run --force
+      - docker compose -f docker-compose.test.yml exec api-test node ace db:truncate
 
   test:
     desc: Run tests

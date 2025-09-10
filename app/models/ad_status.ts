@@ -1,10 +1,10 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 
-export default class CardCondition extends BaseModel {
+export default class AdStatus extends BaseModel {
   /**
    * The table associated with the model.
    */
-  static table = 'Card_Condition'
+  static table = 'Ad_Status'
 
   @column({ isPrimary: true })
   declare id: number

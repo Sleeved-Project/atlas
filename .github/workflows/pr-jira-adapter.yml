@@ -1,4 +1,4 @@
-name: Update PR Description with JIRA ID
+name: ⛓️ Update PR Description with JIRA ID
 
 on:
   pull_request:
