@@ -208,7 +208,7 @@ test.group('User controller', (group) => {
     }).create()
 
     const response = await client
-      .get(`/api/v1/user/stripe`)
+      .get(`/api/v1/me/stripe`)
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
@@ -231,7 +231,7 @@ test.group('User controller', (group) => {
     }).create()
 
     const response = await client
-      .get(`/api/v1/user/stripe`)
+      .get(`/api/v1/me/stripe`)
       .header('Authorization', 'Bearer fake-token-for-testing')
     response.assertStatus(200)
     assert.isFalse(response.body().hasStripeAccount)
