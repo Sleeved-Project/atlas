@@ -51,16 +51,24 @@ export default class Ad extends BaseModel {
   @column({ columnName: 'certificate_id' })
   declare certificateId: string | null
 
-  @belongsTo(() => Card)
+  @belongsTo(() => Card, {
+    foreignKey: 'cardId',
+  })
   declare card: BelongsTo<typeof Card>
 
-  @belongsTo(() => AdStatus)
+  @belongsTo(() => AdStatus, {
+    foreignKey: 'statusId',
+  })
   declare status: BelongsTo<typeof AdStatus>
 
-  @belongsTo(() => CardCondition)
+  @belongsTo(() => CardCondition, {
+    foreignKey: 'conditionId',
+  })
   declare condition: BelongsTo<typeof CardCondition>
 
-  @belongsTo(() => CardFinish)
+  @belongsTo(() => CardFinish, {
+    foreignKey: 'finishId',
+  })
   declare finish: BelongsTo<typeof CardFinish>
 
   @belongsTo(() => User, {

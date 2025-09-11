@@ -110,12 +110,14 @@ test.group('StripeApiClient', (group) => {
   })
 
   test('stripeWebhook - should return void when successful', async ({ assert }) => {
+    const payload = { id: 'evt_123', type: 'payment_intent.succeeded' }
+
     const constructEventStub = sinon
       .stub(stripeApiClient['stripe'].webhooks, 'constructEvent')
-      .returns({ type: 'event.type' } as any)
+      .returns(payload as any)
 
     const result = await stripeApiClient.stripeWebhook('rawBody', 'signature')
-    assert.isUndefined(result)
+    assert.deepEqual(result, payload)
     assert.isTrue(constructEventStub.calledOnce)
   })
 

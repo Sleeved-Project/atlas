@@ -52,11 +52,10 @@ export default class PaymentController {
       const updatedAd = await this.adService.updateAd(params.id, { statusId: 2 })
 
       // Save the payment intent id in DB
-      const sellerId = updatedAd.toJSON().userId
       await this.paymentIntentService.createPaymentIntent({
         id: paymentIntentId,
         fromId: authUser.id,
-        toId: sellerId,
+        toId: updatedAd.sellerId,
         adId: params.id,
         status: 'created',
       })

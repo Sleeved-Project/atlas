@@ -7,6 +7,18 @@ import MeService from '#services/me_service'
 import { errors as lucidErrors } from '@adonisjs/lucid'
 import { StripeException } from '#exceptions/payment_exception'
 import StripeApiClient from '#clients/stripe_api_client'
+import { AdFactory } from '#database/factories/ad'
+import { CardFactory } from '#database/factories/card'
+import { SetFactory } from '#database/factories/set'
+import { LegalityFactory } from '#database/factories/legality'
+import { RarityFactory } from '#database/factories/rarity'
+import { ArtistFactory } from '#database/factories/artist'
+import { AdStatusFactory } from '#database/factories/ad_status'
+import { CardConditionFactory } from '#database/factories/card_condition'
+import { CardFinishFactory } from '#database/factories/card_finish'
+import { UserFactory } from '#database/factories/user'
+import AdService from '#services/ad_service'
+import PaymentIntentService from '#services/payment_intent_service'
 
 test.group('Payment controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
@@ -16,18 +28,20 @@ test.group('Payment controller', (group) => {
   let adServiceStub: sinon.SinonStub
   let paymentIntentServiceStub: sinon.SinonStub
   let paymentServiceCreatePaymentSheetStub: sinon.SinonStub
+  let stripeWebhookStub: sinon.SinonStub
 
   group.setup(() => {
     wardenApiClientStub = AuthServiceMock.setupWardenApiClientStub()
     paymentServiceStub = sinon.stub(PaymentService.prototype, 'createAccount')
     meServiceStub = sinon.stub(MeService.prototype, 'updateUser')
     stripeApiClient = new StripeApiClient()
-    adServiceStub = sinon.stub()
-    paymentIntentServiceStub = sinon.stub()
+    adServiceStub = sinon.stub(AdService.prototype, 'updateAd')
+    paymentIntentServiceStub = sinon.stub(PaymentIntentService.prototype, 'createPaymentIntent')
     paymentServiceCreatePaymentSheetStub = sinon.stub(
       PaymentService.prototype,
       'createPaymentSheet'
     )
+    stripeWebhookStub = sinon.stub(StripeApiClient.prototype, 'stripeWebhook')
   })
 
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -36,6 +50,10 @@ test.group('Payment controller', (group) => {
     wardenApiClientStub.restore()
     paymentServiceStub.restore()
     meServiceStub.restore()
+    adServiceStub.restore()
+    paymentIntentServiceStub.restore()
+    paymentServiceCreatePaymentSheetStub.restore()
+    stripeWebhookStub.restore()
   })
 
   test('createAccount - should create Stripe account and update user', async ({
@@ -107,20 +125,42 @@ test.group('Payment controller', (group) => {
   })
 
   test('createPaymentSheet - should create payment sheet', async ({ client, assert }) => {
-    // TODO use ad factory to create ad and use its id in the request
+    await ArtistFactory.merge({ id: 1 }).create()
+    await RarityFactory.merge({ id: 1 }).create()
+    await LegalityFactory.merge({ id: 1 }).create()
+    await SetFactory.merge({ id: 'base1' }).create()
+    await CardFactory.merge({
+      id: 'card_12345',
+      setId: 'base1',
+      artistId: 1,
+      rarityId: 1,
+      legalityId: 1,
+    }).create()
+    await AdStatusFactory.merge({ id: 1 }).create()
+    await CardConditionFactory.merge({ id: 1 }).create()
+    await CardFinishFactory.merge({ id: 1 }).create()
+    await UserFactory.merge({ id: 'user_67890', stripeId: 'acct_12345' }).create()
+    await AdFactory.merge({ id: 'ad_12345', cardId: 'card_12345', sellerId: 'user_67890' }).create()
+
     paymentServiceCreatePaymentSheetStub.resolves({
-      paymentIntentClientSecret: 'pi_12345',
+      paymentIntentClientSecret: 'psec_12345',
       paymentIntentId: 'pi_12345',
       ephemeralKey: 'ek_12345',
       customer: 'cus_12345',
     })
 
-    adServiceStub.resolves({ id: 'ad_12345', userId: 'user_12345' })
+    adServiceStub.resolves({
+      id: 'ad_12345',
+      userId: '123',
+      sellerId: 'user_67890',
+      statusId: 2,
+    })
     paymentIntentServiceStub.resolves({
       id: 'pi_12345',
-      fromId: 'user_12345',
+      fromId: '123',
       toId: 'user_67890',
       adId: 'ad_12345',
+      status: 'created',
     })
 
     const response = await client
@@ -130,24 +170,24 @@ test.group('Payment controller', (group) => {
 
     response.assertStatus(200)
     response.assertBodyContains({
-      paymentIntent: 'pi_12345',
+      paymentIntent: 'psec_12345',
       ephemeralKey: 'ek_12345',
       customer: 'cus_12345',
     })
+    console.log('check calls', paymentIntentServiceStub.firstCall.args[0])
 
-    assert.isTrue(adServiceStub.calledWith('ad_12345', { stripeId: 'acct_12345' }))
+    assert.isTrue(adServiceStub.calledWith('ad_12345', { statusId: 2 }))
     assert.isTrue(
-      paymentIntentServiceStub.calledOnceWith({
+      paymentIntentServiceStub.calledWith({
         id: 'pi_12345',
-        fromId: 'user_12345',
+        fromId: '123',
         toId: 'user_67890',
         adId: 'ad_12345',
+        status: 'created',
       })
     )
 
     assert.isTrue(paymentServiceCreatePaymentSheetStub.calledOnceWith(TEST_AUTH_USER_ID))
-
-    paymentServiceCreatePaymentSheetStub.restore()
   })
 
   test('createPaymentSheet - should throw if update ad creates error', async ({ client }) => {
@@ -159,12 +199,7 @@ test.group('Payment controller', (group) => {
     })
 
     adServiceStub.rejects(new lucidErrors.E_ROW_NOT_FOUND())
-    paymentIntentServiceStub.resolves({
-      id: 'pi_12345',
-      fromId: 'user_12345',
-      toId: 'user_67890',
-      adId: 'ad_12345',
-    })
+    paymentIntentServiceStub.rejects() // not called
 
     const response = await client
       .get('/api/v1/payment/ad_12345/sheet')
@@ -173,10 +208,9 @@ test.group('Payment controller', (group) => {
 
     response.assertStatus(404)
     response.assertBodyContains({
-      message: 'Ad not found',
+      message: 'Row not found',
       code: 'E_ROW_NOT_FOUND',
     })
-    paymentServiceCreatePaymentSheetStub.restore()
   })
 
   test('createPaymentSheet - should throw error if payment sheet creation fails', async ({
@@ -193,8 +227,6 @@ test.group('Payment controller', (group) => {
     const body = response.body()
     assert.equal(body.message, 'Unknown error occured with Stripe')
     assert.equal(body.code, 'E_STRIPE_EXCEPTION')
-
-    paymentServiceCreatePaymentSheetStub.restore()
   })
 
   test('stripeWebhook - should handle webhook event', async ({ client, assert }) => {
@@ -210,8 +242,7 @@ test.group('Payment controller', (group) => {
       payload: payloadString,
       secret,
     })
-
-    const stripeWebhookStub = sinon.stub(StripeApiClient.prototype, 'stripeWebhook').resolves()
+    stripeWebhookStub.resolves(payload)
 
     const response = await client
       .post('/api/v1/payment/webhook')
@@ -221,8 +252,6 @@ test.group('Payment controller', (group) => {
 
     response.assertStatus(200)
     assert.isTrue(stripeWebhookStub.calledOnce)
-
-    stripeWebhookStub.restore()
   })
 
   test('stripeWebhook - should return 500 if signature is missing when webhook secret is set', async ({
