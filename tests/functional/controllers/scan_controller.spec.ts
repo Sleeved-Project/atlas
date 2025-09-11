@@ -8,33 +8,30 @@ import fs from 'node:fs'
 import app from '@adonisjs/core/services/app'
 import { FileUploadException } from '#exceptions/file_upload_exception'
 import { errors as lucidErrors } from '@adonisjs/lucid'
+import FileService from '#services/file_service'
 
 test.group('Scan controller', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
   let scanServiceStub: sinon.SinonStub
   let cardServiceStub: sinon.SinonStub
-  let rmSyncStub: sinon.SinonStub
+  let fileServiceStub: sinon.SinonStub
+  let fileServiceCleanupStub: sinon.SinonStub
 
   let testImagePath: string
 
   group.each.setup(async () => {
-    rmSyncStub = sinon.stub(fs, 'rmSync')
-
-    const uploadsPath = app.makePath('storage/uploads')
-    try {
-      await fs.promises.mkdir(uploadsPath, { recursive: true })
-    } catch (error) {}
-
-    const fixturesPath = app.makePath('tests/fixtures')
-    try {
-      await fs.promises.mkdir(fixturesPath, { recursive: true })
-    } catch (error) {}
-
+    // Setup test image path
     testImagePath = app.makePath('tests/fixtures/test-image.png')
 
+    // Create stubs
     scanServiceStub = sinon.stub(ScanService.prototype, 'getAnalyseResults')
     cardServiceStub = sinon.stub(CardService.prototype, 'getCardScanResulInfosById')
+    fileServiceStub = sinon.stub(FileService.prototype, 'saveFile')
+    fileServiceCleanupStub = sinon.stub(FileService.prototype, 'cleanup')
+
+    // Setup default stub behavior
+    fileServiceStub.resolves('/tmp/test-file.png')
   })
 
   group.each.teardown(async () => {
@@ -112,8 +109,10 @@ test.group('Scan controller', (group) => {
     assert.equal(firstResult.imageSmall, 'https://example.com/bulbasaur-small.png')
     assert.equal(firstResult.imageLarge, 'https://example.com/bulbasaur.png')
 
+    sinon.assert.calledOnce(fileServiceStub)
     sinon.assert.calledOnce(scanServiceStub)
     sinon.assert.calledWith(cardServiceStub, 'base1-1')
+    sinon.assert.calledOnce(fileServiceCleanupStub)
   })
 
   test('analyze - should handle file upload error', async ({ client }) => {
@@ -127,6 +126,7 @@ test.group('Scan controller', (group) => {
       })
 
     response.assertStatus(422)
+    sinon.assert.calledOnce(fileServiceCleanupStub)
   })
 
   test('analyze - should handle not found error', async ({ client }) => {
@@ -149,6 +149,7 @@ test.group('Scan controller', (group) => {
       message: 'Row not found',
       code: 'E_ROW_NOT_FOUND',
     })
+    sinon.assert.calledOnce(fileServiceCleanupStub)
   })
 
   test('analyze - should handle multiple cards in scan results', async ({ client, assert }) => {
@@ -230,18 +231,15 @@ test.group('Scan controller', (group) => {
     assert.equal(results[1].similarity, 0.87)
     assert.equal(results[1].imageSmall, 'https://example.com/ivysaur-small.png')
 
+    sinon.assert.calledOnce(fileServiceStub)
     sinon.assert.calledOnce(scanServiceStub)
     sinon.assert.calledWith(cardServiceStub.firstCall, 'base1-1')
     sinon.assert.calledWith(cardServiceStub.secondCall, 'base1-2')
+    sinon.assert.calledOnce(fileServiceCleanupStub)
   })
 
-  test('analyze - should always delete the file, even in case of error', async ({
-    client,
-    assert,
-  }) => {
+  test('analyze - should always delete the file, even in case of error', async ({ client }) => {
     scanServiceStub.rejects(new Error('Erreur de service simulée'))
-
-    rmSyncStub.reset()
 
     const response = await client
       .post('/api/v1/scan/analyze')
@@ -251,13 +249,6 @@ test.group('Scan controller', (group) => {
       })
 
     response.assertStatus(500)
-
-    assert.isTrue(rmSyncStub.called, 'rmSync devrait être appelé pour supprimer le fichier')
-
-    const filePath = rmSyncStub.firstCall.args[0]
-    assert.isTrue(
-      filePath.startsWith(app.makePath('storage/uploads')),
-      `Le fichier supprimé devrait être dans le répertoire uploads`
-    )
+    sinon.assert.calledOnce(fileServiceCleanupStub)
   })
 })

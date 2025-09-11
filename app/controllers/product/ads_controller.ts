@@ -7,43 +7,26 @@ import ValidationException from '#exceptions/validation_exception'
 import { SuccessOutputDTO } from '#types/success_output_dto_type'
 import CardService from '#services/card_service'
 import AdService from '#services/ad_service'
-import { MultipartFile } from '@adonisjs/core/bodyparser'
-import { adCardSchema, createAdValidator } from '#validators/ad_validator'
-import app from '@adonisjs/core/services/app'
-import { cuid } from '@adonisjs/core/helpers'
-import { FileUploadException } from '#exceptions/file_upload_exception'
-import type { Infer } from '@vinejs/vine/types'
-import fs from 'node:fs'
+import { createAdValidator } from '#validators/ad_validator'
 import CertificateService from '#services/certificate_service'
 import Certificate from '#models/certificate'
+import FileService from '#services/file_service'
 
 @inject()
 export default class AdsController {
   constructor(
     private cardService: CardService,
     private certificateService: CertificateService,
-    private adService: AdService
+    private adService: AdService,
+    private fileService: FileService // Ajout du FileService
   ) {}
 
   async store({ request, response, authUser }: HttpContext) {
-    let versoFile: MultipartFile | undefined
-    let rectoFile: MultipartFile | undefined
-    let cardData: Infer<typeof adCardSchema>
-
     try {
-      ;({ versoFile, rectoFile, ...cardData } = await request.validateUsing(createAdValidator))
+      const { versoFile, rectoFile, ...cardData } = await request.validateUsing(createAdValidator)
 
-      await versoFile.move(app.makePath('storage/uploads'), {
-        name: `${cuid()}.${versoFile.extname}`,
-      })
-
-      await rectoFile.move(app.makePath('storage/uploads'), {
-        name: `${cuid()}.${rectoFile.extname}`,
-      })
-
-      if (!rectoFile.filePath || !versoFile.filePath) {
-        throw new FileUploadException()
-      }
+      const versoPath = await this.fileService.saveFile(versoFile)
+      const rectoPath = await this.fileService.saveFile(rectoFile)
 
       let certificate: Certificate | null = null
       // Get card by id for verification
@@ -66,8 +49,8 @@ export default class AdsController {
         cardData.finishId,
         cardData.conditionId,
         card.id,
-        rectoFile.filePath,
-        versoFile.filePath,
+        rectoPath,
+        versoPath,
         cardData.price,
         certificate?.id || null
       )
@@ -85,12 +68,7 @@ export default class AdsController {
       }
       throw error
     } finally {
-      if (versoFile && versoFile.filePath) {
-        fs.rmSync(versoFile.filePath)
-      }
-      if (rectoFile && rectoFile.filePath) {
-        fs.rmSync(rectoFile.filePath)
-      }
+      this.fileService.cleanup()
     }
   }
 }
