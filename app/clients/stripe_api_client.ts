@@ -8,6 +8,10 @@ export default class StripeApiClient {
   })
   constructor() {}
 
+  get webhooks() {
+    return this.stripe.webhooks
+  }
+
   public async createStripeAccount(): Promise<string> {
     try {
       const account = await this.stripe.accounts.create({

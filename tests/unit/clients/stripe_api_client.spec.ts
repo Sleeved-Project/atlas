@@ -7,6 +7,9 @@ test.group('StripeApiClient', (group) => {
   let stripeApiClient: StripeApiClient
   let accountsStub: any
   let accountLinksStub: any
+  let customer: any
+  let ephemeralKey: any
+  let paymentIntent: any
 
   group.each.setup(() => {
     stripeApiClient = new StripeApiClient()
@@ -14,6 +17,9 @@ test.group('StripeApiClient', (group) => {
     // Stub Stripe SDK methods
     accountsStub = sinon.stub(stripeApiClient['stripe'].accounts, 'create')
     accountLinksStub = sinon.stub(stripeApiClient['stripe'].accountLinks, 'create')
+    customer = sinon.stub(stripeApiClient['stripe'].customers, 'create')
+    ephemeralKey = sinon.stub(stripeApiClient['stripe'].ephemeralKeys, 'create')
+    paymentIntent = sinon.stub(stripeApiClient['stripe'].paymentIntents, 'create')
     sinon.stub(stripeApiClient['stripe'].accounts, 'del')
   })
 
@@ -74,5 +80,56 @@ test.group('StripeApiClient', (group) => {
     await assert.rejects(async () => {
       await stripeApiClient.deleteStripeAccount('acct_123')
     }, StripeException.message)
+  })
+
+  test('createPaymentSheet - should return customer, ephemeralKey and paymentIntent when successful', async ({
+    assert,
+  }) => {
+    customer.resolves({ id: 'cus_123' })
+    ephemeralKey.resolves({ secret: 'ephkey_123' })
+    paymentIntent.resolves({ client_secret: 'secret_123' })
+    const result = await stripeApiClient.createPaymentSheet('user_123')
+    console.log('result', result)
+
+    assert.deepEqual(result, {
+      customer: 'cus_123',
+      ephemeralKey: 'ephkey_123',
+      paymentIntent: 'secret_123',
+    })
+  })
+
+  test('createPaymentSheet - should throw StripeException when Stripe fails', async ({
+    assert,
+  }) => {
+    customer.rejects(new Error('Stripe customer error'))
+
+    await assert.rejects(async () => {
+      await stripeApiClient.createPaymentSheet('user_123')
+    }, StripeException.message)
+  })
+
+  test('stripeWebhook - should return void when successful', async ({ assert }) => {
+    const constructEventStub = sinon
+      .stub(stripeApiClient['stripe'].webhooks, 'constructEvent')
+      .returns({ type: 'event.type' } as any)
+
+    const result = await stripeApiClient.stripeWebhook(
+      { type: 'event.type' },
+      'rawBody',
+      'signature'
+    )
+    assert.isUndefined(result)
+    assert.isTrue(constructEventStub.calledOnce)
+  })
+
+  test('stripeWebhook - should throw StripeException when Stripe fails', async ({ assert }) => {
+    const constructEventStub = sinon
+      .stub(stripeApiClient['stripe'].webhooks, 'constructEvent')
+      .throws(new Error('Invalid signature'))
+
+    await assert.rejects(async () => {
+      await stripeApiClient.stripeWebhook({ type: 'event.type' }, 'rawBody', 'signature')
+    }, StripeException.message)
+    assert.isTrue(constructEventStub.calledOnce)
   })
 })
