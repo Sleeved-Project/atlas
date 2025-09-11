@@ -8,6 +8,7 @@ import {
   getAllCardsFiltersValidator,
   getCardBaseParamsValidator,
   getCardDetailParamsValidator,
+  getCardPriceAdviceValidator,
   getCardPriceParamsValidator,
 } from '#validators/card_validator'
 import ValidationException from '#exceptions/validation_exception'
@@ -77,6 +78,26 @@ export default class CardsController {
       const card = await this.cardService.getLastCardPricesById(params.id)
       const cardPriceMapped = CardMapper.toCardPricesOutputDTO(card)
       return response.ok(cardPriceMapped)
+    } catch (error) {
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async advices({ response, request }: HttpContext) {
+    try {
+      const { params, query } = await getCardPriceAdviceValidator.validate({
+        params: request.params(),
+        query: request.qs(),
+      })
+      // const card = await this.cardService.getLastCardPricesById(params.id)
+      // const cardPriceMapped = CardMapper.toCardPricesOutputDTO(card)
+      return response.ok({ params, query })
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)
