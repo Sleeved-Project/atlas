@@ -1,5 +1,9 @@
-import { ScanAnalyseIrisResponse, ScanCardInfoDTO, GradingIrisResponse } from '#types/iris_type'
-import { generateDescription } from '#utils/grading_utils'
+import {
+  ScanAnalyseIrisResponse,
+  ScanCardInfoDTO,
+  GradingIrisResponse,
+  GradingOutputDTO,
+} from '#types/iris_type'
 
 export default class IrisMapper {
   public static scanAnalyseIrisResponseToScanCardInfoDTO(
@@ -11,21 +15,17 @@ export default class IrisMapper {
     }))
   }
 
-  public static gradingIrisResponseToDTO(gradingIrisResponse: GradingIrisResponse) {
-    return gradingIrisResponse.cards.map((card) => {
-      const averageScore = card.average_card_score
-      return {
-        averageScore,
-        label: generateDescription(averageScore),
-        topClass: card.top_class_matchs[0]?.card_class ?? null,
-        confidence: card.top_class_matchs[0]?.confidence ?? null,
-        details: {
-          surface: card.surface_score,
-          contour: card.contour_score,
-          corner: card.corner_score,
-          center: card.center_score,
-        },
-      }
-    })
+  public static toGradingOutputDTO(gradingIrisResponse: GradingIrisResponse): GradingOutputDTO[] {
+    const grades = gradingIrisResponse.grades ?? []
+    return grades.map((grade) => ({
+      averageScore: grade.average_grade_score,
+      details: {
+        surface: grade.surface_score,
+        contour: grade.contour_score,
+        corner: grade.corner_score,
+        center: grade.center_score,
+      },
+      topClassMatches: grade.top_class_matchs ?? [],
+    }))
   }
 }

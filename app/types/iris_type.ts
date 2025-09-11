@@ -29,21 +29,38 @@ export interface ScanCardInfoDTO {
   similarity: number
 }
 
+// -------------------------------
+// Grading interfaces
+// -------------------------------
 export interface GradingIrisResponse {
   message: string
-  cards: GradingIrisCard[]
+  grades: GradingIrisGrade[] // tableau de notes
 }
 
-export interface GradingIrisCard {
-  average_card_score: number
-  top_class_matchs: GradingIrisClassMatch[]
+export interface GradingIrisGrade {
+  average_grade_score: number
   surface_score: number
   contour_score: number
   corner_score: number
   center_score: number
+  top_class_matchs: {
+    grade_class: string
+    confidence: number
+  }[]
 }
 
-export interface GradingIrisClassMatch {
-  card_class: string
-  confidence: number
+// DTO simplifié pour la sortie
+export interface GradingOutputDTO {
+  averageScore: number
+  details: {
+    surface: number
+    contour: number
+    corner: number
+    center: number
+  }
+  topClassMatches: {
+    grade_class: string
+    confidence: number
+  }[]
+  label?: string // Ajouté par le controller
 }

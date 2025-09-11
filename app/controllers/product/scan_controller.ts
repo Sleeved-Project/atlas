@@ -3,6 +3,7 @@ import NotFoundException from '#exceptions/not_found_exception'
 import ValidationException from '#exceptions/validation_exception'
 import CardMapper from '#mappers/card_mapper'
 import IrisMapper from '#mappers/iris_mapper'
+import { getGradeLabel } from '#services/grade_service'
 import CardService from '#services/card_service'
 import ScanService from '#services/scan_service'
 import { CardScanResultOutputDTO } from '#types/card_dto_type'
@@ -86,9 +87,26 @@ export default class ScanController {
         file.headers['content-type']
       )
 
-      const gradingResultsDTO = IrisMapper.gradingIrisResponseToDTO(gradingResponse)
+      // Gestion du cas "aucun match"
+      if (!gradingResponse.grades || gradingResponse.grades.length === 0) {
+        return response.notFound({
+          code: 'E_IRIS_NO_MATCH',
+          message: 'No matching cards found for the scan',
+        })
+      }
 
-      return response.ok(gradingResultsDTO)
+      const gradingResultsDTO = IrisMapper.toGradingOutputDTO(gradingResponse)
+
+      // Ajout du label et suppression de topClassMatches
+      const gradingResultsWithLabel = await Promise.all(
+        gradingResultsDTO.map(async (dto) => ({
+          averageScore: dto.averageScore,
+          details: dto.details,
+          label: (await getGradeLabel(dto.averageScore)) || 'Unknown',
+        }))
+      )
+
+      return response.ok(gradingResultsWithLabel)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)

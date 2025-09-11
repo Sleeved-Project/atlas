@@ -1,200 +1,263 @@
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 import sinon from 'sinon'
-import fs from 'node:fs'
 import ScanService from '#services/scan_service'
-import IrisApiClient from '#clients/iris_api_client'
-import IrisMapper from '#mappers/iris_mapper'
-import { ScanAnalyseIrisResponse, ScanCardInfoDTO, GradingIrisResponse } from '#types/iris_type'
-import { IrisException } from '#exceptions/iris_exception'
+import CardService from '#services/card_service'
+import { createReadStream } from 'node:fs'
+import fs from 'node:fs'
+import app from '@adonisjs/core/services/app'
+import { FileUploadException } from '#exceptions/file_upload_exception'
+import { errors as lucidErrors } from '@adonisjs/lucid'
 
-test.group('ScanService', (group) => {
-  let readFileSyncStub: sinon.SinonStub
-  let scanCardStub: sinon.SinonStub
-  let gradeCardStub: sinon.SinonStub
-  let mapperStub: sinon.SinonStub
-  let fileConstructorStub: sinon.SinonStub
-  let formDataAppendStub: sinon.SinonStub
-  let originalFormData: typeof FormData
+test.group('Scan controller', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  group.each.setup(() => {
-    originalFormData = global.FormData
+  let scanServiceStub: sinon.SinonStub
+  let cardServiceStub: sinon.SinonStub
+  let rmSyncStub: sinon.SinonStub
 
-    readFileSyncStub = sinon.stub(fs, 'readFileSync')
+  let testImagePath: string
 
-    // Correction du stub File pour prendre 3 arguments
-    fileConstructorStub = sinon.stub(global, 'File').callsFake(function (
-      name: string,
-      options?: { type?: string }
-    ) {
-      return { name, type: options?.type || 'application/octet-stream' }
-    })
+  group.each.setup(async () => {
+    rmSyncStub = sinon.stub(fs, 'rmSync')
 
-    formDataAppendStub = sinon.stub()
-    // @ts-ignore
-    global.FormData = function () {
-      return { append: formDataAppendStub }
-    }
+    const uploadsPath = app.makePath('storage/uploads')
+    try {
+      await fs.promises.mkdir(uploadsPath, { recursive: true })
+    } catch (error) {}
 
-    scanCardStub = sinon.stub(IrisApiClient.prototype, 'scanCard')
-    gradeCardStub = sinon.stub(IrisApiClient.prototype, 'gradeCard')
-    mapperStub = sinon.stub(IrisMapper, 'scanAnalyseIrisResponseToScanCardInfoDTO')
+    const fixturesPath = app.makePath('tests/fixtures')
+    try {
+      await fs.promises.mkdir(fixturesPath, { recursive: true })
+    } catch (error) {}
+
+    testImagePath = app.makePath('tests/fixtures/test-image.png')
+
+    scanServiceStub = sinon.stub(ScanService.prototype, 'getAnalyseResults')
+    cardServiceStub = sinon.stub(CardService.prototype, 'getCardScanResulInfosById')
   })
 
-  group.each.teardown(() => {
+  group.each.teardown(async () => {
     sinon.restore()
-    global.FormData = originalFormData
+    const uploadsPath = app.makePath('storage/uploads')
+    try {
+      const files = await fs.promises.readdir(uploadsPath)
+
+      for (const file of files) {
+        if (file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg')) {
+          await fs.promises.unlink(`${uploadsPath}/${file}`)
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors du nettoyage des fichiers de test:', error)
+    }
   })
 
-  // -------------------- Analyse tests --------------------
-  test('getAnalyseResults - should return analysis results successfully', async ({ assert }) => {
-    const filePath = '/path/to/image.jpg'
-    const fileName = 'image.jpg'
-    const fileType = 'image/jpeg'
-    const fileBuffer = Buffer.from('fake-image-data')
+  test('analyze - should analyze image and return card scan results', async ({
+    client,
+    assert,
+  }) => {
+    const mockScanResults = [{ id: 'base1-1', similarity: 0.95 }] // 'similarity' au lieu de 'confidence'
 
-    const mockScanResponse: ScanAnalyseIrisResponse = {
-      message: 'Success',
-      cards: [
+    const mockCardInfo = {
+      id: 'base1-1',
+      imageLarge: 'https://example.com/bulbasaur.png',
+      imageSmall: 'https://example.com/bulbasaur-small.png',
+      cardMarketPrices: [
         {
-          card_hash: 'hash123',
-          card_index: 0,
-          is_similar: true,
-          similarity_percentage: 95,
-          matched_card_id: '123',
-          matched_card_name: 'Test Card',
-          top_n_matches: [
-            {
-              card_id: '123',
-              card_name: 'Test Card',
-              similarity_percentage: 95,
-              hamming_distance: 5,
-            },
+          id: 1,
+          trendPrice: 10.5,
+          reverseHoloTrend: 15.75,
+          url: 'https://cardmarket.com/card/base1-1',
+        },
+      ],
+      tcgPlayerReportings: [
+        {
+          id: 1,
+          url: 'https://tcgplayer.com/card/base1-1',
+          tcgPlayerPrices: [
+            { id: 1, type: 'normal', market: 12.25 },
+            { id: 2, type: 'holofoil', market: 18.5 },
           ],
         },
       ],
     }
 
-    const expectedResult: ScanCardInfoDTO[] = [{ id: '123', similarity: 95 }]
+    scanServiceStub.resolves(mockScanResults)
+    cardServiceStub.withArgs('base1-1').resolves(mockCardInfo)
 
-    readFileSyncStub.withArgs(filePath).returns(fileBuffer)
-    scanCardStub.resolves(mockScanResponse)
-    mapperStub.withArgs(mockScanResponse).returns(expectedResult)
+    const response = await client
+      .post('/api/v1/scan/analyze')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
 
-    const scanService = new ScanService()
-    const result = await scanService.getAnalyseResults(filePath, fileName, fileType)
+    response.assertStatus(200)
 
-    assert.deepEqual(result, expectedResult)
-    sinon.assert.calledWith(readFileSyncStub, filePath)
-    sinon.assert.calledWith(fileConstructorStub, [fileBuffer], fileName, { type: fileType })
-    sinon.assert.called(formDataAppendStub)
-    sinon.assert.called(scanCardStub)
-    sinon.assert.calledWith(mapperStub, mockScanResponse)
+    const results = response.body()
+    assert.isArray(results)
+    assert.isNotEmpty(results)
+
+    const firstResult = results[0]
+    assert.properties(firstResult, [
+      'id',
+      'imageSmall',
+      'imageLarge',
+      'bestTrendPrice',
+      'similarity',
+    ])
+    assert.equal(firstResult.id, 'base1-1')
+    assert.equal(firstResult.similarity, 0.95)
+    assert.equal(firstResult.imageSmall, 'https://example.com/bulbasaur-small.png')
+    assert.equal(firstResult.imageLarge, 'https://example.com/bulbasaur.png')
+
+    sinon.assert.calledOnce(scanServiceStub)
+    sinon.assert.calledWith(cardServiceStub, 'base1-1')
   })
 
-  test('getAnalyseResults - should use default type if fileType not provided', async ({
-    assert,
-  }) => {
-    const filePath = '/path/to/image.jpg'
-    const fileName = 'image.jpg'
-    const fileBuffer = Buffer.from('fake-image-data')
-    const mockScanResponse: ScanAnalyseIrisResponse = { message: 'Success', cards: [] }
+  test('analyze - should handle file upload error', async ({ client }) => {
+    scanServiceStub.rejects(new FileUploadException('Failed to upload file'))
 
-    readFileSyncStub.withArgs(filePath).returns(fileBuffer)
-    scanCardStub.resolves(mockScanResponse)
-    mapperStub.returns([])
+    const response = await client
+      .post('/api/v1/scan/analyze')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
 
-    const scanService = new ScanService()
-    const result = await scanService.getAnalyseResults(filePath, fileName, undefined)
+    response.assertStatus(422)
+  })
 
-    assert.deepEqual(result, [])
-    sinon.assert.calledWith(fileConstructorStub, [fileBuffer], fileName, {
-      type: 'application/octet-stream',
+  test('analyze - should handle not found error', async ({ client }) => {
+    const mockScanResults = [{ id: 'non-existent-id', similarity: 0.95 }]
+
+    scanServiceStub.resolves(mockScanResults)
+
+    const notFoundError = new lucidErrors.E_ROW_NOT_FOUND()
+    cardServiceStub.withArgs('non-existent-id').rejects(notFoundError)
+
+    const response = await client
+      .post('/api/v1/scan/analyze')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      message: 'Row not found',
+      code: 'E_ROW_NOT_FOUND',
     })
   })
 
-  test('getAnalyseResults - should propagate exception from Iris', async ({ assert }) => {
-    const filePath = '/path/to/image.jpg'
-    const fileName = 'image.jpg'
-    const fileType = 'image/jpeg'
-    const errorMessage = 'Iris service unavailable'
+  test('analyze - should handle multiple cards in scan results', async ({ client, assert }) => {
+    const mockScanResults = [
+      { id: 'base1-1', similarity: 0.95 },
+      { id: 'base1-2', similarity: 0.87 },
+    ]
 
-    readFileSyncStub.returns(Buffer.from('fake-image-data'))
-    scanCardStub.rejects(new IrisException(errorMessage))
-
-    const scanService = new ScanService()
-    await assert.rejects(async () => {
-      await scanService.getAnalyseResults(filePath, fileName, fileType)
-    }, 'Iris service unavailable')
-  })
-
-  // -------------------- Grading tests --------------------
-  test('getGradingResults - should return grading results successfully', async ({ assert }) => {
-    const filePath = '/path/to/image.jpg'
-    const fileName = 'image.jpg'
-    const fileType = 'image/jpeg'
-    const fileBuffer = Buffer.from('fake-image-data')
-
-    const mockGradingResponse: GradingIrisResponse = {
-      message: 'Gradation complétée. Score: 9',
-      cards: [
+    const mockCardInfo1 = {
+      id: 'base1-1',
+      imageLarge: 'https://example.com/bulbasaur.png',
+      imageSmall: 'https://example.com/bulbasaur-small.png',
+      cardMarketPrices: [
         {
-          average_card_score: 9,
-          top_class_matchs: [
-            { card_class: 'PSA_9', confidence: 64.25 },
-            { card_class: 'PSA_10', confidence: 27.69 },
+          id: 1,
+          trendPrice: 10.5,
+          reverseHoloTrend: 15.75,
+          url: 'https://cardmarket.com/card/base1-1',
+        },
+      ],
+      tcgPlayerReportings: [
+        {
+          id: 1,
+          url: 'https://tcgplayer.com/card/base1-1',
+          tcgPlayerPrices: [
+            { id: 1, type: 'normal', market: 12.25 },
+            { id: 2, type: 'holofoil', market: 18.5 },
           ],
-          surface_score: 8.7,
-          contour_score: 8.6,
-          corner_score: 8.8,
-          center_score: 9.9,
         },
       ],
     }
 
-    readFileSyncStub.withArgs(filePath).returns(fileBuffer)
-    gradeCardStub.resolves(mockGradingResponse)
+    const mockCardInfo2 = {
+      id: 'base1-2',
+      imageLarge: 'https://example.com/ivysaur.png',
+      imageSmall: 'https://example.com/ivysaur-small.png',
+      cardMarketPrices: [
+        {
+          id: 2,
+          trendPrice: 8.75,
+          reverseHoloTrend: 12.0,
+          url: 'https://cardmarket.com/card/base1-2',
+        },
+      ],
+      tcgPlayerReportings: [
+        {
+          id: 2,
+          url: 'https://tcgplayer.com/card/base1-2',
+          tcgPlayerPrices: [
+            { id: 3, type: 'normal', market: 9.5 },
+            { id: 4, type: 'holofoil', market: 14.25 },
+          ],
+        },
+      ],
+    }
 
-    const scanService = new ScanService()
-    const result = await scanService.getGradingResults(filePath, fileName, fileType)
+    scanServiceStub.resolves(mockScanResults)
+    cardServiceStub.withArgs('base1-1').resolves(mockCardInfo1)
+    cardServiceStub.withArgs('base1-2').resolves(mockCardInfo2)
 
-    assert.deepEqual(result, mockGradingResponse)
-    sinon.assert.calledWith(readFileSyncStub, filePath)
-    sinon.assert.calledWith(fileConstructorStub, [fileBuffer], fileName, { type: fileType })
-    sinon.assert.called(formDataAppendStub)
-    sinon.assert.called(gradeCardStub)
+    const response = await client
+      .post('/api/v1/scan/analyze')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+
+    response.assertStatus(200)
+
+    const results = response.body()
+    assert.isArray(results)
+    assert.lengthOf(results, 2)
+
+    assert.equal(results[0].id, 'base1-1')
+    assert.equal(results[0].similarity, 0.95)
+    assert.equal(results[0].imageSmall, 'https://example.com/bulbasaur-small.png')
+
+    assert.equal(results[1].id, 'base1-2')
+    assert.equal(results[1].similarity, 0.87)
+    assert.equal(results[1].imageSmall, 'https://example.com/ivysaur-small.png')
+
+    sinon.assert.calledOnce(scanServiceStub)
+    sinon.assert.calledWith(cardServiceStub.firstCall, 'base1-1')
+    sinon.assert.calledWith(cardServiceStub.secondCall, 'base1-2')
   })
 
-  test('getGradingResults - should propagate exception from Iris', async ({ assert }) => {
-    const filePath = '/path/to/image.jpg'
-    const fileName = 'image.jpg'
-    const fileType = 'image/jpeg'
-    const errorMessage = 'Iris service unavailable'
-
-    readFileSyncStub.returns(Buffer.from('fake-image-data'))
-    gradeCardStub.rejects(new IrisException(errorMessage))
-
-    const scanService = new ScanService()
-    await assert.rejects(async () => {
-      await scanService.getGradingResults(filePath, fileName, fileType)
-    }, 'Iris service unavailable')
-  })
-
-  test('getGradingResults - should use default type if fileType not provided', async ({
+  test('analyze - should always delete the file, even in case of error', async ({
+    client,
     assert,
   }) => {
-    const filePath = '/path/to/image.jpg'
-    const fileName = 'image.jpg'
-    const fileBuffer = Buffer.from('fake-image-data')
+    scanServiceStub.rejects(new Error('Erreur de service simulée'))
 
-    readFileSyncStub.withArgs(filePath).returns(fileBuffer)
-    gradeCardStub.resolves({ message: 'Gradation complétée', cards: [] })
+    rmSyncStub.reset()
 
-    const scanService = new ScanService()
-    const result = await scanService.getGradingResults(filePath, fileName, undefined)
+    const response = await client
+      .post('/api/v1/scan/analyze')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
 
-    assert.deepEqual(result, { message: 'Gradation complétée', cards: [] })
-    sinon.assert.calledWith(fileConstructorStub, [fileBuffer], fileName, {
-      type: 'application/octet-stream',
-    })
+    response.assertStatus(500)
+
+    assert.isTrue(rmSyncStub.called, 'rmSync devrait être appelé pour supprimer le fichier')
+
+    const filePath = rmSyncStub.firstCall.args[0]
+    assert.isTrue(
+      filePath.startsWith(app.makePath('storage/uploads')),
+      `Le fichier supprimé devrait être dans le répertoire uploads`
+    )
   })
 })

@@ -47,9 +47,14 @@ export default class ScanService {
       formData.append('file', localFile)
 
       const gradingResponse = await this.irisApiClient.gradeCard(formData)
-
       return gradingResponse
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'IrisNoMatchException') {
+        return {
+          message: error.message,
+          grades: [],
+        }
+      }
       throw error
     }
   }
