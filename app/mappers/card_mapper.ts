@@ -7,18 +7,9 @@ import {
   CardScanResultOutputDTO,
 } from '#types/card_dto_type'
 import { ScanCardInfoDTO } from '#types/iris_type'
+import PriceUtils from '#utils/price_utils'
 
 export default class CardMapper {
-  private static readonly UNKNOWN_PRICE = 'unknown'
-  private static readonly DEFAULT_PRICE = 0
-
-  public static formatPriceValue(value: string | number | null): string {
-    if (value === null || value === '0.00' || value === 0 || value === '0') {
-      return this.UNKNOWN_PRICE
-    }
-    return value.toString()
-  }
-
   /**
    * Converts a Card object to a CardPricesOutputDTO.
    */
@@ -57,12 +48,12 @@ export default class CardMapper {
         {
           id: cardMarketPrice.id,
           type: 'normal',
-          market: this.formatPriceValue(normal),
+          market: PriceUtils.formatPriceValue(normal),
         },
         {
           id: cardMarketPrice.id,
           type: 'reverseHolo',
-          market: this.formatPriceValue(reverseHoloPrice),
+          market: PriceUtils.formatPriceValue(reverseHoloPrice),
         },
       ],
     }
@@ -82,7 +73,7 @@ export default class CardMapper {
       tcgPlayerPrices: (tcgPlayerReporting.tcgPlayerPrices || []).map((price) => ({
         id: price.id,
         type: price.type,
-        market: this.formatPriceValue(price.market),
+        market: PriceUtils.formatPriceValue(price.market),
       })),
     }
   }
@@ -104,13 +95,13 @@ export default class CardMapper {
   }
 
   public static getBestPriceFromCardScanResultInfos(card: Card): string {
-    if (!card) return this.UNKNOWN_PRICE
+    if (!card) return PriceUtils.UNKNOWN_PRICE
 
     const cardMarketPrices = card.cardMarketPrices || []
     const tcgPlayerReportings = card.tcgPlayerReportings || []
 
     if (cardMarketPrices.length === 0 && tcgPlayerReportings.length === 0) {
-      return this.UNKNOWN_PRICE
+      return PriceUtils.UNKNOWN_PRICE
     }
 
     // cardMarketPrices and tcgPlayerReportings are already sorted in sql request
@@ -120,17 +111,17 @@ export default class CardMapper {
     const bestCardMarketPrice =
       cardMarketPrices.length > 0
         ? this.getBestCardMarketPrice(todayCardMarketPrices)
-        : this.DEFAULT_PRICE
+        : PriceUtils.DEFAULT_PRICE
 
     const bestTcgPlayerPrice =
       tcgPlayerReportings.length > 0
         ? this.getBestTcgPlayerReportingPrice(todayTcgPlayerReporting)
-        : this.DEFAULT_PRICE
+        : PriceUtils.DEFAULT_PRICE
 
     // compare prices and return the best one between CardMarket and TCGPlayer
     const bestPrice = Math.max(bestCardMarketPrice, bestTcgPlayerPrice)
 
-    return bestPrice === this.DEFAULT_PRICE ? this.UNKNOWN_PRICE : bestPrice.toString()
+    return bestPrice === PriceUtils.DEFAULT_PRICE ? PriceUtils.UNKNOWN_PRICE : bestPrice.toString()
   }
 
   /**
@@ -140,11 +131,13 @@ export default class CardMapper {
     reporting: TcgPlayerReporting | null | undefined
   ): number {
     if (!reporting || !reporting.tcgPlayerPrices || reporting.tcgPlayerPrices.length === 0) {
-      return this.DEFAULT_PRICE
+      return PriceUtils.DEFAULT_PRICE
     }
 
     // Validate that prices are sorted by market price in descending order
-    return Math.max(...reporting.tcgPlayerPrices.map((price) => price.market || this.DEFAULT_PRICE))
+    return Math.max(
+      ...reporting.tcgPlayerPrices.map((price) => price.market || PriceUtils.DEFAULT_PRICE)
+    )
   }
 
   /**
@@ -152,11 +145,11 @@ export default class CardMapper {
    */
   public static getBestCardMarketPrice(price: CardMarketPrice | null | undefined): number {
     if (!price) {
-      return this.DEFAULT_PRICE
+      return PriceUtils.DEFAULT_PRICE
     }
 
-    const reverseHoloTrend = price.reverseHoloTrend || this.DEFAULT_PRICE
-    const trendPrice = price.trendPrice || this.DEFAULT_PRICE
+    const reverseHoloTrend = price.reverseHoloTrend || PriceUtils.DEFAULT_PRICE
+    const trendPrice = price.trendPrice || PriceUtils.DEFAULT_PRICE
 
     return Math.max(trendPrice, reverseHoloTrend)
   }

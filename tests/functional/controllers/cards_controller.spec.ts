@@ -11,6 +11,10 @@ import { SubtypeFactory } from '#database/factories/subtype'
 import { TypeFactory } from '#database/factories/type'
 import { FolioFactory } from '#database/factories/folio'
 import { CardFolioFactory } from '#database/factories/card_folio'
+import { CardFinishBasicFactory } from '#database/factories/card_finish'
+import { CardConditionBasicFactory } from '#database/factories/card_condition'
+import { CardMarketPriceFactory } from '#database/factories/card_marker_price'
+import { DateTime } from 'luxon'
 
 test.group('Card controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
@@ -609,6 +613,90 @@ test.group('Card controller', (group) => {
 
     response.assertStatus(404)
 
+    response.assertBodyContains({
+      message: 'Card not found',
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
+
+  test('advices - should return price advice for a card', async ({ client, assert }) => {
+    // Setup
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
+    const card = await CardFactory.merge({ id: 'base1-1' }).create()
+    const finish = await CardFinishBasicFactory.create() // Holofoil
+    const condition = await CardConditionBasicFactory.create() // Good condition
+
+    await CardMarketPriceFactory.merge({
+      cardId: card.id,
+      trendPrice: 10.0,
+      reverseHoloTrend: 15.0,
+      updatedAt: DateTime.now(),
+    }).create()
+
+    const response = await client
+      .get(`/api/v1/cards/${card.id}/advices`)
+      .qs({ conditions: condition.id, finishes: finish.id })
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+    const body = response.body()
+
+    assert.exists(body.advicePrice)
+    assert.isString(body.advicePrice)
+    assert.notEqual(body.advicePrice, 'unknown')
+  })
+
+  test('advices - should return unknown when no prices available', async ({ client, assert }) => {
+    // Setup
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
+    const card = await CardFactory.merge({ id: 'base1-1' }).create()
+    const finish = await CardFinishBasicFactory.create()
+    const condition = await CardConditionBasicFactory.create()
+
+    const response = await client
+      .get(`/api/v1/cards/${card.id}/advices`)
+      .qs({ conditions: condition.id, finishes: finish.id })
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+    assert.equal(response.body().advicePrice, 'unknown')
+  })
+
+  test('advices - should handle invalid query parameters', async ({ client }) => {
+    // Setup
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
+    const card = await CardFactory.merge({ id: 'base1-1' }).create()
+
+    const response = await client
+      .get(`/api/v1/cards/${card.id}/advices`)
+      .qs({ conditions: 'invalid', finishes: 'invalid' })
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(422)
+  })
+
+  test('advices - should return 404 for non-existent card', async ({ client }) => {
+    const finish = await CardFinishBasicFactory.create()
+    const condition = await CardConditionBasicFactory.create()
+
+    const response = await client
+      .get('/api/v1/cards/non-existent-id/advices')
+      .qs({ conditions: condition.id, finishes: finish.id })
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(404)
     response.assertBodyContains({
       message: 'Card not found',
       code: 'E_ROW_NOT_FOUND',

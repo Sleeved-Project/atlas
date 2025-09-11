@@ -11,4 +11,7 @@ export default class CardCondition extends BaseModel {
 
   @column()
   declare label: string
+
+  @column({ columnName: 'percent_price_alteration' })
+  declare percentPriceAlteration: number
 }
