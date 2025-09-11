@@ -24,4 +24,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   STRIPE_WEBHOOK_SECRET: Env.schema.string(),
   ATLAS_BASE_URL: Env.schema.string(),
   UPLOAD_DIR: Env.schema.string(),
+  CLOUDINARY_CLOUD_NAME: Env.schema.string(),
+  CLOUDINARY_API_KEY: Env.schema.string(),
+  CLOUDINARY_API_SECRET: Env.schema.string(),
 })

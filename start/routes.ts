@@ -46,6 +46,7 @@ router
             router.get('/:id', [CardsController, 'show']).use(middleware.auth())
             router.get('/:id/details', [CardsController, 'details'])
             router.get('/:id/prices', [CardsController, 'prices'])
+            router.get('/:id/advices', [CardsController, 'advices'])
           })
           .prefix('cards')
         router

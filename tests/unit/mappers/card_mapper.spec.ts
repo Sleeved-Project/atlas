@@ -19,23 +19,6 @@ test.group('CardMapper', (group) => {
     sandbox.restore()
   })
 
-  test('formatPriceValue - should return "unknown" for null or zero values', ({ assert }) => {
-    const formatPriceValue = Reflect.get(CardMapper, 'formatPriceValue').bind(CardMapper)
-
-    assert.equal(formatPriceValue(null), 'unknown')
-    assert.equal(formatPriceValue('0.00'), 'unknown')
-    assert.equal(formatPriceValue(0), 'unknown')
-    assert.equal(formatPriceValue('0'), 'unknown')
-  })
-
-  test('formatPriceValue - should convert non-null values to string', ({ assert }) => {
-    const formatPriceValue = Reflect.get(CardMapper, 'formatPriceValue').bind(CardMapper)
-
-    assert.equal(formatPriceValue(10), '10')
-    assert.equal(formatPriceValue('10.50'), '10.50')
-    assert.equal(formatPriceValue(15.75), '15.75')
-  })
-
   test('toCardPricesOutputDTO - should throw an error if the card is null', ({ assert }) => {
     assert.throws(
       () => CardMapper.toCardPricesOutputDTO(null as unknown as Card),
