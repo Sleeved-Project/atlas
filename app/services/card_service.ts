@@ -114,6 +114,16 @@ export default class CardService {
       .firstOrFail()
   }
 
+  public async getMinimalCardDetailById(id: string): Promise<Card> {
+    return await Card.query()
+      .preload('set', (setQuery) => {
+        setQuery.select('id', 'release_date')
+      })
+      .select('id', 'name', 'image_small', 'set_id')
+      .where('id', id)
+      .firstOrFail()
+  }
+
   public async getLastCardPricesById(id: string): Promise<Card> {
     const query = Card.query().select('id').where('id', id)
     PriceQueryUtils.buildPricePreloadQuery(ConstantUtils.DAY_BEFORE_DEFAULT_COUNT, query)

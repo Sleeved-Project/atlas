@@ -57,7 +57,7 @@ test.group('Scan controller', (group) => {
     client,
     assert,
   }) => {
-    const mockScanResults = [{ id: 'base1-1', similarity: 0.95 }] // 'similarity' au lieu de 'confidence'
+    const mockScanResults = [{ id: 'base1-1', similarity: 0.95 }]
 
     const mockCardInfo = {
       id: 'base1-1',

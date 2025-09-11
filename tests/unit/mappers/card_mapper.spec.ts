@@ -122,6 +122,7 @@ test.group('CardMapper', (group) => {
     const scanCardInfo: ScanCardInfoDTO = {
       id: '1',
       similarity: 95,
+      extractedTempImageUrl: 'temp-image-url.jpg',
     }
 
     const result = CardMapper.toCardScanResultOutputDTO(card, scanCardInfo)

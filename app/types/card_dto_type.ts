@@ -17,6 +17,15 @@ export type CardScanResultOutputDTO = {
   imageLarge: string
   bestTrendPrice: string
   similarity: number
+  extractedTempImageUrl: string
+}
+
+export type CardScanIdentifyResultOutputDTO = {
+  id: string
+  potentialMatchedCard: string
+  name: string
+  similarity: number
+  extractedTempImageUrl: string
 }
 
 export interface CardBaseOuputDTO {

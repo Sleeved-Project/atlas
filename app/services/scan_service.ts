@@ -31,4 +31,27 @@ export default class ScanService {
       throw error
     }
   }
+
+  public async getIdentifyResult(
+    filePath: string,
+    fileName: string,
+    fileType: string | undefined
+  ): Promise<ScanCardInfoDTO | null> {
+    try {
+      const formData = new FormData()
+
+      const fileStream = fs.readFileSync(filePath)
+      const localFile = new File([fileStream], fileName, {
+        type: fileType || 'application/octet-stream',
+      })
+
+      formData.append('file', localFile)
+
+      const scanAnalyseResponse = await this.irisApiClient.scanCard(formData)
+
+      return IrisMapper.scanAnalyseIrisResponseToIdentifyDTO(scanAnalyseResponse)
+    } catch (error) {
+      throw error
+    }
+  }
 }

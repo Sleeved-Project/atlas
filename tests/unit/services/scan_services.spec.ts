@@ -60,6 +60,7 @@ test.group('ScanService', (group) => {
           similarity_percentage: 95,
           matched_card_id: '123',
           matched_card_name: 'Test Card',
+          extracted_temp_image_url: 'https://example.com/temp-image.jpg',
           top_n_matches: [
             {
               card_id: '123',
@@ -76,6 +77,7 @@ test.group('ScanService', (group) => {
       {
         id: '123',
         similarity: 95,
+        extractedTempImageUrl: 'https://example.com/temp-image.jpg',
       },
     ]
 
@@ -112,6 +114,7 @@ test.group('ScanService', (group) => {
           similarity_percentage: 95,
           matched_card_id: '123',
           matched_card_name: 'Test Card',
+          extracted_temp_image_url: 'https://example.com/temp-image.jpg',
           top_n_matches: [
             {
               card_id: '123',
@@ -128,6 +131,7 @@ test.group('ScanService', (group) => {
       {
         id: '123',
         similarity: 95,
+        extractedTempImageUrl: 'https://example.com/temp-image.jpg',
       },
     ]
 

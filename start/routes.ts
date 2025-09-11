@@ -78,7 +78,12 @@ router
             router.post('/account/', [PaymentController, 'createAccount']).use(middleware.auth())
           })
           .prefix('payment')
-        router.post('/scan/analyze', [ScanController, 'analyze'])
+        router
+          .group(() => {
+            router.post('/analyze', [ScanController, 'analyze'])
+            router.post('/identify', [ScanController, 'identify'])
+          })
+          .prefix('scan')
       })
       .prefix('v1')
   })
