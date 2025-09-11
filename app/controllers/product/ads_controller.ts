@@ -11,6 +11,7 @@ import { createAdValidator } from '#validators/ad_validator'
 import CertificateService from '#services/certificate_service'
 import Certificate from '#models/certificate'
 import FileService from '#services/file_service'
+import MediaUploadService from '#services/media_upload_service'
 
 @inject()
 export default class AdsController {
@@ -18,7 +19,8 @@ export default class AdsController {
     private cardService: CardService,
     private certificateService: CertificateService,
     private adService: AdService,
-    private fileService: FileService // Ajout du FileService
+    private fileService: FileService,
+    private mediaUploadService: MediaUploadService
   ) {}
 
   async store({ request, response, authUser }: HttpContext) {
@@ -41,7 +43,9 @@ export default class AdsController {
         )
       }
 
-      // !!! Upload files on cloudinary
+      // Upload files to Cloudinary
+      const rectoUrl = await this.mediaUploadService.upload(rectoPath, 'ads/recto')
+      const versoUrl = await this.mediaUploadService.upload(versoPath, 'ads/verso')
 
       // Create ad with published status
       await this.adService.createAd(
@@ -49,8 +53,8 @@ export default class AdsController {
         cardData.finishId,
         cardData.conditionId,
         card.id,
-        rectoPath,
-        versoPath,
+        rectoUrl,
+        versoUrl,
         cardData.price,
         certificate?.id || null
       )
