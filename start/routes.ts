@@ -77,8 +77,13 @@ router
         router
           .group(() => {
             router.get('/account/', [PaymentController, 'createAccount']).use(middleware.auth())
+            router.get('/sheet/', [PaymentController, 'createPaymentSheet']).use(middleware.auth())
+            router
+              .get('/publishablekey/', [PaymentController, 'getPublishableKey'])
+              .use(middleware.auth())
             router.get('/account/success', [PaymentController, 'stripeAccountLinkSuccess'])
             router.get('/account/refresh', [PaymentController, 'stripeAccountLinkRefresh'])
+            router.post('/webhook/', [PaymentController, 'stripeWebhook'])
           })
           .prefix('payment')
         router.post('/scan/analyze', [ScanController, 'analyze'])
