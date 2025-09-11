@@ -74,6 +74,7 @@ router
           .group(() => {
             router.post('/', [AdsController, 'store']).use(middleware.auth())
             router.get('/', [AdsController, 'index']).use(middleware.auth())
+            router.get('/search', [AdsController, 'search']).use(middleware.auth())
           })
           .prefix('ads')
         router

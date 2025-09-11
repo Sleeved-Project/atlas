@@ -8,7 +8,12 @@ import { SuccessOutputDTO } from '#types/success_output_dto_type'
 import CardService from '#services/card_service'
 import AdService from '#services/ad_service'
 import { MultipartFile } from '@adonisjs/core/bodyparser'
-import { adCardSchema, createAdValidator, listAdsValidator } from '#validators/ad_validator'
+import {
+  adCardSchema,
+  createAdValidator,
+  listAdsValidator,
+  searchAdsValidator,
+} from '#validators/ad_validator'
 import app from '@adonisjs/core/services/app'
 import { cuid } from '@adonisjs/core/helpers'
 import { FileUploadException } from '#exceptions/file_upload_exception'
@@ -98,6 +103,19 @@ export default class AdsController {
     try {
       const filters = await listAdsValidator.validate(request.qs())
       const ads = await this.adService.listAds(filters)
+      return response.ok(ads)
+    } catch (error) {
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
+      throw error
+    }
+  }
+
+  async search({ request, response }: HttpContext) {
+    try {
+      const query = await searchAdsValidator.validate(request.qs())
+      const ads = await this.adService.searchAds(query)
       return response.ok(ads)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {

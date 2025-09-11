@@ -13,8 +13,8 @@ export const AdFactory = Factory.define(Ad, ({ faker }) => {
     rectoImageUrl: faker.image.url(),
     versoImageUrl: faker.image.url(),
     statusId: 1,
-    conditionId: faker.number.int({ min: 1, max: 5 }),
-    finishId: faker.number.int({ min: 1, max: 3 }),
+    conditionId: 2,
+    finishId: 1,
     certificateId: null,
   }
 })
@@ -24,16 +24,4 @@ export const AdFactory = Factory.define(Ad, ({ faker }) => {
   .relation('finish', () => CardFinishFactory)
   .relation('certificate', () => CertificateFactory)
   .relation('status', () => AdStatusFactory)
-  .state('nearMint', (ad) => {
-    ad.conditionId = 1 // Assuming 1 = Near Mint
-  })
-  .state('foil', (ad) => {
-    ad.finishId = 2 // Assuming 2 = Foil
-  })
-  .state('expensive', (ad) => {
-    ad.originalPrice = 50000 // 500€
-  })
-  .state('cheap', (ad) => {
-    ad.originalPrice = 500 // 5€
-  })
   .build()
