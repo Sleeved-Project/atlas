@@ -115,13 +115,7 @@ export default class CardService {
   }
 
   public async getMinimalCardDetailById(id: string): Promise<Card> {
-    return await Card.query()
-      .preload('set', (setQuery) => {
-        setQuery.select('id', 'release_date')
-      })
-      .select('id', 'name', 'image_small', 'set_id')
-      .where('id', id)
-      .firstOrFail()
+    return await Card.query().select('id', 'name', 'image_small').where('id', id).firstOrFail()
   }
 
   public async getLastCardPricesById(id: string): Promise<Card> {

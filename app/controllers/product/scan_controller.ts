@@ -1,3 +1,4 @@
+import { ScanNoMatchException } from '#exceptions/iris_exception'
 import NotFoundException from '#exceptions/not_found_exception'
 import ValidationException from '#exceptions/validation_exception'
 import CardMapper from '#mappers/card_mapper'
@@ -63,7 +64,7 @@ export default class ScanController {
       )
 
       if (!cardIdentificationResult) {
-        return response.notFound({ message: "Aucune carte valide détectée dans l'image" })
+        throw new ScanNoMatchException()
       }
 
       const cardDetails = await this.cardService.getMinimalCardDetailById(
