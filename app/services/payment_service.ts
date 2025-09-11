@@ -19,8 +19,9 @@ export default class PaymentService {
   }
 
   protected async linkAccount(accountId: string): Promise<string> {
-    const returnUrl = `https://192.168.0.33/--/sell/success/`
-    const refreshUrl = `https://192.168.0.33/--/sell/refresh/`
+    // These Urls need to be actual URLs that Stripe can reach otherwise Stripe rejects the account link creation
+    const returnUrl = `${process.env.ATLAS_BASE_URL}/payment/account/success`
+    const refreshUrl = `${process.env.ATLAS_BASE_URL}/payment/account/refresh`
 
     const accountLink = await this.stripeApiClient.linkStripeAccount(
       accountId,

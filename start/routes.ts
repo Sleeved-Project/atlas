@@ -14,6 +14,7 @@ const CardConditionsController = () => import('#controllers/product/card_conditi
 const CardFinishesController = () => import('#controllers/product/card_finishes_controller')
 const PaymentController = () => import('#controllers/product/payment_controller')
 const UsersController = () => import('#controllers/product/users_controller')
+const AdsController = () => import('#controllers/product/ads_controller')
 
 router.get('/', [RootController])
 router.get('/health', [HealthCheckController])
@@ -28,6 +29,7 @@ router
             router.post('/init', [MeController, 'store']).use(middleware.auth())
             router.get('/', [MeController, 'show']).use(middleware.auth())
             router.patch('/', [MeController, 'update']).use(middleware.auth())
+            router.get('/stripe', [MeController, 'hasStripeAccount']).use(middleware.auth())
           })
           .prefix('me')
         router
@@ -70,12 +72,19 @@ router
           .prefix('sets')
         router
           .group(() => {
+            router.post('/', [AdsController, 'store']).use(middleware.auth())
+          })
+          .prefix('ads')
+        router
+          .group(() => {
             router.get('/cards', [FiltersController, 'cards'])
           })
           .prefix('filters')
         router
           .group(() => {
-            router.post('/account/', [PaymentController, 'createAccount']).use(middleware.auth())
+            router.get('/account/', [PaymentController, 'createAccount']).use(middleware.auth())
+            router.get('/account/success', [PaymentController, 'stripeAccountLinkSuccess'])
+            router.get('/account/refresh', [PaymentController, 'stripeAccountLinkRefresh'])
           })
           .prefix('payment')
         router

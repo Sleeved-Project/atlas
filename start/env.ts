@@ -20,4 +20,6 @@ export default await Env.create(new URL('../', import.meta.url), {
   WARDEN_API_BASE_URL: Env.schema.string(),
   IRIS_API_BASE_URL: Env.schema.string(),
   STRIPE_SECRET_KEY: Env.schema.string(),
+  ATLAS_BASE_URL: Env.schema.string(),
+  UPLOAD_DIR: Env.schema.string(),
 })

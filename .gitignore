@@ -26,3 +26,5 @@ yarn-error.log
 
 # Database files
 *_data_dump.sql
+*structure.dbml
+*structure.json
