@@ -13,12 +13,21 @@ test.group('Payment controller', (group) => {
   let paymentServiceStub: sinon.SinonStub
   let meServiceStub: sinon.SinonStub
   let stripeApiClient: StripeApiClient
+  let adServiceStub: sinon.SinonStub
+  let paymentIntentServiceStub: sinon.SinonStub
+  let paymentServiceCreatePaymentSheetStub: sinon.SinonStub
 
   group.setup(() => {
     wardenApiClientStub = AuthServiceMock.setupWardenApiClientStub()
     paymentServiceStub = sinon.stub(PaymentService.prototype, 'createAccount')
     meServiceStub = sinon.stub(MeService.prototype, 'updateUser')
     stripeApiClient = new StripeApiClient()
+    adServiceStub = sinon.stub()
+    paymentIntentServiceStub = sinon.stub()
+    paymentServiceCreatePaymentSheetStub = sinon.stub(
+      PaymentService.prototype,
+      'createPaymentSheet'
+    )
   })
 
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -98,17 +107,26 @@ test.group('Payment controller', (group) => {
   })
 
   test('createPaymentSheet - should create payment sheet', async ({ client, assert }) => {
-    const paymentServiceCreatePaymentSheetStub = sinon
-      .stub(PaymentService.prototype, 'createPaymentSheet')
-      .resolves({
-        paymentIntent: 'pi_12345',
-        ephemeralKey: 'ek_12345',
-        customer: 'cus_12345',
-      })
+    // TODO use ad factory to create ad and use its id in the request
+    paymentServiceCreatePaymentSheetStub.resolves({
+      paymentIntentClientSecret: 'pi_12345',
+      paymentIntentId: 'pi_12345',
+      ephemeralKey: 'ek_12345',
+      customer: 'cus_12345',
+    })
+
+    adServiceStub.resolves({ id: 'ad_12345', userId: 'user_12345' })
+    paymentIntentServiceStub.resolves({
+      id: 'pi_12345',
+      fromId: 'user_12345',
+      toId: 'user_67890',
+      adId: 'ad_12345',
+    })
 
     const response = await client
-      .get('/api/v1/payment/sheet')
+      .get('/api/v1/payment/ad_12345/sheet')
       .header('Authorization', 'Bearer fake-token-for-testing')
+    console.log('response', response.body())
 
     response.assertStatus(200)
     response.assertBodyContains({
@@ -117,8 +135,47 @@ test.group('Payment controller', (group) => {
       customer: 'cus_12345',
     })
 
+    assert.isTrue(adServiceStub.calledWith('ad_12345', { stripeId: 'acct_12345' }))
+    assert.isTrue(
+      paymentIntentServiceStub.calledOnceWith({
+        id: 'pi_12345',
+        fromId: 'user_12345',
+        toId: 'user_67890',
+        adId: 'ad_12345',
+      })
+    )
+
     assert.isTrue(paymentServiceCreatePaymentSheetStub.calledOnceWith(TEST_AUTH_USER_ID))
 
+    paymentServiceCreatePaymentSheetStub.restore()
+  })
+
+  test('createPaymentSheet - should throw if update ad creates error', async ({ client }) => {
+    paymentServiceCreatePaymentSheetStub.resolves({
+      paymentIntentClientSecret: 'pi_12345',
+      paymentIntentId: 'pi_12345',
+      ephemeralKey: 'ek_12345',
+      customer: 'cus_12345',
+    })
+
+    adServiceStub.rejects(new lucidErrors.E_ROW_NOT_FOUND())
+    paymentIntentServiceStub.resolves({
+      id: 'pi_12345',
+      fromId: 'user_12345',
+      toId: 'user_67890',
+      adId: 'ad_12345',
+    })
+
+    const response = await client
+      .get('/api/v1/payment/ad_12345/sheet')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+    console.log('response', response.body())
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      message: 'Ad not found',
+      code: 'E_ROW_NOT_FOUND',
+    })
     paymentServiceCreatePaymentSheetStub.restore()
   })
 
@@ -126,12 +183,10 @@ test.group('Payment controller', (group) => {
     client,
     assert,
   }) => {
-    const paymentServiceCreatePaymentSheetStub = sinon
-      .stub(PaymentService.prototype, 'createPaymentSheet')
-      .rejects(new StripeException())
+    paymentServiceCreatePaymentSheetStub.rejects(new StripeException())
 
     const response = await client
-      .get('/api/v1/payment/sheet')
+      .get('/api/v1/payment/ad_12345/sheet')
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(500)

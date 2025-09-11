@@ -1,0 +1,39 @@
+import PaymentIntent from '#models/payment_intent'
+
+interface CreatePaymentIntentParams {
+  id: string
+  fromId: string
+  toId: string
+  adId: string
+  status: string
+}
+
+export default class PaymentIntentService {
+  async createPaymentIntent({
+    id,
+    fromId,
+    toId,
+    adId,
+    status,
+  }: CreatePaymentIntentParams): Promise<PaymentIntent> {
+    return await PaymentIntent.create({
+      id,
+      fromId,
+      toId,
+      adId,
+      status,
+    })
+  }
+
+  async getPaymentIntentById(id: string) {
+    return await PaymentIntent.findOrFail(id)
+  }
+
+  async updateUser(id: string, data: Partial<PaymentIntent>) {
+    const paymentIntent = await PaymentIntent.findOrFail(id)
+    paymentIntent.merge(data)
+    await paymentIntent.save()
+
+    return paymentIntent
+  }
+}

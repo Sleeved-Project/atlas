@@ -83,7 +83,9 @@ router
         router
           .group(() => {
             router.get('/account/', [PaymentController, 'createAccount']).use(middleware.auth())
-            router.get('/sheet/', [PaymentController, 'createPaymentSheet']).use(middleware.auth())
+            router
+              .get('/:id/sheet/', [PaymentController, 'createPaymentSheet'])
+              .use(middleware.auth())
             router
               .get('/publishablekey/', [PaymentController, 'getPublishableKey'])
               .use(middleware.auth())

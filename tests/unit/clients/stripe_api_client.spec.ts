@@ -87,14 +87,15 @@ test.group('StripeApiClient', (group) => {
   }) => {
     customer.resolves({ id: 'cus_123' })
     ephemeralKey.resolves({ secret: 'ephkey_123' })
-    paymentIntent.resolves({ client_secret: 'secret_123' })
+    paymentIntent.resolves({ client_secret: 'secret_123', id: 'pi_123' })
     const result = await stripeApiClient.createPaymentSheet('user_123')
     console.log('result', result)
 
     assert.deepEqual(result, {
       customer: 'cus_123',
       ephemeralKey: 'ephkey_123',
-      paymentIntent: 'secret_123',
+      paymentIntentClientSecret: 'secret_123',
+      paymentIntentId: 'pi_123',
     })
   })
 
@@ -113,11 +114,7 @@ test.group('StripeApiClient', (group) => {
       .stub(stripeApiClient['stripe'].webhooks, 'constructEvent')
       .returns({ type: 'event.type' } as any)
 
-    const result = await stripeApiClient.stripeWebhook(
-      { type: 'event.type' },
-      'rawBody',
-      'signature'
-    )
+    const result = await stripeApiClient.stripeWebhook('rawBody', 'signature')
     assert.isUndefined(result)
     assert.isTrue(constructEventStub.calledOnce)
   })
@@ -128,7 +125,7 @@ test.group('StripeApiClient', (group) => {
       .throws(new Error('Invalid signature'))
 
     await assert.rejects(async () => {
-      await stripeApiClient.stripeWebhook({ type: 'event.type' }, 'rawBody', 'signature')
+      await stripeApiClient.stripeWebhook('rawBody', 'signature')
     }, StripeException.message)
     assert.isTrue(constructEventStub.calledOnce)
   })

@@ -6,7 +6,8 @@ interface CreateAccountResponse {
 }
 
 interface CreatePaymentSheetResponse {
-  paymentIntent: string | null
+  paymentIntentClientSecret: string | null
+  paymentIntentId: string
   ephemeralKey: string | undefined
   customer: string
 }
@@ -39,16 +40,12 @@ export default class PaymentService {
   }
 
   async createPaymentSheet(userId: string): Promise<CreatePaymentSheetResponse> {
-    const { paymentIntent, ephemeralKey, customer } =
+    const { paymentIntentClientSecret, paymentIntentId, ephemeralKey, customer } =
       await this.stripeApiClient.createPaymentSheet(userId)
-    return { paymentIntent, ephemeralKey, customer }
+    return { paymentIntentClientSecret, paymentIntentId, ephemeralKey, customer }
   }
 
-  async stripeWebhook(
-    event: Record<string, any>,
-    rawBody: string,
-    signature: string | string[]
-  ): Promise<void> {
-    await this.stripeApiClient.stripeWebhook(event, rawBody, signature)
+  async stripeWebhook(rawBody: string, signature: string | string[]): Promise<Record<string, any>> {
+    return await this.stripeApiClient.stripeWebhook(rawBody, signature)
   }
 }

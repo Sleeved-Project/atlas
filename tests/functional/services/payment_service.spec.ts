@@ -72,7 +72,8 @@ test.group('Payment service', (group) => {
 
   test('createPaymentSheet - should create payment sheet successfully', async ({ assert }) => {
     const paymentSheetResponse = {
-      paymentIntent: 'pi_12345',
+      paymentIntentClientSecret: 'pi_12345',
+      paymentIntentId: 'pi_12345',
       ephemeralKey: 'ek_12345',
       customer: 'cus_12345',
     }

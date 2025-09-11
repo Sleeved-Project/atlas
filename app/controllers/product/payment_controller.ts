@@ -5,12 +5,17 @@ import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { errors as lucidErrors } from '@adonisjs/lucid'
 import { StripeException } from '#exceptions/payment_exception'
+import { paymentSchemaValidator } from '#validators/payment_validator'
+import AdService from '#services/ad_service'
+import PaymentIntentService from '#services/payment_intent_service'
 
 @inject()
 export default class PaymentController {
   constructor(
     private paymentService: PaymentService,
-    private userService: UserService
+    private userService: UserService,
+    private adService: AdService,
+    private paymentIntentService: PaymentIntentService
   ) {}
 
   async createAccount({ authUser, response }: HttpContext) {
@@ -37,15 +42,27 @@ export default class PaymentController {
     response.redirect('folio://')
   }
 
-  async createPaymentSheet({ authUser, response }: HttpContext) {
+  async createPaymentSheet({ request, authUser, response }: HttpContext) {
     try {
-      // TODO This should have an AD id to get the correct price
-
-      const { paymentIntent, ephemeralKey, customer } =
+      const params = await paymentSchemaValidator.validate(request.params())
+      const { paymentIntentClientSecret, paymentIntentId, ephemeralKey, customer } =
         await this.paymentService.createPaymentSheet(authUser.id)
 
+      // Update existing ad with new status
+      const updatedAd = await this.adService.updateAd(params.id, { statusId: 2 })
+
+      // Save the payment intent id in DB
+      const sellerId = updatedAd.toJSON().userId
+      await this.paymentIntentService.createPaymentIntent({
+        id: paymentIntentId,
+        fromId: authUser.id,
+        toId: sellerId,
+        adId: params.id,
+        status: 'created',
+      })
+
       response.json({
-        paymentIntent,
+        paymentIntent: paymentIntentClientSecret,
         ephemeralKey,
         customer,
       })
@@ -68,19 +85,33 @@ export default class PaymentController {
   }
 
   async stripeWebhook({ request, response }: HttpContext) {
-    // TODO Handle webhook events from Stripe
     try {
-      let event = request.body()
-      if (process.env.STRIPE_WEBHOOK_SECRET) {
-        const signature = request.headers()['stripe-signature']
-        console.log(signature)
-
-        const rawBody = request.raw()
-        if (!signature || !rawBody) {
-          throw new StripeException()
-        }
-        await this.paymentService.stripeWebhook(event, rawBody, signature)
+      const signature = request.headers()['stripe-signature']
+      const rawBody = request.raw()
+      if (!signature || !rawBody) {
+        throw new StripeException()
       }
+
+      const stripeEvent = await this.paymentService.stripeWebhook(rawBody, signature)
+      // TODO return the event to the caller instead of handling it here
+
+      switch (stripeEvent.type) {
+        case 'payment_intent.succeeded':
+          console.log('PaymentIntent was successful!')
+          break
+
+        case 'payment_intent.payment_failed':
+          console.log('PaymentIntent failed.')
+          break
+
+        case 'payment_intent.canceled':
+          console.log('PaymentIntent was canceled.')
+          break
+
+        default:
+          break
+      }
+
       response.status(200).send('Webhook received')
     } catch (error) {
       throw error

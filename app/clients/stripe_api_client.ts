@@ -68,7 +68,8 @@ export default class StripeApiClient {
   }
 
   public async createPaymentSheet(userId: string): Promise<{
-    paymentIntent: string | null
+    paymentIntentClientSecret: string | null
+    paymentIntentId: string
     ephemeralKey: string | undefined
     customer: string
   }> {
@@ -97,7 +98,8 @@ export default class StripeApiClient {
       // TODO: store paymentintent.id, from and to ids and ad id to payment intent table
 
       return {
-        paymentIntent: paymentIntent.client_secret,
+        paymentIntentClientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id,
         ephemeralKey: ephemeralKey.secret,
         customer: newCustomer.id,
       }
@@ -107,37 +109,22 @@ export default class StripeApiClient {
   }
 
   public async stripeWebhook(
-    event: Record<string, any>,
     rawBody: string,
     signature: string | string[]
-  ): Promise<void> {
-    if (process.env.STRIPE_WEBHOOK_SECRET) {
-      try {
-        event = this.stripe.webhooks.constructEvent(
-          rawBody,
-          signature,
-          process.env.STRIPE_WEBHOOK_SECRET
-        )
-      } catch (err) {
+  ): Promise<Record<string, any>> {
+    try {
+      if (!process.env.STRIPE_WEBHOOK_SECRET) {
         throw new StripeException()
       }
+      const event = this.stripe.webhooks.constructEvent(
+        rawBody,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET
+      )
 
-      switch (event.type) {
-        case 'payment_intent.succeeded':
-          console.log('PaymentIntent was successful!')
-          break
-
-        case 'payment_intent.payment_failed':
-          console.log('PaymentIntent failed.')
-          break
-
-        case 'payment_intent.canceled':
-          console.log('PaymentIntent was canceled.')
-          break
-
-        default:
-          break
-      }
+      return event
+    } catch (err) {
+      throw new StripeException()
     }
   }
 }

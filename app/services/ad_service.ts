@@ -23,4 +23,16 @@ export default class AdService {
       certificateId,
     })
   }
+
+  public async getAdById(id: string): Promise<Ad> {
+    return await Ad.findOrFail(id)
+  }
+
+  public async updateAd(id: string, data: Partial<Ad>): Promise<Ad> {
+    const ad = await Ad.findOrFail(id)
+    ad.merge(data)
+    await ad.save()
+
+    return ad
+  }
 }
