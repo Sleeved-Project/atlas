@@ -13,13 +13,13 @@ export default class PaymentIntent extends BaseModel {
   @column({ isPrimary: true })
   declare id: string
 
-  @column()
+  @column({ columnName: 'from_id' })
   declare fromId: string
 
-  @column()
+  @column({ columnName: 'to_id' })
   declare toId: string
 
-  @column()
+  @column({ columnName: 'ad_id' })
   declare adId: string
 
   @column()
@@ -32,13 +32,20 @@ export default class PaymentIntent extends BaseModel {
   declare updatedAt: DateTime
 
   @hasOne(() => User, {
+    localKey: 'fromId',
     foreignKey: 'id',
   })
   declare from: HasOne<typeof User>
 
-  @hasOne(() => User, { foreignKey: 'id' })
+  @hasOne(() => User, {
+    localKey: 'toId',
+    foreignKey: 'id',
+  })
   declare to: HasOne<typeof User>
 
-  @hasOne(() => Ad, { foreignKey: 'id' })
+  @hasOne(() => Ad, {
+    localKey: 'adId',
+    foreignKey: 'id',
+  })
   declare ad: HasOne<typeof Ad>
 }

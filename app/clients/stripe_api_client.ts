@@ -3,6 +3,8 @@ import env from '#start/env'
 import Stripe from 'stripe'
 
 export default class StripeApiClient {
+  private readonly publishableKey = env.get('STRIPE_PUBLISHABLE_KEY')
+
   private readonly stripe = new Stripe(env.get('STRIPE_SECRET_KEY'), {
     apiVersion: '2025-07-30.basil',
   })
@@ -67,7 +69,7 @@ export default class StripeApiClient {
     }
   }
 
-  public async createPaymentSheet(): Promise<{
+  public async createPaymentSheet(adAmount: number): Promise<{
     paymentIntentClientSecret: string | null
     paymentIntentId: string
     ephemeralKey: string | undefined
@@ -85,7 +87,7 @@ export default class StripeApiClient {
 
       // Create a payment intent for the customer
       const paymentIntent = await this.stripe.paymentIntents.create({
-        amount: 2990, // Test amount in cents
+        amount: adAmount,
         currency: 'eur',
         customer: newCustomer.id,
         automatic_payment_methods: {
@@ -109,14 +111,7 @@ export default class StripeApiClient {
     signature: string | string[]
   ): Promise<Record<string, any>> {
     try {
-      if (!process.env.STRIPE_WEBHOOK_SECRET) {
-        throw new StripeException()
-      }
-      const event = this.stripe.webhooks.constructEvent(
-        rawBody,
-        signature,
-        process.env.STRIPE_WEBHOOK_SECRET
-      )
+      const event = this.stripe.webhooks.constructEvent(rawBody, signature, this.publishableKey)
 
       return event
     } catch (err) {

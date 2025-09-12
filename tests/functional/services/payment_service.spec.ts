@@ -83,10 +83,10 @@ test.group('Payment service', (group) => {
       .resolves(paymentSheetResponse)
 
     const service = new PaymentService()
-    const result = await service.createPaymentSheet()
+    const result = await service.createPaymentSheet(1000)
 
     assert.deepEqual(result, paymentSheetResponse)
-    assert.isTrue(createPaymentSheetStub.calledOnceWith())
+    assert.isTrue(createPaymentSheetStub.calledOnceWith(1000))
 
     createPaymentSheetStub.restore()
   })
@@ -99,10 +99,10 @@ test.group('Payment service', (group) => {
     const service = new PaymentService()
 
     try {
-      await service.createPaymentSheet()
+      await service.createPaymentSheet(1000)
       assert.fail('Expected createPaymentSheet to throw')
     } catch (err: any) {
-      assert.isTrue(createPaymentSheetStub.calledOnceWith())
+      assert.isTrue(createPaymentSheetStub.calledOnceWith(1000))
       assert.include(err.message, 'Stripe payment sheet error')
     }
 

@@ -88,8 +88,7 @@ test.group('StripeApiClient', (group) => {
     customer.resolves({ id: 'cus_123' })
     ephemeralKey.resolves({ secret: 'ephkey_123' })
     paymentIntent.resolves({ client_secret: 'secret_123', id: 'pi_123' })
-    const result = await stripeApiClient.createPaymentSheet()
-    console.log('result', result)
+    const result = await stripeApiClient.createPaymentSheet(1000)
 
     assert.deepEqual(result, {
       customer: 'cus_123',
@@ -105,7 +104,7 @@ test.group('StripeApiClient', (group) => {
     customer.rejects(new Error('Stripe customer error'))
 
     await assert.rejects(async () => {
-      await stripeApiClient.createPaymentSheet()
+      await stripeApiClient.createPaymentSheet(1000)
     }, StripeException.message)
   })
 

@@ -9,14 +9,19 @@ import { paymentSchemaValidator } from '#validators/payment_validator'
 import AdService from '#services/ad_service'
 import PaymentIntentService from '#services/payment_intent_service'
 import { PaymentIntentStatus } from '#types/payment_intent_status'
+import WebhookProcessor from '#processors/webhook_processor'
+import { stripeWebhookHeaderValidator } from '#validators/stripe_webhook_validator'
+import env from '#start/env'
 
 @inject()
 export default class PaymentController {
+  private readonly publishableKey = env.get('STRIPE_PUBLISHABLE_KEY')
   constructor(
     private paymentService: PaymentService,
     private userService: UserService,
     private adService: AdService,
-    private paymentIntentService: PaymentIntentService
+    private paymentIntentService: PaymentIntentService,
+    private webhookProcessor: WebhookProcessor
   ) {}
 
   async createAccount({ authUser, response }: HttpContext) {
@@ -46,8 +51,11 @@ export default class PaymentController {
   async createPaymentSheet({ request, authUser, response }: HttpContext) {
     try {
       const params = await paymentSchemaValidator.validate(request.params())
+      // Fetch the ad to get the amount and seller info
+      const ad = await this.adService.getStripePaymentRelevantColumnsAdById(params.id)
+
       const { paymentIntentClientSecret, paymentIntentId, ephemeralKey, customer } =
-        await this.paymentService.createPaymentSheet()
+        await this.paymentService.createPaymentSheet(ad.originalPrice * 100)
 
       // Update existing ad with new status
       const updatedAd = await this.adService.updateAd(params.id, { statusId: 2 })
@@ -77,7 +85,7 @@ export default class PaymentController {
   async getPublishableKey({ response }: HttpContext) {
     try {
       response.json({
-        publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+        publishableKey: this.publishableKey,
       })
     } catch (error) {
       throw error
@@ -86,7 +94,8 @@ export default class PaymentController {
 
   async stripeWebhook({ request, response }: HttpContext) {
     try {
-      const signature = request.headers()['stripe-signature']
+      const headers = await stripeWebhookHeaderValidator.validate(request.headers())
+      const signature = headers['stripe-signature']
       const rawBody = request.raw()
 
       if (!signature || !rawBody) {
@@ -95,41 +104,7 @@ export default class PaymentController {
 
       const stripeEvent = await this.paymentService.stripeWebhook(rawBody, signature)
 
-      const paymentIntent = stripeEvent.data.object
-
-      switch (stripeEvent.type) {
-        case 'payment_intent.succeeded':
-          // If succeeded, update the payment intent status in DB
-          await this.paymentIntentService.updatePaymentIntent(paymentIntent.id, {
-            status: 'succeeded',
-          })
-
-          break
-
-        case 'payment_intent.payment_failed':
-          // If failed, update the payment intent status in DB and the ad status to "available" again
-          // In the future, we will notify the user that the payment failed and they need to retry
-          await this.paymentIntentService.updatePaymentIntent(paymentIntent.id, {
-            status: 'payment_failed',
-          })
-
-          await this.adService.updateAd(paymentIntent.id, { statusId: 1 })
-          break
-
-        case 'payment_intent.canceled':
-          // If canceled, update the payment intent status in DB and the ad status to "available" again
-          // In the future, we will notify the buyer that the payment was canceled
-          await this.paymentIntentService.updatePaymentIntent(paymentIntent.id, {
-            status: 'canceled',
-          })
-
-          await this.adService.updateAd(paymentIntent.id, { statusId: 1 })
-
-          break
-
-        default:
-          break
-      }
+      await this.webhookProcessor.processStripeWebhookEvent(stripeEvent)
 
       response.status(200).send('Webhook received')
     } catch (error) {

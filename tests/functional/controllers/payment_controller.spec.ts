@@ -26,7 +26,8 @@ test.group('Payment controller', (group) => {
   let paymentServiceStub: sinon.SinonStub
   let meServiceStub: sinon.SinonStub
   let stripeApiClient: StripeApiClient
-  let adServiceStub: sinon.SinonStub
+  let adServiceUpdateAdStub: sinon.SinonStub
+  let adServiceGetStripePaymentRelevantColumnsStub: sinon.SinonStub
   let paymentIntentServiceStub: sinon.SinonStub
   let paymentServiceCreatePaymentSheetStub: sinon.SinonStub
   let stripeWebhookStub: sinon.SinonStub
@@ -36,7 +37,11 @@ test.group('Payment controller', (group) => {
     paymentServiceStub = sinon.stub(PaymentService.prototype, 'createAccount')
     meServiceStub = sinon.stub(MeService.prototype, 'updateUser')
     stripeApiClient = new StripeApiClient()
-    adServiceStub = sinon.stub(AdService.prototype, 'updateAd')
+    adServiceUpdateAdStub = sinon.stub(AdService.prototype, 'updateAd')
+    adServiceGetStripePaymentRelevantColumnsStub = sinon.stub(
+      AdService.prototype,
+      'getStripePaymentRelevantColumnsAdById'
+    )
     paymentIntentServiceStub = sinon.stub(PaymentIntentService.prototype, 'createPaymentIntent')
     paymentServiceCreatePaymentSheetStub = sinon.stub(
       PaymentService.prototype,
@@ -51,7 +56,8 @@ test.group('Payment controller', (group) => {
     wardenApiClientStub.restore()
     paymentServiceStub.restore()
     meServiceStub.restore()
-    adServiceStub.restore()
+    adServiceGetStripePaymentRelevantColumnsStub.restore()
+    adServiceUpdateAdStub.restore()
     paymentIntentServiceStub.restore()
     paymentServiceCreatePaymentSheetStub.restore()
     stripeWebhookStub.restore()
@@ -141,7 +147,12 @@ test.group('Payment controller', (group) => {
     await CardConditionFactory.merge({ id: 1 }).create()
     await CardFinishFactory.merge({ id: 1 }).create()
     await UserFactory.merge({ id: 'user_67890', stripeId: 'acct_12345' }).create()
-    await AdFactory.merge({ id: 'ad_12345', cardId: 'card_12345', sellerId: 'user_67890' }).create()
+    await AdFactory.merge({
+      id: 'ad_12345',
+      cardId: 'card_12345',
+      sellerId: 'user_67890',
+      originalPrice: 10,
+    }).create()
 
     paymentServiceCreatePaymentSheetStub.resolves({
       paymentIntentClientSecret: 'psec_12345',
@@ -150,11 +161,15 @@ test.group('Payment controller', (group) => {
       customer: 'cus_12345',
     })
 
-    adServiceStub.resolves({
+    adServiceGetStripePaymentRelevantColumnsStub.resolves({
+      originalPrice: 10,
+    })
+    adServiceUpdateAdStub.resolves({
       id: 'ad_12345',
-      userId: '123',
+      cardId: 'card_12345',
       sellerId: 'user_67890',
       statusId: 2,
+      originalPrice: 10,
     })
     paymentIntentServiceStub.resolves({
       id: 'pi_12345',
@@ -175,7 +190,7 @@ test.group('Payment controller', (group) => {
       customer: 'cus_12345',
     })
 
-    assert.isTrue(adServiceStub.calledWith('ad_12345', { statusId: 2 }))
+    assert.isTrue(adServiceUpdateAdStub.calledWith('ad_12345', { statusId: 2 }))
     assert.isTrue(
       paymentIntentServiceStub.calledWith({
         id: 'pi_12345',
@@ -197,7 +212,7 @@ test.group('Payment controller', (group) => {
       customer: 'cus_12345',
     })
 
-    adServiceStub.rejects(new lucidErrors.E_ROW_NOT_FOUND())
+    adServiceUpdateAdStub.rejects(new lucidErrors.E_ROW_NOT_FOUND())
     paymentIntentServiceStub.rejects()
 
     const response = await client
@@ -337,7 +352,7 @@ test.group('Payment controller', (group) => {
       secret,
     })
     stripeWebhookStub.resolves(payload)
-    adServiceStub.rejects(new lucidErrors.E_ROW_NOT_FOUND())
+    adServiceUpdateAdStub.rejects(new lucidErrors.E_ROW_NOT_FOUND())
 
     const response = await client
       .post('/api/v1/payment/webhook')
@@ -354,7 +369,6 @@ test.group('Payment controller', (group) => {
 
   test('stripeWebhook - should return 500 if signature is missing when webhook secret is set', async ({
     client,
-    assert,
   }) => {
     const webhookEvent = {
       id: 'evt_12345',
@@ -373,9 +387,6 @@ test.group('Payment controller', (group) => {
       .header('Content-Type', 'application/json')
       .json(webhookEvent)
 
-    response.assertStatus(500)
-    const body = response.body()
-    assert.equal(body.message, 'Unknown error occured with Stripe')
-    assert.equal(body.code, 'E_STRIPE_EXCEPTION')
+    response.assertStatus(422)
   })
 })

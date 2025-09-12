@@ -25,10 +25,6 @@ export default class PaymentIntentService {
     })
   }
 
-  async getPaymentIntentById(id: string) {
-    return await PaymentIntent.findOrFail(id)
-  }
-
   async updatePaymentIntent(id: string, data: Partial<PaymentIntent>) {
     const paymentIntent = await PaymentIntent.findOrFail(id)
     paymentIntent.merge(data)

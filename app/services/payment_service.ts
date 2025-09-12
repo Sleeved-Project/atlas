@@ -39,9 +39,9 @@ export default class PaymentService {
     return accountLink.url
   }
 
-  async createPaymentSheet(): Promise<CreatePaymentSheetResponse> {
+  async createPaymentSheet(adAmount: number): Promise<CreatePaymentSheetResponse> {
     const { paymentIntentClientSecret, paymentIntentId, ephemeralKey, customer } =
-      await this.stripeApiClient.createPaymentSheet()
+      await this.stripeApiClient.createPaymentSheet(adAmount)
     return { paymentIntentClientSecret, paymentIntentId, ephemeralKey, customer }
   }
 
