@@ -19,6 +19,7 @@ import { CardFinishFactory } from '#database/factories/card_finish'
 import { UserFactory } from '#database/factories/user'
 import AdService from '#services/ad_service'
 import PaymentIntentService from '#services/payment_intent_service'
+import { PaymentIntentFactory } from '#database/factories/payment_intent'
 
 test.group('Payment controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
@@ -166,7 +167,6 @@ test.group('Payment controller', (group) => {
     const response = await client
       .get('/api/v1/payment/ad_12345/sheet')
       .header('Authorization', 'Bearer fake-token-for-testing')
-    console.log('response', response.body())
 
     response.assertStatus(200)
     response.assertBodyContains({
@@ -174,7 +174,6 @@ test.group('Payment controller', (group) => {
       ephemeralKey: 'ek_12345',
       customer: 'cus_12345',
     })
-    console.log('check calls', paymentIntentServiceStub.firstCall.args[0])
 
     assert.isTrue(adServiceStub.calledWith('ad_12345', { statusId: 2 }))
     assert.isTrue(
@@ -187,7 +186,7 @@ test.group('Payment controller', (group) => {
       })
     )
 
-    assert.isTrue(paymentServiceCreatePaymentSheetStub.calledOnceWith(TEST_AUTH_USER_ID))
+    assert.isTrue(paymentServiceCreatePaymentSheetStub.calledOnce)
   })
 
   test('createPaymentSheet - should throw if update ad creates error', async ({ client }) => {
@@ -199,12 +198,11 @@ test.group('Payment controller', (group) => {
     })
 
     adServiceStub.rejects(new lucidErrors.E_ROW_NOT_FOUND())
-    paymentIntentServiceStub.rejects() // not called
+    paymentIntentServiceStub.rejects()
 
     const response = await client
       .get('/api/v1/payment/ad_12345/sheet')
       .header('Authorization', 'Bearer fake-token-for-testing')
-    console.log('response', response.body())
 
     response.assertStatus(404)
     response.assertBodyContains({
@@ -230,12 +228,47 @@ test.group('Payment controller', (group) => {
   })
 
   test('stripeWebhook - should handle webhook event', async ({ client, assert }) => {
+    await ArtistFactory.merge({ id: 1 }).create()
+    await RarityFactory.merge({ id: 1 }).create()
+    await LegalityFactory.merge({ id: 1 }).create()
+    await SetFactory.merge({ id: 'base1' }).create()
+    await CardFactory.merge({
+      id: 'card_12345',
+      setId: 'base1',
+      artistId: 1,
+      rarityId: 1,
+      legalityId: 1,
+    }).create()
+    await AdStatusFactory.merge({ id: 1 }).create()
+    await CardConditionFactory.merge({ id: 1 }).create()
+    await CardFinishFactory.merge({ id: 1 }).create()
+    const user = await UserFactory.merge({ id: 'user_67890', stripeId: 'acct_12345' }).create()
+    const ad = await AdFactory.merge({
+      id: 'ad_12345',
+      cardId: 'card_12345',
+      sellerId: 'user_67890',
+    }).create()
+
+    await PaymentIntentFactory.merge({
+      id: 'pi_12345',
+      fromId: user.id,
+      toId: 'user_67890',
+      adId: ad.id,
+      status: 'created',
+    }).create()
+
     const payload = {
       id: 'evt_test_webhook',
-      object: 'event',
+      data: {
+        object: {
+          id: 'pi_12345',
+          object: 'payment_intent',
+        },
+      },
+      type: 'payment_intent.succeeded',
     }
 
-    const payloadString = JSON.stringify(payload, null, 2)
+    const payloadString = JSON.stringify(payload)
     const secret = 'whsec_test_secret'
 
     const header = stripeApiClient.webhooks.generateTestHeaderString({
@@ -252,6 +285,71 @@ test.group('Payment controller', (group) => {
 
     response.assertStatus(200)
     assert.isTrue(stripeWebhookStub.calledOnce)
+  })
+
+  test('stripeWebhook - should throw row not found if webhook event fails update ad', async ({
+    client,
+  }) => {
+    await ArtistFactory.merge({ id: 1 }).create()
+    await RarityFactory.merge({ id: 1 }).create()
+    await LegalityFactory.merge({ id: 1 }).create()
+    await SetFactory.merge({ id: 'base1' }).create()
+    await CardFactory.merge({
+      id: 'card_12345',
+      setId: 'base1',
+      artistId: 1,
+      rarityId: 1,
+      legalityId: 1,
+    }).create()
+    await AdStatusFactory.merge({ id: 1 }).create()
+    await CardConditionFactory.merge({ id: 1 }).create()
+    await CardFinishFactory.merge({ id: 1 }).create()
+    const user = await UserFactory.merge({ id: 'user_67890', stripeId: 'acct_12345' }).create()
+    const ad = await AdFactory.merge({
+      id: 'ad_12345',
+      cardId: 'card_12345',
+      sellerId: 'user_67890',
+    }).create()
+
+    await PaymentIntentFactory.merge({
+      id: 'pi_12345',
+      fromId: user.id,
+      toId: 'user_67890',
+      adId: ad.id,
+      status: 'created',
+    }).create()
+
+    const payload = {
+      id: 'evt_test_webhook',
+      data: {
+        object: {
+          id: 'pi_12345',
+          object: 'payment_intent',
+        },
+      },
+      type: 'payment_intent.payment_failed',
+    }
+    const payloadString = JSON.stringify(payload, null, 2)
+    const secret = 'whsec_test_secret'
+
+    const header = stripeApiClient.webhooks.generateTestHeaderString({
+      payload: payloadString,
+      secret,
+    })
+    stripeWebhookStub.resolves(payload)
+    adServiceStub.rejects(new lucidErrors.E_ROW_NOT_FOUND())
+
+    const response = await client
+      .post('/api/v1/payment/webhook')
+      .header('Content-Type', 'application/json')
+      .header('Stripe-Signature', header)
+      .json(payload)
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      message: 'Row not found',
+      code: 'E_ROW_NOT_FOUND',
+    })
   })
 
   test('stripeWebhook - should return 500 if signature is missing when webhook secret is set', async ({

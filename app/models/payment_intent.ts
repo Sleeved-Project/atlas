@@ -1,5 +1,8 @@
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, column, hasOne } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
+import type { HasOne } from '@adonisjs/lucid/types/relations'
+import User from './user.js'
+import Ad from './ad.js'
 
 export default class PaymentIntent extends BaseModel {
   /**
@@ -27,4 +30,15 @@ export default class PaymentIntent extends BaseModel {
 
   @column.dateTime({ columnName: 'updated_at', autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+
+  @hasOne(() => User, {
+    foreignKey: 'id',
+  })
+  declare from: HasOne<typeof User>
+
+  @hasOne(() => User, { foreignKey: 'id' })
+  declare to: HasOne<typeof User>
+
+  @hasOne(() => Ad, { foreignKey: 'id' })
+  declare ad: HasOne<typeof Ad>
 }

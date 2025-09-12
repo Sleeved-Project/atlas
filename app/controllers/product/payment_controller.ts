@@ -46,7 +46,7 @@ export default class PaymentController {
     try {
       const params = await paymentSchemaValidator.validate(request.params())
       const { paymentIntentClientSecret, paymentIntentId, ephemeralKey, customer } =
-        await this.paymentService.createPaymentSheet(authUser.id)
+        await this.paymentService.createPaymentSheet()
 
       // Update existing ad with new status
       const updatedAd = await this.adService.updateAd(params.id, { statusId: 2 })
@@ -87,24 +87,43 @@ export default class PaymentController {
     try {
       const signature = request.headers()['stripe-signature']
       const rawBody = request.raw()
+
       if (!signature || !rawBody) {
         throw new StripeException()
       }
 
       const stripeEvent = await this.paymentService.stripeWebhook(rawBody, signature)
-      // TODO return the event to the caller instead of handling it here
+
+      const paymentIntent = stripeEvent.data.object
 
       switch (stripeEvent.type) {
         case 'payment_intent.succeeded':
-          console.log('PaymentIntent was successful!')
+          // If succeeded, update the payment intent status in DB
+          await this.paymentIntentService.updatePaymentIntent(paymentIntent.id, {
+            status: 'succeeded',
+          })
+
           break
 
         case 'payment_intent.payment_failed':
-          console.log('PaymentIntent failed.')
+          // If failed, update the payment intent status in DB and the ad status to "available" again
+          // In the future, we will notify the user that the payment failed and they need to retry
+          await this.paymentIntentService.updatePaymentIntent(paymentIntent.id, {
+            status: 'payment_failed',
+          })
+
+          await this.adService.updateAd(paymentIntent.id, { statusId: 1 })
           break
 
         case 'payment_intent.canceled':
-          console.log('PaymentIntent was canceled.')
+          // If canceled, update the payment intent status in DB and the ad status to "available" again
+          // In the future, we will notify the buyer that the payment was canceled
+          await this.paymentIntentService.updatePaymentIntent(paymentIntent.id, {
+            status: 'canceled',
+          })
+
+          await this.adService.updateAd(paymentIntent.id, { statusId: 1 })
+
           break
 
         default:
@@ -113,6 +132,9 @@ export default class PaymentController {
 
       response.status(200).send('Webhook received')
     } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
       throw error
     }
   }

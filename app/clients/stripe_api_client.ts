@@ -67,14 +67,12 @@ export default class StripeApiClient {
     }
   }
 
-  public async createPaymentSheet(userId: string): Promise<{
+  public async createPaymentSheet(): Promise<{
     paymentIntentClientSecret: string | null
     paymentIntentId: string
     ephemeralKey: string | undefined
     customer: string
   }> {
-    console.log(`Creating payment sheet for user ${userId}`)
-
     try {
       // Create a new customer in Stripe
       const newCustomer = await this.stripe.customers.create()
@@ -94,8 +92,6 @@ export default class StripeApiClient {
           enabled: true,
         },
       })
-
-      // TODO: store paymentintent.id, from and to ids and ad id to payment intent table
 
       return {
         paymentIntentClientSecret: paymentIntent.client_secret,

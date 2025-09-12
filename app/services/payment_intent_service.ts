@@ -29,7 +29,7 @@ export default class PaymentIntentService {
     return await PaymentIntent.findOrFail(id)
   }
 
-  async updateUser(id: string, data: Partial<PaymentIntent>) {
+  async updatePaymentIntent(id: string, data: Partial<PaymentIntent>) {
     const paymentIntent = await PaymentIntent.findOrFail(id)
     paymentIntent.merge(data)
     await paymentIntent.save()
