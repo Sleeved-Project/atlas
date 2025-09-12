@@ -18,7 +18,7 @@ export default class Ad extends BaseModel {
   @column({ isPrimary: true })
   declare id: string
 
-  @column({ columnName: 'original_Price' })
+  @column({ columnName: 'original_price' })
   declare originalPrice: number
 
   @column({ columnName: 'recto_image_url' })
@@ -54,13 +54,19 @@ export default class Ad extends BaseModel {
   @belongsTo(() => Card)
   declare card: BelongsTo<typeof Card>
 
-  @belongsTo(() => AdStatus)
+  @belongsTo(() => AdStatus, {
+    foreignKey: 'statusId',
+  })
   declare status: BelongsTo<typeof AdStatus>
 
-  @belongsTo(() => CardCondition)
+  @belongsTo(() => CardCondition, {
+    foreignKey: 'conditionId',
+  })
   declare condition: BelongsTo<typeof CardCondition>
 
-  @belongsTo(() => CardFinish)
+  @belongsTo(() => CardFinish, {
+    foreignKey: 'finishId',
+  })
   declare finish: BelongsTo<typeof CardFinish>
 
   @belongsTo(() => User, {

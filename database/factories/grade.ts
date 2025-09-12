@@ -14,4 +14,15 @@ export const GradeFactory = Factory.define(Grade, ({ faker }) => {
     description: faker.lorem.sentence(),
     code: faker.string.alphanumeric(6).toUpperCase(),
   }
-}).build()
+})
+  .state('mint', (grade) => {
+    grade.minGrade = 9
+    grade.maxGrade = 10
+    grade.label = 'Mint'
+  })
+  .state('poor', (grade) => {
+    grade.minGrade = 1
+    grade.maxGrade = 3
+    grade.label = 'Poor'
+  })
+  .build()
