@@ -109,6 +109,20 @@ export default class CardMapper {
       name: card.name,
       similarity: identifyResult.similarity,
       extractedTempImageUrl: identifyResult.extractedTempImageUrl,
+      is_back_side: false,
+    }
+  }
+
+  public static toBackSideCardIdentifyResultOutputDTO(
+    identifyResult: ScanCardInfoDTO
+  ): CardScanIdentifyResultOutputDTO {
+    return {
+      id: 'back-side',
+      potentialMatchedCard: null,
+      name: 'Card Back Side',
+      similarity: identifyResult.similarity,
+      extractedTempImageUrl: identifyResult.extractedTempImageUrl,
+      is_back_side: true,
     }
   }
 

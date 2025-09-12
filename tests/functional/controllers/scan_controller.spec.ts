@@ -386,4 +386,104 @@ test.group('Scan controller', (group) => {
 
     sinon.assert.calledOnce(fileServiceCleanupStub)
   })
+  test('identify - should handle back-side card identification', async ({ client, assert }) => {
+    const extractedTempImageUrl = '/api/v1/uploads/test-file.png'
+    const backSideIdentificationResult = {
+      id: 'back-side',
+      similarity: 0.95,
+      extractedTempImageUrl: extractedTempImageUrl,
+    }
+
+    const temporaryFilePath = '/tmp/test-file.png'
+
+    fileServiceStub.resolves(temporaryFilePath)
+    getIdentifyResultStub.resolves(backSideIdentificationResult)
+
+    const response = await client
+      .post('/api/v1/scan/identify')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+
+    response.assertStatus(200)
+    const result = response.body()
+
+    assert.properties(result, [
+      'id',
+      'name',
+      'similarity',
+      'extractedTempImageUrl',
+      'is_back_side',
+      'potentialMatchedCard',
+    ])
+
+    assert.equal(result.id, 'back-side')
+    assert.equal(result.name, 'Card Back Side')
+    assert.equal(result.similarity, 0.95)
+    assert.equal(result.extractedTempImageUrl, extractedTempImageUrl)
+    assert.isTrue(result.is_back_side)
+    assert.isNull(result.potentialMatchedCard)
+
+    sinon.assert.calledOnce(fileServiceStub)
+    sinon.assert.calledOnce(getIdentifyResultStub)
+    sinon.assert.notCalled(getMinimalCardDetailByIdStub)
+    sinon.assert.calledOnce(fileServiceCleanupStub)
+  })
+
+  test('identify - should correctly pass threshold parameter to scan service', async ({
+    client,
+    assert,
+  }) => {
+    const extractedTempImageUrl = '/api/v1/uploads/test-file.png'
+    const threshold = 0.75
+
+    const cardIdentificationResult = {
+      id: 'base1-1',
+      similarity: 0.95,
+      extractedTempImageUrl: extractedTempImageUrl,
+    }
+
+    const temporaryFilePath = '/tmp/test-file.png'
+
+    const mockCardDetails = {
+      id: 'base1-1',
+      name: 'Bulbasaur',
+      imageLarge: 'https://example.com/bulbasaur.png',
+      imageSmall: 'https://example.com/bulbasaur-small.png',
+      number: '1',
+      setId: 'base1',
+      set: {
+        id: 'base1',
+        name: 'Base Set',
+        imageSymbol: 'https://example.com/base-symbol.png',
+      },
+    }
+
+    fileServiceStub.resolves(temporaryFilePath)
+    getIdentifyResultStub.resolves(cardIdentificationResult)
+    getMinimalCardDetailByIdStub.withArgs('base1-1').resolves(mockCardDetails)
+
+    const response = await client
+      .post('/api/v1/scan/identify')
+      .field('threshold', threshold.toString())
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+
+    response.assertStatus(200)
+
+    sinon.assert.calledWith(
+      getIdentifyResultStub,
+      temporaryFilePath,
+      'test-image.png',
+      'image/png',
+      threshold
+    )
+
+    const result = response.body()
+    assert.equal(result.id, 'base1-1')
+    assert.equal(result.similarity, 0.95)
+  })
 })

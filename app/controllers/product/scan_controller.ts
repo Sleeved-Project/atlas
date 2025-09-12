@@ -54,29 +54,37 @@ export default class ScanController {
 
   async identify({ response, request }: HttpContext) {
     try {
-      const { file } = await request.validateUsing(scanValidator)
+      const { file, threshold } = await request.validateUsing(scanValidator)
       const filePath = await this.fileService.saveFile(file)
 
       const cardIdentificationResult = await this.scanService.getIdentifyResult(
         filePath,
         file.clientName,
-        file.headers['content-type']
+        file.headers['content-type'],
+        threshold
       )
 
       if (!cardIdentificationResult) {
         throw new ScanNoMatchException()
       }
 
+      if (cardIdentificationResult.id === 'back-side') {
+        const formattedBackSideCardResult =
+          CardMapper.toBackSideCardIdentifyResultOutputDTO(cardIdentificationResult)
+
+        return response.ok(formattedBackSideCardResult)
+      }
+
       const cardDetails = await this.cardService.getMinimalCardDetailById(
         cardIdentificationResult.id
       )
 
-      const formattedCardResult = CardMapper.toCardScanIdentifyResultOutputDTO(
+      const formattedFrontSideCardResult = CardMapper.toCardScanIdentifyResultOutputDTO(
         cardDetails,
         cardIdentificationResult
       )
 
-      return response.ok(formattedCardResult)
+      return response.ok(formattedFrontSideCardResult)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)
