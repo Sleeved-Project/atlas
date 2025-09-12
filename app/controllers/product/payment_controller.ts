@@ -8,6 +8,7 @@ import { StripeException } from '#exceptions/payment_exception'
 import { paymentSchemaValidator } from '#validators/payment_validator'
 import AdService from '#services/ad_service'
 import PaymentIntentService from '#services/payment_intent_service'
+import { PaymentIntentStatus } from '#types/payment_intent_status'
 
 @inject()
 export default class PaymentController {
@@ -57,7 +58,7 @@ export default class PaymentController {
         fromId: authUser.id,
         toId: updatedAd.sellerId,
         adId: params.id,
-        status: 'created',
+        status: PaymentIntentStatus.CREATED,
       })
 
       response.json({
@@ -76,7 +77,7 @@ export default class PaymentController {
   async getPublishableKey({ response }: HttpContext) {
     try {
       response.json({
-        publishableKey: process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY,
+        publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
       })
     } catch (error) {
       throw error

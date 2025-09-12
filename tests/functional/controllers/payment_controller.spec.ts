@@ -121,7 +121,7 @@ test.group('Payment controller', (group) => {
 
     response.assertStatus(200)
     response.assertBodyContains({
-      publishableKey: process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY,
+      publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
     })
   })
 
