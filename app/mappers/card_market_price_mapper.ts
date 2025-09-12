@@ -15,6 +15,8 @@ export default class CardMarketPriceMapper {
   ): string {
     if (!cardMarketPrice) return PriceUtils.UNKNOWN_PRICE
 
+    console.log(cardMarketPrice)
+
     let basePrice = PriceUtils.DEFAULT_PRICE
 
     const finishType = cardFinish.label.toLowerCase()
@@ -31,13 +33,9 @@ export default class CardMarketPriceMapper {
         basePrice = PriceUtils.DEFAULT_PRICE
     }
 
-    if (basePrice === PriceUtils.DEFAULT_PRICE) {
-      return PriceUtils.UNKNOWN_PRICE
-    }
-
     const alterationMultiplier = 1 + cardCondition.percentPriceAlteration / 100
     const finalPrice = basePrice * alterationMultiplier
 
-    return finalPrice.toFixed(2)
+    return PriceUtils.formatPriceValue(finalPrice.toFixed(2))
   }
 }
