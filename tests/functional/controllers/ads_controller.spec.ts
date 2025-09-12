@@ -322,9 +322,6 @@ test.group('Ads Controller', (group) => {
       conditionId: cardCondition.id,
     })
       .with('card')
-      // .with('condition')
-      // .with('finish')
-      // .with('status')
       .with('seller')
       .createMany(15)
 
@@ -357,9 +354,6 @@ test.group('Ads Controller', (group) => {
       statusId: status.id,
     })
       .with('card')
-      // .with('condition')
-      // .with('finish')
-      // .with('status')
       .with('seller')
       .createMany(25)
 
@@ -369,7 +363,6 @@ test.group('Ads Controller', (group) => {
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
-    console.log('response:', response.body()['data'][0])
     assert.equal(response.body().data.length, 10)
     assert.equal(response.body().meta.currentPage, 2)
     assert.equal(response.body().meta.total, 25)
