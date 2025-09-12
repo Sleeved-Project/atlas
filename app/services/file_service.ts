@@ -31,6 +31,24 @@ export default class FileService {
     return file.filePath
   }
 
+  /**
+   * Create a FormData object with a file for API requests
+   */
+  createFormDataWithFile(
+    filePath: string,
+    fileName: string,
+    fileType: string | undefined
+  ): FormData {
+    const formData = new FormData()
+    const fileStream = fs.readFileSync(filePath)
+    const localFile = new File([fileStream], fileName, {
+      type: fileType || 'application/octet-stream',
+    })
+
+    formData.append('file', localFile)
+    return formData
+  }
+
   cleanup() {
     for (const filePath of this.filesToClean) {
       if (fs.existsSync(filePath)) {

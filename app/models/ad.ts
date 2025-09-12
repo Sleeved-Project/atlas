@@ -18,7 +18,7 @@ export default class Ad extends BaseModel {
   @column({ isPrimary: true })
   declare id: string
 
-  @column({ columnName: 'original_Price' })
+  @column({ columnName: 'original_price' })
   declare originalPrice: number
 
   @column({ columnName: 'recto_image_url' })

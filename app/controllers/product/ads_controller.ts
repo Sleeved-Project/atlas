@@ -1,16 +1,16 @@
-import type { HttpContext } from '@adonisjs/core/http'
-import { inject } from '@adonisjs/core'
-import { errors as lucidErrors } from '@adonisjs/lucid'
-import { errors as vineErrors } from '@vinejs/vine'
 import NotFoundException from '#exceptions/not_found_exception'
 import ValidationException from '#exceptions/validation_exception'
-import { SuccessOutputDTO } from '#types/success_output_dto_type'
-import CardService from '#services/card_service'
-import AdService from '#services/ad_service'
-import { createAdValidator } from '#validators/ad_validator'
-import CertificateService from '#services/certificate_service'
 import Certificate from '#models/certificate'
+import AdService from '#services/ad_service'
+import CardService from '#services/card_service'
+import CertificateService from '#services/certificate_service'
 import FileService from '#services/file_service'
+import { SuccessOutputDTO } from '#types/success_output_dto_type'
+import { createAdValidator, listAdsValidator, searchAdsValidator } from '#validators/ad_validator'
+import { inject } from '@adonisjs/core'
+import type { HttpContext } from '@adonisjs/core/http'
+import { errors as lucidErrors } from '@adonisjs/lucid'
+import { errors as vineErrors } from '@vinejs/vine'
 import MediaUploadService from '#services/media_upload_service'
 
 @inject()
@@ -73,6 +73,32 @@ export default class AdsController {
       throw error
     } finally {
       this.fileService.cleanup()
+    }
+  }
+
+  async index({ request, response }: HttpContext) {
+    try {
+      const filters = await listAdsValidator.validate(request.qs())
+      const ads = await this.adService.listAds(filters)
+      return response.ok(ads)
+    } catch (error) {
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
+      throw error
+    }
+  }
+
+  async search({ request, response }: HttpContext) {
+    try {
+      const query = await searchAdsValidator.validate(request.qs())
+      const ads = await this.adService.searchAds(query)
+      return response.ok(ads)
+    } catch (error) {
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
+      throw error
     }
   }
 }

@@ -74,6 +74,8 @@ router
         router
           .group(() => {
             router.post('/', [AdsController, 'store']).use(middleware.auth())
+            router.get('/', [AdsController, 'index']).use(middleware.auth())
+            router.get('/search', [AdsController, 'search']).use(middleware.auth())
           })
           .prefix('ads')
         router
@@ -95,7 +97,12 @@ router
             router.post('/webhook/', [PaymentController, 'stripeWebhook'])
           })
           .prefix('payment')
-        router.post('/scan/analyze', [ScanController, 'analyze'])
+        router
+          .group(() => {
+            router.post('/analyze', [ScanController, 'analyze'])
+            router.post('/identify', [ScanController, 'identify'])
+          })
+          .prefix('scan')
       })
       .prefix('v1')
   })
