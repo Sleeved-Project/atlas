@@ -208,3 +208,19 @@ task test # Run tests
 - All API routes are prefixed with /api/v1
 - Use .env to configure database, ports, and external service URLs
 - Follow AdonisJS conventions for services, routing, and error handling
+
+### To test webhooks locally:
+
+Install the stripe cli:
+
+`brew install stripe/stripe-cli/stripe`
+
+`stripe login`
+
+### Premier terminal
+
+`stripe listen --skip-verify --forward-to http://127.0.0.1:8082/api/v1/payment/webhook/`
+
+### Puis un autre terminal:
+
+`stripe trigger payment_intent.created`
