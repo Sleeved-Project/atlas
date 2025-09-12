@@ -46,6 +46,7 @@ router
             router.get('/:id', [CardsController, 'show']).use(middleware.auth())
             router.get('/:id/details', [CardsController, 'details'])
             router.get('/:id/prices', [CardsController, 'prices'])
+            router.get('/:id/advices', [CardsController, 'advices'])
           })
           .prefix('cards')
         router
@@ -89,7 +90,12 @@ router
             router.get('/account/refresh', [PaymentController, 'stripeAccountLinkRefresh'])
           })
           .prefix('payment')
-        router.post('/scan/analyze', [ScanController, 'analyze'])
+        router
+          .group(() => {
+            router.post('/analyze', [ScanController, 'analyze'])
+            router.post('/identify', [ScanController, 'identify'])
+          })
+          .prefix('scan')
       })
       .prefix('v1')
   })

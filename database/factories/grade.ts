@@ -3,11 +3,16 @@ import Factory from '@adonisjs/lucid/factories'
 import { v4 as uuidv4 } from 'uuid'
 
 export const GradeFactory = Factory.define(Grade, ({ faker }) => {
+  const minGrade = faker.number.int({ min: 0, max: 9 })
+  const maxGrade = faker.number.int({ min: Math.max(minGrade, 0), max: 10 })
+
   return {
     id: uuidv4(),
-    minGrade: faker.number.int({ min: 1, max: 5 }),
-    maxGrade: faker.number.int({ min: 6, max: 10 }),
-    label: faker.helpers.arrayElement(['Poor', 'Fair', 'Good', 'Very Good', 'Excellent', 'Mint']),
+    minGrade,
+    maxGrade: Math.max(maxGrade, minGrade),
+    label: faker.helpers.arrayElement(['Mint', 'Near Mint', 'Excellent', 'Good', 'Played']),
+    description: faker.lorem.sentence(),
+    code: faker.string.alphanumeric(6).toUpperCase(),
   }
 })
   .state('mint', (grade) => {

@@ -1,31 +1,24 @@
 import Certificate from '#models/certificate'
+import { v4 as uuidv4 } from 'uuid'
 import Factory from '@adonisjs/lucid/factories'
+import { DateTime } from 'luxon'
+import { TEST_AUTH_USER_ID } from '#tests/mocks/auth_service_mock'
 import { CardFactory } from './card.js'
-import { GradeFactory } from './grade.js'
 
 export const CertificateFactory = Factory.define(Certificate, ({ faker }) => {
   return {
-    globalRating: faker.number.int({ min: 1, max: 10 }),
-    centeringRating: faker.number.int({ min: 1, max: 10 }),
-    cornerRating: faker.number.int({ min: 1, max: 10 }),
-    edgeRating: faker.number.int({ min: 1, max: 10 }),
-    surfaceRating: faker.number.int({ min: 1, max: 10 }),
+    id: uuidv4(),
+    cardId: 'base1-1',
+    certifiedById: TEST_AUTH_USER_ID,
+    gradeId: '1',
+    certifiedAt: DateTime.now(),
+    globalRating: faker.number.int({ min: 0, max: 9 }),
+    centeringRating: faker.number.int({ min: 0, max: 9 }),
+    cornerRating: faker.number.int({ min: 0, max: 9 }),
+    edgeRating: faker.number.int({ min: 0, max: 9 }),
+    surfaceRating: faker.number.int({ min: 0, max: 9 }),
+    grade: faker.helpers.arrayElement(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']),
   }
 })
   .relation('card', () => CardFactory)
-  .relation('grade', () => GradeFactory)
-  .state('perfect', (certificate) => {
-    certificate.globalRating = 10
-    certificate.centeringRating = 10
-    certificate.cornerRating = 10
-    certificate.edgeRating = 10
-    certificate.surfaceRating = 10
-  })
-  .state('poor', (certificate) => {
-    certificate.globalRating = 2
-    certificate.centeringRating = 2
-    certificate.cornerRating = 1
-    certificate.edgeRating = 2
-    certificate.surfaceRating = 3
-  })
   .build()

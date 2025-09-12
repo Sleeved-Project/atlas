@@ -23,8 +23,20 @@ export const getAllMainFolioCardsFiltersValidator = vine.compile(
   })
 )
 
+export const cardAdviceQuerySchema = vine.object({
+  conditions: vine.number().positive(),
+  finishes: vine.number().positive(),
+})
+
 export const getCardDetailParamsValidator = vine.compile(baseParamsSchema)
 
 export const getCardBaseParamsValidator = vine.compile(baseParamsSchema)
 
 export const getCardPriceParamsValidator = vine.compile(baseParamsSchema)
+
+export const getCardPriceAdviceValidator = vine.compile(
+  vine.object({
+    params: baseParamsSchema,
+    query: cardAdviceQuerySchema,
+  })
+)

@@ -2,6 +2,16 @@ import CardFolio from '#models/card_folio'
 import { PriceTrending } from '#types/folio_type'
 
 export default class PriceUtils {
+  public static readonly UNKNOWN_PRICE = 'unknown'
+  public static readonly DEFAULT_PRICE = 0
+
+  public static formatPriceValue(value: string | number | null): string {
+    if (value === null || value === '0.00' || value === 0 || value === '0') {
+      return this.UNKNOWN_PRICE
+    }
+    return value.toString()
+  }
+
   public static getPriceTrend(todayPrice: number, yesterdayPrice: number): PriceTrending {
     if (todayPrice > yesterdayPrice) {
       return PriceTrending.UP

@@ -41,4 +41,23 @@ test.group('CardFinishservice', (group) => {
     assert.instanceOf(result[0], CardFinish)
     assert.isTrue(typeof result[0].label === 'string')
   })
+
+  test('getFinishById - should return a card finish by id', async ({ assert }) => {
+    const cardFinish = await CardFinishBasicFactory.create()
+
+    const result = await cardFinishService.getFinishById(cardFinish.id)
+
+    assert.equal(result.id, cardFinish.id)
+    assert.equal(result.label, cardFinish.label)
+    assert.instanceOf(result, CardFinish)
+  })
+
+  test('getFinishById - should throw error when finish does not exist', async ({ assert }) => {
+    const nonExistentId = 999
+
+    await assert.rejects(
+      async () => await cardFinishService.getFinishById(nonExistentId),
+      'Row not found'
+    )
+  })
 })
