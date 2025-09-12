@@ -4,6 +4,7 @@ import TcgPlayerReporting from '#models/tcg_player_reporting'
 import {
   CardBaseOuputDTO,
   CardPricesOutputDTO,
+  CardScanIdentifyResultOutputDTO,
   CardScanResultOutputDTO,
 } from '#types/card_dto_type'
 import { ScanCardInfoDTO } from '#types/iris_type'
@@ -91,6 +92,23 @@ export default class CardMapper {
       imageLarge: card.imageLarge,
       bestTrendPrice: this.getBestPriceFromCardScanResultInfos(card),
       similarity: scanCardInfo.similarity,
+      extractedTempImageUrl: scanCardInfo.extractedTempImageUrl,
+    }
+  }
+
+  /**
+   * Converts a Card and ScanCardInfoDTO to a CardScanIdentifyResultOutputDTO.
+   */
+  public static toCardScanIdentifyResultOutputDTO(
+    card: Card,
+    identifyResult: ScanCardInfoDTO
+  ): CardScanIdentifyResultOutputDTO {
+    return {
+      id: card.id,
+      potentialMatchedCard: card.imageSmall,
+      name: card.name,
+      similarity: identifyResult.similarity,
+      extractedTempImageUrl: identifyResult.extractedTempImageUrl,
     }
   }
 

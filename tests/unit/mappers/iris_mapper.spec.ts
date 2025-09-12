@@ -16,6 +16,7 @@ test.group('IrisMapper', () => {
           similarity_percentage: 95,
           matched_card_id: '123',
           matched_card_name: 'Test Card',
+          extracted_temp_image_url: '/static/extracted_cards/card1.jpg',
           top_n_matches: [
             {
               card_id: '123',
@@ -41,9 +42,9 @@ test.group('IrisMapper', () => {
     }
 
     const expectedResult: ScanCardInfoDTO[] = [
-      { id: '123', similarity: 95 },
-      { id: '456', similarity: 85 },
-      { id: '789', similarity: 75 },
+      { id: '123', similarity: 95, extractedTempImageUrl: '/static/extracted_cards/card1.jpg' },
+      { id: '456', similarity: 85, extractedTempImageUrl: '/static/extracted_cards/card1.jpg' },
+      { id: '789', similarity: 75, extractedTempImageUrl: '/static/extracted_cards/card1.jpg' },
     ]
 
     const result = IrisMapper.scanAnalyseIrisResponseToScanCardInfoDTO(mockScanResponse)
@@ -64,6 +65,7 @@ test.group('IrisMapper', () => {
           similarity_percentage: 100,
           matched_card_id: '123',
           matched_card_name: 'Test Card',
+          extracted_temp_image_url: '/static/extracted_cards/card-single.jpg',
           top_n_matches: [
             {
               card_id: '123',
@@ -76,7 +78,13 @@ test.group('IrisMapper', () => {
       ],
     }
 
-    const expectedResult: ScanCardInfoDTO[] = [{ id: '123', similarity: 100 }]
+    const expectedResult: ScanCardInfoDTO[] = [
+      {
+        id: '123',
+        similarity: 100,
+        extractedTempImageUrl: '/static/extracted_cards/card-single.jpg',
+      },
+    ]
 
     const result = IrisMapper.scanAnalyseIrisResponseToScanCardInfoDTO(mockScanResponse)
 
@@ -96,6 +104,7 @@ test.group('IrisMapper', () => {
           similarity_percentage: 0,
           matched_card_id: '',
           matched_card_name: '',
+          extracted_temp_image_url: '/static/extracted_cards/card-empty.jpg',
           top_n_matches: [],
         },
       ],
@@ -119,6 +128,7 @@ test.group('IrisMapper', () => {
           similarity_percentage: 95,
           matched_card_id: '123',
           matched_card_name: 'First Card',
+          extracted_temp_image_url: '/static/extracted_cards/first.jpg',
           top_n_matches: [
             {
               card_id: '123',
@@ -135,6 +145,7 @@ test.group('IrisMapper', () => {
           similarity_percentage: 92,
           matched_card_id: '456',
           matched_card_name: 'Second Card',
+          extracted_temp_image_url: '/static/extracted_cards/second.jpg',
           top_n_matches: [
             {
               card_id: '456',
@@ -147,7 +158,9 @@ test.group('IrisMapper', () => {
       ],
     }
 
-    const expectedResult: ScanCardInfoDTO[] = [{ id: '123', similarity: 95 }]
+    const expectedResult: ScanCardInfoDTO[] = [
+      { id: '123', similarity: 95, extractedTempImageUrl: '/static/extracted_cards/first.jpg' },
+    ]
 
     const result = IrisMapper.scanAnalyseIrisResponseToScanCardInfoDTO(mockScanResponse)
 
