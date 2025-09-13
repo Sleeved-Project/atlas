@@ -15,8 +15,6 @@ export default class CardMarketPriceMapper {
   ): string {
     if (!cardMarketPrice) return PriceUtils.UNKNOWN_PRICE
 
-    console.log(cardMarketPrice)
-
     let basePrice = PriceUtils.DEFAULT_PRICE
 
     const finishType = cardFinish.label.toLowerCase()
