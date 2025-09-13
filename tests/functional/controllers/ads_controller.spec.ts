@@ -467,4 +467,54 @@ test.group('Ads Controller', (group) => {
 
     response.assertStatus(422)
   })
+
+  test('show - should return ad details for valid id', async ({ client, assert }) => {
+    const artist = await ArtistFactory.create()
+    const rarity = await RarityFactory.create()
+    const legality = await LegalityFactory.create()
+    const set = await SetFactory.merge({ id: 'base5' }).create()
+
+    const card = await CardFactory.merge({
+      id: 'base5-1',
+      artistId: artist.id,
+      rarityId: rarity.id,
+      legalityId: legality.id,
+      setId: set.id,
+    }).create()
+
+    const condition = await CardConditionBasicFactory.create()
+    const finish = await CardFinishBasicFactory.create()
+    const status = await AdStatusFactory.merge({ id: 5, label: 'Published' }).create()
+
+    const ad = await AdFactory.merge({
+      cardId: card.id,
+      conditionId: condition.id,
+      finishId: finish.id,
+      statusId: status.id,
+    })
+      .with('seller')
+      .create()
+
+    const response = await client
+      .get(`/api/v1/ads/${ad.id}`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+    assert.equal(response.body().id, ad.id)
+    assert.equal(response.body().card.id, card.id)
+  })
+
+  test('show - should return 404 for non-existent ad', async ({ client }) => {
+    const response = await client
+      .get('/api/v1/ads/non-existent-ad-id')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(404)
+    response.assertBodyContains({ code: 'E_ROW_NOT_FOUND' })
+  })
+
+  test('show - should return 401 when not authenticated', async ({ client }) => {
+    const response = await client.get('/api/v1/ads/some-ad-id')
+    response.assertStatus(401)
+  })
 })

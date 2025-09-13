@@ -101,4 +101,16 @@ export default class AdsController {
       throw error
     }
   }
+
+  async show({ params, response }: HttpContext) {
+    try {
+      const ad = await this.adService.getAdById(params.id)
+      return response.ok(ad)
+    } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
 }

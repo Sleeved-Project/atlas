@@ -91,4 +91,16 @@ export default class AdService {
       meta: result.getMeta(),
     }
   }
+
+  public async getAdById(adId: string): Promise<Ad> {
+    return await Ad.query()
+      .preload('status')
+      .preload('condition')
+      .preload('finish')
+      .preload('card')
+      .preload('certificate')
+      .preload('seller')
+      .where('id', adId)
+      .firstOrFail()
+  }
 }
