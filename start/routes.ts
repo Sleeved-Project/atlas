@@ -46,6 +46,7 @@ router
             router.get('/:id', [CardsController, 'show']).use(middleware.auth())
             router.get('/:id/details', [CardsController, 'details'])
             router.get('/:id/prices', [CardsController, 'prices'])
+            router.get('/:id/advices', [CardsController, 'advices'])
           })
           .prefix('cards')
         router
@@ -73,6 +74,8 @@ router
         router
           .group(() => {
             router.post('/', [AdsController, 'store']).use(middleware.auth())
+            router.get('/', [AdsController, 'index']).use(middleware.auth())
+            router.get('/search', [AdsController, 'search']).use(middleware.auth())
           })
           .prefix('ads')
         router
@@ -90,6 +93,7 @@ router
         router
           .group(() => {
             router.post('/analyze', [ScanController, 'analyze'])
+            router.post('/identify', [ScanController, 'identify'])
             router.post('/grade', [ScanController, 'grade'])
           })
           .prefix('scan')

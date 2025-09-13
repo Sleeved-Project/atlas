@@ -14,6 +14,7 @@ export interface ScanAnalyseIrisCard {
   similarity_percentage: number
   matched_card_id: string
   matched_card_name: string
+  extracted_temp_image_url: string
   top_n_matches: ScanAnalyseIrisCardMatch[]
 }
 
@@ -27,6 +28,7 @@ export interface ScanAnalyseIrisCardMatch {
 export interface ScanCardInfoDTO {
   id: string
   similarity: number
+  extractedTempImageUrl: string
 }
 
 // -------------------------------

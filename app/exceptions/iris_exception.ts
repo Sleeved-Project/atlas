@@ -32,3 +32,8 @@ export class IrisNoMatchException extends IrisException {
     super(message, 404)
   }
 }
+export class ScanNoMatchException extends IrisException {
+  constructor(message: string = 'No matching cards found for the scan') {
+    super(message, 422)
+  }
+}

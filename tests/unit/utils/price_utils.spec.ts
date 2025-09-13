@@ -24,6 +24,19 @@ test.group('PriceUtils', (group) => {
     sandbox.restore()
   })
 
+  test('formatPriceValue - should return "unknown" for null or zero values', ({ assert }) => {
+    assert.equal(PriceUtils.formatPriceValue(null), PriceUtils.UNKNOWN_PRICE)
+    assert.equal(PriceUtils.formatPriceValue('0.00'), PriceUtils.UNKNOWN_PRICE)
+    assert.equal(PriceUtils.formatPriceValue(0), PriceUtils.UNKNOWN_PRICE)
+    assert.equal(PriceUtils.formatPriceValue('0'), PriceUtils.UNKNOWN_PRICE)
+  })
+
+  test('formatPriceValue - should convert non-null values to string', ({ assert }) => {
+    assert.equal(PriceUtils.formatPriceValue(10), '10')
+    assert.equal(PriceUtils.formatPriceValue('10.50'), '10.50')
+    assert.equal(PriceUtils.formatPriceValue(15.75), '15.75')
+  })
+
   test('getPriceTrend - should return "up" when today price is higher', ({ assert }) => {
     const result = PriceUtils.getPriceTrend(100, 80)
     assert.equal(result, PriceTrending.UP)

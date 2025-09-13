@@ -8,33 +8,34 @@ import fs from 'node:fs'
 import app from '@adonisjs/core/services/app'
 import { FileUploadException } from '#exceptions/file_upload_exception'
 import { errors as lucidErrors } from '@adonisjs/lucid'
+import FileService from '#services/file_service'
 
 test.group('Scan controller', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
   let scanServiceStub: sinon.SinonStub
   let cardServiceStub: sinon.SinonStub
-  let rmSyncStub: sinon.SinonStub
+  let fileServiceStub: sinon.SinonStub
+  let fileServiceCleanupStub: sinon.SinonStub
+  let getIdentifyResultStub: sinon.SinonStub
+  let getMinimalCardDetailByIdStub: sinon.SinonStub
 
   let testImagePath: string
 
   group.each.setup(async () => {
-    rmSyncStub = sinon.stub(fs, 'rmSync')
-
-    const uploadsPath = app.makePath('storage/uploads')
-    try {
-      await fs.promises.mkdir(uploadsPath, { recursive: true })
-    } catch (error) {}
-
-    const fixturesPath = app.makePath('tests/fixtures')
-    try {
-      await fs.promises.mkdir(fixturesPath, { recursive: true })
-    } catch (error) {}
-
+    // Setup test image path
     testImagePath = app.makePath('tests/fixtures/test-image.png')
 
+    // Create stubs
     scanServiceStub = sinon.stub(ScanService.prototype, 'getAnalyseResults')
     cardServiceStub = sinon.stub(CardService.prototype, 'getCardScanResulInfosById')
+    fileServiceStub = sinon.stub(FileService.prototype, 'saveFile')
+    fileServiceCleanupStub = sinon.stub(FileService.prototype, 'cleanup')
+    getIdentifyResultStub = sinon.stub(ScanService.prototype, 'getIdentifyResult')
+    getMinimalCardDetailByIdStub = sinon.stub(CardService.prototype, 'getMinimalCardDetailById')
+
+    // Setup default stub behavior
+    fileServiceStub.resolves('/tmp/test-file.png')
   })
 
   group.each.teardown(async () => {
@@ -112,8 +113,10 @@ test.group('Scan controller', (group) => {
     assert.equal(firstResult.imageSmall, 'https://example.com/bulbasaur-small.png')
     assert.equal(firstResult.imageLarge, 'https://example.com/bulbasaur.png')
 
+    sinon.assert.calledOnce(fileServiceStub)
     sinon.assert.calledOnce(scanServiceStub)
     sinon.assert.calledWith(cardServiceStub, 'base1-1')
+    sinon.assert.calledOnce(fileServiceCleanupStub)
   })
 
   test('analyze - should handle file upload error', async ({ client }) => {
@@ -127,6 +130,7 @@ test.group('Scan controller', (group) => {
       })
 
     response.assertStatus(422)
+    sinon.assert.calledOnce(fileServiceCleanupStub)
   })
 
   test('analyze - should handle not found error', async ({ client }) => {
@@ -149,6 +153,7 @@ test.group('Scan controller', (group) => {
       message: 'Row not found',
       code: 'E_ROW_NOT_FOUND',
     })
+    sinon.assert.calledOnce(fileServiceCleanupStub)
   })
 
   test('analyze - should handle multiple cards in scan results', async ({ client, assert }) => {
@@ -230,9 +235,11 @@ test.group('Scan controller', (group) => {
     assert.equal(results[1].similarity, 0.87)
     assert.equal(results[1].imageSmall, 'https://example.com/ivysaur-small.png')
 
+    sinon.assert.calledOnce(fileServiceStub)
     sinon.assert.calledOnce(scanServiceStub)
     sinon.assert.calledWith(cardServiceStub.firstCall, 'base1-1')
     sinon.assert.calledWith(cardServiceStub.secondCall, 'base1-2')
+    sinon.assert.calledOnce(fileServiceCleanupStub)
   })
 
   test('analyze - should always delete the file, even in case of error', async ({
@@ -251,13 +258,137 @@ test.group('Scan controller', (group) => {
       })
 
     response.assertStatus(500)
+    sinon.assert.calledOnce(fileServiceCleanupStub)
+  })
 
-    assert.isTrue(rmSyncStub.called, 'rmSync should be called to delete the file')
+  test('identify - should identify card and return details', async ({ client, assert }) => {
+    const extractedTempImageUrl = '/api/v1/uploads/test-file.png'
 
-    const filePath = rmSyncStub.firstCall.args[0]
-    assert.isTrue(
-      filePath.startsWith(app.makePath('storage/uploads')),
-      `The deleted file should be inside the uploads directory`
-    )
+    const cardIdentificationResult = {
+      id: 'base1-1',
+      similarity: 0.95,
+      extractedTempImageUrl: extractedTempImageUrl,
+    }
+
+    const temporaryFilePath = '/tmp/test-file.png'
+
+    const mockCardDetails = {
+      id: 'base1-1',
+      name: 'Bulbasaur',
+      imageLarge: 'https://example.com/bulbasaur.png',
+      imageSmall: 'https://example.com/bulbasaur-small.png',
+      number: '1',
+      setId: 'base1',
+      set: {
+        id: 'base1',
+        name: 'Base Set',
+        imageSymbol: 'https://example.com/base-symbol.png',
+      },
+    }
+
+    fileServiceStub.resolves(temporaryFilePath)
+    getIdentifyResultStub.resolves(cardIdentificationResult)
+    getMinimalCardDetailByIdStub.withArgs('base1-1').resolves(mockCardDetails)
+
+    const response = await client
+      .post('/api/v1/scan/identify')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+
+    response.assertStatus(200)
+    const result = response.body()
+
+    assert.properties(result, [
+      'id',
+      'name',
+      'similarity',
+      'potentialMatchedCard',
+      'extractedTempImageUrl',
+    ])
+
+    assert.equal(result.id, 'base1-1')
+    assert.equal(result.name, 'Bulbasaur')
+    assert.equal(result.similarity, 0.95)
+    assert.equal(result.extractedTempImageUrl, extractedTempImageUrl)
+
+    assert.isString(result.potentialMatchedCard)
+    assert.equal(result.potentialMatchedCard, 'https://example.com/bulbasaur-small.png')
+
+    sinon.assert.calledOnce(fileServiceStub)
+    sinon.assert.calledOnce(getIdentifyResultStub)
+    sinon.assert.calledOnce(getMinimalCardDetailByIdStub)
+    sinon.assert.calledOnce(fileServiceCleanupStub)
+  })
+
+  test('identify - should return 422 when no card is matched', async ({ client }) => {
+    getIdentifyResultStub.resolves(null)
+
+    const response = await client
+      .post('/api/v1/scan/identify')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+
+    response.assertStatus(422)
+    response.assertBodyContains({
+      code: 'E_IRIS_EXCEPTION',
+      message: 'No matching cards found for the scan',
+    })
+
+    sinon.assert.calledOnce(fileServiceStub)
+    sinon.assert.calledOnce(getIdentifyResultStub)
+    sinon.assert.notCalled(getMinimalCardDetailByIdStub)
+    sinon.assert.calledOnce(fileServiceCleanupStub)
+  })
+
+  test('identify - should return 404 when card exists in API but not in database', async ({
+    client,
+  }) => {
+    const cardIdentificationResult = { id: 'non-existent-id', similarity: 0.95 }
+    getIdentifyResultStub.resolves(cardIdentificationResult)
+
+    const notFoundError = new lucidErrors.E_ROW_NOT_FOUND()
+    getMinimalCardDetailByIdStub.withArgs('non-existent-id').rejects(notFoundError)
+
+    const response = await client
+      .post('/api/v1/scan/identify')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      message: 'Row not found',
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
+
+  test('identify - should handle validation errors', async ({ client }) => {
+    const response = await client.post('/api/v1/scan/identify')
+
+    response.assertStatus(422)
+    response.assertBodyContains({ code: 'E_VALIDATION_ERROR' })
+
+    sinon.assert.notCalled(getIdentifyResultStub)
+    sinon.assert.notCalled(getMinimalCardDetailByIdStub)
+  })
+
+  test('identify - should always clean up files even when errors occur', async ({ client }) => {
+    getIdentifyResultStub.rejects(new Error('Unexpected service error'))
+
+    const response = await client
+      .post('/api/v1/scan/identify')
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+
+    response.assertStatus(500)
+
+    sinon.assert.calledOnce(fileServiceCleanupStub)
   })
 })

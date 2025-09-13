@@ -1,6 +1,6 @@
 import vine from '@vinejs/vine'
 
-export const scanAnalyzeValidator = vine.compile(
+export const scanValidator = vine.compile(
   vine.object({
     file: vine.file({
       size: '5mb',
