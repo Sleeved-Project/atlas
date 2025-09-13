@@ -4,4 +4,9 @@ export const stripeWebhookHeaderSchema = vine.object({
   'stripe-signature': vine.string(),
 })
 
-export const stripeWebhookHeaderValidator = vine.compile(stripeWebhookHeaderSchema)
+export const stripeWebhookValidator = vine.compile(
+  vine.object({
+    headers: stripeWebhookHeaderSchema,
+    raw: vine.string(),
+  })
+)

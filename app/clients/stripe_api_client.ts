@@ -76,10 +76,10 @@ export default class StripeApiClient {
     customer: string
   }> {
     try {
-      // Create a new customer in Stripe
+      // Create a new customer in Stripe (we will save the customer ID in our DB later)
       const newCustomer = await this.stripe.customers.create()
 
-      // Create an ephemeral key for the customer
+      // Create an ephemeral key for the customer (used by the Stripe SDK on the client side)
       const ephemeralKey = await this.stripe.ephemeralKeys.create(
         { customer: newCustomer.id },
         { apiVersion: '2024-06-20' }

@@ -1,4 +1,3 @@
-// database/factories/payment_intent_factory.ts
 import Factory from '@adonisjs/lucid/factories'
 import PaymentIntent from '#models/payment_intent'
 import { DateTime } from 'luxon'

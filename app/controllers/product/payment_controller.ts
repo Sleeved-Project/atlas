@@ -4,14 +4,16 @@ import UserService from '#services/me_service'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { errors as lucidErrors } from '@adonisjs/lucid'
-import { StripeException } from '#exceptions/payment_exception'
+import { errors as vineErrors } from '@vinejs/vine'
 import { paymentSchemaValidator } from '#validators/payment_validator'
 import AdService from '#services/ad_service'
 import PaymentIntentService from '#services/payment_intent_service'
 import { PaymentIntentStatus } from '#types/payment_intent_status'
 import WebhookProcessor from '#processors/webhook_processor'
-import { stripeWebhookHeaderValidator } from '#validators/stripe_webhook_validator'
+import { stripeWebhookValidator } from '#validators/stripe_webhook_validator'
 import env from '#start/env'
+import PriceUtils from '#utils/price_utils'
+import ValidationException from '#exceptions/validation_exception'
 
 @inject()
 export default class PaymentController {
@@ -55,7 +57,7 @@ export default class PaymentController {
       const ad = await this.adService.getStripePaymentRelevantColumnsAdById(params.id)
 
       const { paymentIntentClientSecret, paymentIntentId, ephemeralKey, customer } =
-        await this.paymentService.createPaymentSheet(ad.originalPrice * 100)
+        await this.paymentService.createPaymentSheet(PriceUtils.getPriceInCents(ad.originalPrice))
 
       // Update existing ad with new status
       const updatedAd = await this.adService.updateAd(params.id, { statusId: 2 })
@@ -94,20 +96,20 @@ export default class PaymentController {
 
   async stripeWebhook({ request, response }: HttpContext) {
     try {
-      const headers = await stripeWebhookHeaderValidator.validate(request.headers())
-      const signature = headers['stripe-signature']
-      const rawBody = request.raw()
+      const { headers, raw } = await stripeWebhookValidator.validate({
+        headers: request.headers(),
+        raw: request.raw(),
+      })
 
-      if (!signature || !rawBody) {
-        throw new StripeException()
-      }
-
-      const stripeEvent = await this.paymentService.stripeWebhook(rawBody, signature)
+      const stripeEvent = await this.paymentService.stripeWebhook(raw, headers['stripe-signature'])
 
       await this.webhookProcessor.processStripeWebhookEvent(stripeEvent)
 
       response.status(200).send('Webhook received')
     } catch (error) {
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
       }
