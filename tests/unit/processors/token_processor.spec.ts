@@ -30,7 +30,7 @@ test.group('TokenProcessor', (group) => {
 
     await assert.rejects(
       () => tokenProcessor.verifyGradingTokens(user.id),
-      'Not enought token to perform operation'
+      'Not enough token to perform operation'
     )
   })
 })
