@@ -45,4 +45,8 @@ export default class PriceUtils {
       return acc
     }, 0)
   }
+
+  public static getPriceInCents(price: number): number {
+    return price * 100
+  }
 }
