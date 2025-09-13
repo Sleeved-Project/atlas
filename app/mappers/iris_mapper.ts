@@ -1,8 +1,8 @@
 import {
   ScanAnalyseIrisResponse,
   ScanCardInfoDTO,
-  GradingIrisResponse,
-  GradingOutputDTO,
+  ScanGradeDTO,
+  ScanGradeIrisResponse,
 } from '#types/iris_type'
 
 export default class IrisMapper {
@@ -38,17 +38,16 @@ export default class IrisMapper {
     }
   }
 
-  public static toGradingOutputDTO(gradingIrisResponse: GradingIrisResponse): GradingOutputDTO[] {
-    const grades = gradingIrisResponse.grades ?? []
-    return grades.map((grade) => ({
-      averageScore: grade.average_grade_score,
-      details: {
-        surface: grade.surface_score,
-        contour: grade.contour_score,
-        corner: grade.corner_score,
-        center: grade.center_score,
-      },
-      topClassMatches: grade.top_class_matchs ?? [],
-    }))
+  public static scanGradeIrisResponseToGradeInputDTO(
+    gradingIrisResponse: ScanGradeIrisResponse
+  ): ScanGradeDTO {
+    const gradeData = gradingIrisResponse.cards[0]
+    return {
+      globaleRating: gradeData.average_card_score,
+      surfaceRating: gradeData.surface_score,
+      edgeRating: gradeData.contour_score,
+      cornerRating: gradeData.corner_score,
+      centerRating: gradeData.center_score,
+    }
   }
 }

@@ -6,5 +6,6 @@ export const gradingValidator = vine.compile(
       size: '5mb',
       extnames: ['png', 'jpg', 'jpeg'],
     }),
+    cardId: vine.string(),
   })
 )

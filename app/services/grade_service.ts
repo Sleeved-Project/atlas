@@ -1,10 +1,11 @@
 import Grade from '#models/grade'
 
-export async function getGradeLabel(score: number): Promise<string | null> {
-  const grade = await Grade.query()
-    .where('min_grade', '<=', score)
-    .andWhere('max_grade', '>=', score)
-    .first()
-
-  return grade?.label ?? null
+export default class GradeService {
+  async getGradeByScore(score: number): Promise<Grade> {
+    return await Grade.query()
+      .select('id', 'label', 'description', 'code')
+      .where('min_grade', '<=', score)
+      .andWhere('max_grade', '>=', score)
+      .firstOrFail()
+  }
 }

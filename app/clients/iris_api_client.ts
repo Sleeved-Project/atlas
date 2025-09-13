@@ -4,7 +4,7 @@ import {
   IrisNoMatchException,
 } from '#exceptions/iris_exception'
 import env from '#start/env'
-import { GradingIrisResponse, ScanAnalyseIrisResponse } from '#types/iris_type'
+import { ScanGradeIrisResponse, ScanAnalyseIrisResponse } from '#types/iris_type'
 
 export default class IrisApiClient {
   private readonly baseUrl = env.get('IRIS_API_BASE_URL')
@@ -35,7 +35,7 @@ export default class IrisApiClient {
     }
   }
 
-  public async gradeCard(formData: FormData): Promise<GradingIrisResponse> {
+  public async gradeCard(formData: FormData): Promise<ScanGradeIrisResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/images/grade`, {
         method: 'POST',
@@ -46,9 +46,9 @@ export default class IrisApiClient {
         throw new IrisConnectionException()
       }
 
-      const data = (await response.json()) as GradingIrisResponse
+      const data = (await response.json()) as ScanGradeIrisResponse
 
-      if (!data.grades || data.grades.length === 0) {
+      if (!data.cards || data.cards.length === 0) {
         throw new IrisNoMatchException()
       }
 

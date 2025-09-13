@@ -31,16 +31,13 @@ export interface ScanCardInfoDTO {
   extractedTempImageUrl: string
 }
 
-// -------------------------------
-// Grading interfaces
-// -------------------------------
-export interface GradingIrisResponse {
+export interface ScanGradeIrisResponse {
   message: string
-  grades: GradingIrisGrade[] // tableau de notes
+  cards: ScanGradeIrisCard[]
 }
 
-export interface GradingIrisGrade {
-  average_grade_score: number
+export interface ScanGradeIrisCard {
+  average_card_score: number
   surface_score: number
   contour_score: number
   corner_score: number
@@ -51,18 +48,10 @@ export interface GradingIrisGrade {
   }[]
 }
 
-// DTO simplifié pour la sortie
-export interface GradingOutputDTO {
-  averageScore: number
-  details: {
-    surface: number
-    contour: number
-    corner: number
-    center: number
-  }
-  topClassMatches: {
-    grade_class: string
-    confidence: number
-  }[]
-  label?: string // Ajouté par le controller
+export interface ScanGradeDTO {
+  globaleRating: number
+  surfaceRating: number
+  edgeRating: number
+  cornerRating: number
+  centerRating: number
 }

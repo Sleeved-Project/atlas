@@ -1,4 +1,5 @@
 import Certificate from '#models/certificate'
+import { ScanGradeDTO } from '#types/iris_type'
 
 export default class CertificateService {
   public async getCertificateByCardIdCertifyedByAndId(
@@ -10,6 +11,24 @@ export default class CertificateService {
       id: certificateId,
       certifiedById,
       cardId,
+    })
+  }
+
+  public async createCertificate(
+    certifiedById: string,
+    cardId: string,
+    gradeId: string,
+    scanGradeDTO: ScanGradeDTO
+  ): Promise<Certificate> {
+    return await Certificate.create({
+      certifiedById,
+      cardId,
+      gradeId,
+      globalRating: scanGradeDTO.globaleRating,
+      centeringRating: scanGradeDTO.centerRating,
+      cornerRating: scanGradeDTO.cornerRating,
+      edgeRating: scanGradeDTO.edgeRating,
+      surfaceRating: scanGradeDTO.surfaceRating,
     })
   }
 }

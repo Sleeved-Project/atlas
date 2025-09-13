@@ -20,4 +20,15 @@ export default class MeService {
 
     return user
   }
+
+  async getGradingTokenCount(id: string): Promise<number> {
+    const user = await User.query().select('remaning_certificate_token').where({ id }).firstOrFail()
+    return user.remaningCertificateToken
+  }
+
+  async decrementGradingTokenCount(id: string): Promise<void> {
+    const user = await User.findOrFail(id)
+    user.remaningCertificateToken -= 1
+    await user.save()
+  }
 }
