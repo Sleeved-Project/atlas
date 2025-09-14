@@ -5,6 +5,13 @@ interface CreateAccountResponse {
   accountId: string
 }
 
+interface CreatePaymentSheetResponse {
+  paymentIntentClientSecret: string | null
+  paymentIntentId: string
+  ephemeralKey: string | undefined
+  customer: string
+}
+
 export default class PaymentService {
   private stripeApiClient: StripeApiClient
   constructor() {
@@ -30,5 +37,15 @@ export default class PaymentService {
     )
 
     return accountLink.url
+  }
+
+  async createPaymentSheet(adAmount: number): Promise<CreatePaymentSheetResponse> {
+    const { paymentIntentClientSecret, paymentIntentId, ephemeralKey, customer } =
+      await this.stripeApiClient.createPaymentSheet(adAmount)
+    return { paymentIntentClientSecret, paymentIntentId, ephemeralKey, customer }
+  }
+
+  async stripeWebhook(rawBody: string, signature: string | string[]): Promise<Record<string, any>> {
+    return await this.stripeApiClient.stripeWebhook(rawBody, signature)
   }
 }

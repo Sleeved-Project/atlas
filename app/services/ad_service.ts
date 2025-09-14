@@ -91,4 +91,16 @@ export default class AdService {
       meta: result.getMeta(),
     }
   }
+
+  public async getStripePaymentRelevantColumnsAdById(id: string): Promise<Ad> {
+    return await Ad.query().select('original_price').where('id', id).firstOrFail()
+  }
+
+  public async updateAd(id: string, data: Partial<Ad>): Promise<Ad> {
+    const ad = await Ad.findOrFail(id)
+    ad.merge(data)
+    await ad.save()
+
+    return ad
+  }
 }
