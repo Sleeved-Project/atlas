@@ -1,0 +1,11 @@
+import vine from '@vinejs/vine'
+
+export const gradingValidator = vine.compile(
+  vine.object({
+    file: vine.file({
+      size: '5mb',
+      extnames: ['png', 'jpg', 'jpeg'],
+    }),
+    cardId: vine.string(),
+  })
+)

@@ -8,7 +8,7 @@ import { ArtistFactory } from '#database/factories/artist'
 import { RarityFactory } from '#database/factories/rarity'
 import { LegalityFactory } from '#database/factories/legality'
 import { SetFactory } from '#database/factories/set'
-import { UserFactory } from '#database/factories/user'
+import { TEST_AUTH_USER_ID } from '#tests/mocks/auth_service_mock'
 
 test.group('CertificateService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -29,9 +29,7 @@ test.group('CertificateService', (group) => {
 
     const card = await CardFactory.merge({ id: 'base1-1' }).create()
     const grade = await GradeFactory.create()
-    const userId = 'test-user-id'
-
-    await UserFactory.merge({ id: userId }).create()
+    const userId = TEST_AUTH_USER_ID
 
     const certificate = await CertificateFactory.merge({
       cardId: card.id,
@@ -73,7 +71,7 @@ test.group('CertificateService', (group) => {
     const card = await CardFactory.merge({ id: 'base1-1' }).create()
 
     const nonExistentCertificateId = 'non-existent-certificate-id'
-    const userId = 'test-user-id'
+    const userId = TEST_AUTH_USER_ID
 
     // Test non-existent certificate
     await assert.rejects(async () => {
@@ -95,10 +93,8 @@ test.group('CertificateService', (group) => {
 
     const card = await CardFactory.merge({ id: 'base1-1' }).create()
     const grade = await GradeFactory.create()
-    const userId = 'test-user-id'
+    const userId = TEST_AUTH_USER_ID
     const otherUserId = 'other-user-id'
-
-    await UserFactory.merge({ id: userId }).create()
 
     const certificate = await CertificateFactory.merge({
       cardId: card.id,
@@ -126,9 +122,7 @@ test.group('CertificateService', (group) => {
     const card1 = await CardFactory.merge({ id: 'base1-1' }).create()
     const card2 = await CardFactory.merge({ id: 'base1-2' }).create()
     const grade = await GradeFactory.create()
-    const userId = 'test-user-id'
-
-    await UserFactory.merge({ id: userId }).create()
+    const userId = TEST_AUTH_USER_ID
 
     const certificate = await CertificateFactory.merge({
       cardId: card1.id,
@@ -144,5 +138,41 @@ test.group('CertificateService', (group) => {
         certificate.id
       )
     }, 'Row not found')
+  })
+
+  test('createCertificate - should create certificate with valid data', async ({ assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
+    const card = await CardFactory.merge({ id: 'base1-1' }).create()
+    const grade = await GradeFactory.create()
+    const userId = TEST_AUTH_USER_ID
+
+    const scanGradeDTO = {
+      globaleRating: 8.5,
+      centerRating: 8.2,
+      cornerRating: 8.7,
+      edgeRating: 8.4,
+      surfaceRating: 8.6,
+    }
+
+    const certificate = await certificateService.createCertificate(
+      userId,
+      card.id,
+      grade.id,
+      scanGradeDTO
+    )
+
+    assert.exists(certificate)
+    assert.equal(certificate.certifiedById, userId)
+    assert.equal(certificate.cardId, card.id)
+    assert.equal(certificate.gradeId, grade.id)
+    assert.equal(certificate.globalRating, scanGradeDTO.globaleRating)
+    assert.equal(certificate.centeringRating, scanGradeDTO.centerRating)
+    assert.equal(certificate.cornerRating, scanGradeDTO.cornerRating)
+    assert.equal(certificate.edgeRating, scanGradeDTO.edgeRating)
+    assert.equal(certificate.surfaceRating, scanGradeDTO.surfaceRating)
   })
 })

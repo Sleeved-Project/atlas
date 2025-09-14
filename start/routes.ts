@@ -101,6 +101,7 @@ router
           .group(() => {
             router.post('/analyze', [ScanController, 'analyze'])
             router.post('/identify', [ScanController, 'identify'])
+            router.post('/grade', [ScanController, 'grade']).use(middleware.auth())
           })
           .prefix('scan')
       })

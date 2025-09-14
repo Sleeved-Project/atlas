@@ -9,10 +9,19 @@ import app from '@adonisjs/core/services/app'
 import { FileUploadException } from '#exceptions/file_upload_exception'
 import { errors as lucidErrors } from '@adonisjs/lucid'
 import FileService from '#services/file_service'
+import { ArtistFactory } from '#database/factories/artist'
+import { RarityFactory } from '#database/factories/rarity'
+import { LegalityFactory } from '#database/factories/legality'
+import { SetFactory } from '#database/factories/set'
+import { CardFactory } from '#database/factories/card'
+import { GradeFactory } from '#database/factories/grade'
+import AuthServiceMock, { TEST_AUTH_USER_ID } from '#tests/mocks/auth_service_mock'
+import User from '#models/user'
 
 test.group('Scan controller', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
+  let wardenApiClientStub: sinon.SinonStub
   let scanServiceStub: sinon.SinonStub
   let cardServiceStub: sinon.SinonStub
   let fileServiceStub: sinon.SinonStub
@@ -25,6 +34,7 @@ test.group('Scan controller', (group) => {
   group.each.setup(async () => {
     // Setup test image path
     testImagePath = app.makePath('tests/fixtures/test-image.png')
+    wardenApiClientStub = AuthServiceMock.setupWardenApiClientStub()
 
     // Create stubs
     scanServiceStub = sinon.stub(ScanService.prototype, 'getAnalyseResults')
@@ -39,6 +49,7 @@ test.group('Scan controller', (group) => {
   })
 
   group.each.teardown(async () => {
+    wardenApiClientStub.restore()
     sinon.restore()
     const uploadsPath = app.makePath('storage/uploads')
     try {
@@ -50,7 +61,7 @@ test.group('Scan controller', (group) => {
         }
       }
     } catch (error) {
-      console.error('Erreur lors du nettoyage des fichiers de test:', error)
+      console.error('Error while cleaning test files:', error)
     }
   })
 
@@ -243,7 +254,7 @@ test.group('Scan controller', (group) => {
   })
 
   test('analyze - should always delete the file, even in case of error', async ({ client }) => {
-    scanServiceStub.rejects(new Error('Erreur de service simulée'))
+    scanServiceStub.rejects(new Error('Simulated service error'))
 
     const response = await client
       .post('/api/v1/scan/analyze')
@@ -384,6 +395,108 @@ test.group('Scan controller', (group) => {
 
     response.assertStatus(500)
 
+    sinon.assert.calledOnce(fileServiceCleanupStub)
+  })
+
+  test('grade - should successfully grade a card', async ({ client, assert }) => {
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
+    const card = await CardFactory.merge({ id: 'base1-1' }).create()
+    await GradeFactory.merge({
+      minGrade: 8,
+      maxGrade: 9,
+      label: 'Near Mint',
+      code: 'NM',
+    }).create()
+
+    const mockGradeResponse = {
+      globaleRating: 8.5,
+      centerRating: 8.2,
+      cornerRating: 8.7,
+      edgeRating: 8.4,
+      surfaceRating: 8.6,
+    }
+
+    fileServiceStub.resolves('/tmp/test-file.png')
+    const scanServiceGradingStub = sinon.stub(ScanService.prototype, 'getGradingResults')
+    scanServiceGradingStub.resolves(mockGradeResponse)
+
+    const response = await client
+      .post('/api/v1/scan/grade')
+      .fields({ cardId: card.id })
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+      .header('Authorization', `Bearer fake-token-for-testing`)
+
+    response.assertStatus(200)
+    const result = response.body()
+
+    assert.properties(result, [
+      'id',
+      'globalRating',
+      'centeringRating',
+      'cornerRating',
+      'edgeRating',
+      'surfaceRating',
+      'certifiedAt',
+      'grade',
+    ])
+
+    assert.equal(result.globalRating, '8.5')
+    assert.equal(result.grade.label, 'Near Mint')
+    assert.equal(result.grade.code, 'NM')
+
+    sinon.assert.calledOnce(fileServiceStub)
+    sinon.assert.calledOnce(scanServiceGradingStub)
+    sinon.assert.calledOnce(fileServiceCleanupStub)
+  })
+
+  test('grade - should return 422 when user has no grading tokens', async ({ client }) => {
+    await User.query().where('id', TEST_AUTH_USER_ID).update({ remaningCertificateToken: 0 })
+    await ArtistFactory.create()
+    await RarityFactory.create()
+    await LegalityFactory.create()
+    await SetFactory.merge({ id: 'base1' }).create()
+
+    const card = await CardFactory.merge({ id: 'base1-1' }).create()
+
+    const response = await client
+      .post('/api/v1/scan/grade')
+      .fields({ cardId: card.id })
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+      .header('Authorization', `Bearer fake-token-for-testing`)
+
+    response.assertStatus(403)
+    response.assertBodyContains({
+      code: 'E_NOT_ENOUGH_TOKEN',
+      message: 'Not enough token to perform operation',
+    })
+    sinon.assert.calledOnce(fileServiceCleanupStub)
+  })
+
+  test('grade - should return 404 for non-existent card', async ({ client }) => {
+    const response = await client
+      .post('/api/v1/scan/grade')
+      .fields({ cardId: 'non-existent-card' })
+      .file('file', createReadStream(testImagePath), {
+        filename: 'test-image.png',
+        contentType: 'image/png',
+      })
+      .header('Authorization', `Bearer fake-token-for-testing`)
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      message: 'Card not found',
+      code: 'E_ROW_NOT_FOUND',
+    })
     sinon.assert.calledOnce(fileServiceCleanupStub)
   })
 })
