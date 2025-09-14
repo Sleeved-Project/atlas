@@ -92,6 +92,18 @@ export default class AdService {
     }
   }
 
+  public async getStripePaymentRelevantColumnsAdById(id: string): Promise<Ad> {
+    return await Ad.query().select('original_price').where('id', id).firstOrFail()
+  }
+
+  public async updateAd(id: string, data: Partial<Ad>): Promise<Ad> {
+    const ad = await Ad.findOrFail(id)
+    ad.merge(data)
+    await ad.save()
+
+    return ad
+  }
+
   public async getAdById(adId: string): Promise<Ad> {
     return await Ad.query()
       .preload('status')

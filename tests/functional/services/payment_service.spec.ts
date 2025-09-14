@@ -69,4 +69,43 @@ test.group('Payment service', (group) => {
       assert.include(err.message, 'Stripe link error')
     }
   })
+
+  test('createPaymentSheet - should create payment sheet successfully', async ({ assert }) => {
+    const paymentSheetResponse = {
+      paymentIntentClientSecret: 'pi_12345',
+      paymentIntentId: 'pi_12345',
+      ephemeralKey: 'ek_12345',
+      customer: 'cus_12345',
+    }
+
+    const createPaymentSheetStub = sinon
+      .stub(StripeApiClient.prototype, 'createPaymentSheet')
+      .resolves(paymentSheetResponse)
+
+    const service = new PaymentService()
+    const result = await service.createPaymentSheet(1000)
+
+    assert.deepEqual(result, paymentSheetResponse)
+    assert.isTrue(createPaymentSheetStub.calledOnceWith(1000))
+
+    createPaymentSheetStub.restore()
+  })
+
+  test('createPaymentSheet - should throw if createPaymentSheet fails', async ({ assert }) => {
+    const createPaymentSheetStub = sinon
+      .stub(StripeApiClient.prototype, 'createPaymentSheet')
+      .rejects(new Error('Stripe payment sheet error'))
+
+    const service = new PaymentService()
+
+    try {
+      await service.createPaymentSheet(1000)
+      assert.fail('Expected createPaymentSheet to throw')
+    } catch (err: any) {
+      assert.isTrue(createPaymentSheetStub.calledOnceWith(1000))
+      assert.include(err.message, 'Stripe payment sheet error')
+    }
+
+    createPaymentSheetStub.restore()
+  })
 })
