@@ -49,7 +49,7 @@ export interface ScanGradeIrisCard {
 }
 
 export interface ScanGradeDTO {
-  globaleRating: number
+  globalRating: number
   surfaceRating: number
   edgeRating: number
   cornerRating: number

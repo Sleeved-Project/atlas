@@ -24,7 +24,7 @@ export default class CertificateService {
       certifiedById,
       cardId,
       gradeId,
-      globalRating: scanGradeDTO.globaleRating,
+      globalRating: scanGradeDTO.globalRating,
       centeringRating: scanGradeDTO.centerRating,
       cornerRating: scanGradeDTO.cornerRating,
       edgeRating: scanGradeDTO.edgeRating,

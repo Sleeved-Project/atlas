@@ -241,7 +241,7 @@ test.group('User controller', (group) => {
     await UserFactory.merge({
       id: TEST_AUTH_USER_ID,
       username: TEST_AUTH_USER_USERNAME,
-      remaningCertificateToken: 5,
+      remainingCertificateToken: 5,
     }).create()
 
     const response = await client
@@ -249,8 +249,8 @@ test.group('User controller', (group) => {
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
-    assert.properties(response.body(), ['remaningCertificateToken'])
-    assert.equal(response.body().remaningCertificateToken, 5)
+    assert.properties(response.body(), ['remainingCertificateToken'])
+    assert.equal(response.body().remainingCertificateToken, 5)
   })
 
   test('tokens - it should return 404 when user does not exist', async ({ client }) => {

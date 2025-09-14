@@ -43,7 +43,7 @@ export default class IrisMapper {
   ): ScanGradeDTO {
     const gradeData = gradingIrisResponse.cards[0]
     return {
-      globaleRating: gradeData.average_card_score,
+      globalRating: gradeData.average_card_score,
       surfaceRating: gradeData.surface_score,
       edgeRating: gradeData.contour_score,
       cornerRating: gradeData.corner_score,

@@ -31,7 +31,7 @@ export default class User extends BaseModel {
   declare stripeId: string | null
 
   @column({ columnName: 'remaning_certificate_token' })
-  declare remaningCertificateToken: number
+  declare remainingCertificateToken: number
 
   @column({ columnName: 'profile_picture_url' })
   declare profilePictureUrl: string | null

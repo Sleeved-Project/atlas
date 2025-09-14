@@ -17,7 +17,7 @@ export default class CertificationProcessor {
    * Process cards with ownership information.
    */
   public async processCertification(userId: string, cardId: string, scanGradeDTO: ScanGradeDTO) {
-    const grade = await this.gradeService.getGradeByScore(scanGradeDTO.globaleRating)
+    const grade = await this.gradeService.getGradeByScore(scanGradeDTO.globalRating)
     const certification = await this.certificateService.createCertificate(
       userId,
       cardId,

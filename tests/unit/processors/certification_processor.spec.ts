@@ -42,11 +42,11 @@ test.group('CertificationProcessor', (group) => {
     }).create()
 
     const user = await UserFactory.merge({
-      remaningCertificateToken: 1,
+      remainingCertificateToken: 1,
     }).create()
 
     const scanGradeDTO = {
-      globaleRating: 8.5,
+      globalRating: 8.5,
       centerRating: 8.2,
       cornerRating: 8.7,
       edgeRating: 8.4,
@@ -58,10 +58,10 @@ test.group('CertificationProcessor', (group) => {
     assert.properties(result, ['id', 'grade', 'globalRating'])
     assert.equal(result.grade.label, 'Near Mint')
     assert.equal(result.grade.code, 'PSA9')
-    assert.equal(result.globalRating, scanGradeDTO.globaleRating)
+    assert.equal(result.globalRating, scanGradeDTO.globalRating)
 
     const updatedUser = await meService.getUserById(user.id)
-    assert.equal(updatedUser.remaningCertificateToken, 0)
+    assert.equal(updatedUser.remainingCertificateToken, 0)
   })
 
   test('processCertification - should throw when no matching grade found', async ({ assert }) => {
@@ -77,11 +77,11 @@ test.group('CertificationProcessor', (group) => {
     }).create()
 
     const user = await UserFactory.merge({
-      remaningCertificateToken: 1,
+      remainingCertificateToken: 1,
     }).create()
 
     const scanGradeDTO = {
-      globaleRating: 7.5,
+      globalRating: 7.5,
       centerRating: 7.2,
       cornerRating: 7.7,
       edgeRating: 7.4,
@@ -94,6 +94,6 @@ test.group('CertificationProcessor', (group) => {
     )
 
     const userAfterError = await meService.getUserById(user.id)
-    assert.equal(userAfterError.remaningCertificateToken, 1)
+    assert.equal(userAfterError.remainingCertificateToken, 1)
   })
 })
