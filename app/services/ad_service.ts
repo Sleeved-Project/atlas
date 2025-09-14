@@ -97,9 +97,9 @@ export default class AdService {
       .preload('status')
       .preload('condition')
       .preload('finish')
-      .preload('card')
+      .preload('card', (query) => query.select('id', 'name'))
       .preload('certificate')
-      .preload('seller')
+      .preload('seller', (query) => query.select('id', 'username'))
       .where('id', adId)
       .firstOrFail()
   }
