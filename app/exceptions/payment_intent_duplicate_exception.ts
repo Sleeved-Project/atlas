@@ -2,7 +2,7 @@ import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class PaymentIntentDuplicateException extends Exception {
-  static status = 403
+  static status = 409
   static code = 'E_PAYMENT_INTENT_DUPLICATE'
 
   constructor(adId: string) {

@@ -258,7 +258,7 @@ test.group('Payment controller', (group) => {
       .get('/api/v1/payment/ad_12345/sheet')
       .header('Authorization', 'Bearer fake-token-for-testing')
 
-    response.assertStatus(403)
+    response.assertStatus(409)
     const body = response.body()
     assert.equal(body.message, 'Ad #ad_12345 is not currently available for purchase')
     assert.equal(body.code, 'E_PAYMENT_INTENT_DUPLICATE')
