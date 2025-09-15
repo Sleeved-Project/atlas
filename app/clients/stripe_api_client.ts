@@ -56,7 +56,7 @@ export default class StripeApiClient {
       })
       return accountLink
     } catch (error) {
-      throw new StripeException()
+      throw new StripeException(error)
     }
   }
 
@@ -65,7 +65,7 @@ export default class StripeApiClient {
       const deletedAccount = await this.stripe.accounts.del(accountId)
       return deletedAccount.id
     } catch (error) {
-      throw new StripeException()
+      throw new StripeException(error)
     }
   }
 
@@ -102,7 +102,7 @@ export default class StripeApiClient {
         customer: newCustomer.id,
       }
     } catch (error) {
-      throw new StripeException()
+      throw new StripeException(error)
     }
   }
 
@@ -114,8 +114,8 @@ export default class StripeApiClient {
       const event = this.stripe.webhooks.constructEvent(rawBody, signature, this.publishableKey)
 
       return event
-    } catch (err) {
-      throw new StripeException()
+    } catch (error) {
+      throw new StripeException(error)
     }
   }
 }
