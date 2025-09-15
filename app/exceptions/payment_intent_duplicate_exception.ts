@@ -6,7 +6,7 @@ export default class PaymentIntentDuplicateException extends Exception {
   static code = 'E_PAYMENT_INTENT_DUPLICATE'
 
   constructor(adId: string) {
-    super(`Payment intent already exists for ad ${adId}`)
+    super(`Ad #${adId} is not currently available for purchase`)
   }
 
   async handle(error: this, ctx: HttpContext) {
@@ -14,9 +14,5 @@ export default class PaymentIntentDuplicateException extends Exception {
       code: error.code,
       message: error.message,
     })
-  }
-
-  async report(error: this, ctx: HttpContext) {
-    ctx.logger.error({ err: error }, error.message)
   }
 }
