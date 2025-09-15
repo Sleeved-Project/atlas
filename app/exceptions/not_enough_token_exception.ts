@@ -1,7 +1,7 @@
 import { Exception } from '@adonisjs/core/exceptions'
 import type { HttpContext } from '@adonisjs/core/http'
 
-export default class NotEnoughtTokenException extends Exception {
+export default class NotenoughTokenException extends Exception {
   static status = 403
   static code = 'E_NOT_ENOUGH_TOKEN'
   static message = 'Not enough token to perform operation'

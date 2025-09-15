@@ -17,7 +17,7 @@ test.group('TokenProcessor', (group) => {
 
   test('verifyGradingTokens - should not throw when user has tokens', async ({ assert }) => {
     const user = await UserFactory.merge({
-      remaningCertificateToken: 5,
+      remainingCertificateToken: 5,
     }).create()
 
     await assert.doesNotReject(() => tokenProcessor.verifyGradingTokens(user.id))
@@ -25,7 +25,7 @@ test.group('TokenProcessor', (group) => {
 
   test('verifyGradingTokens - should throw when user has no tokens', async ({ assert }) => {
     const user = await UserFactory.merge({
-      remaningCertificateToken: 0,
+      remainingCertificateToken: 0,
     }).create()
 
     await assert.rejects(

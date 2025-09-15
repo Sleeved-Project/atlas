@@ -151,7 +151,7 @@ test.group('CertificateService', (group) => {
     const userId = TEST_AUTH_USER_ID
 
     const scanGradeDTO = {
-      globaleRating: 8.5,
+      globalRating: 8.5,
       centerRating: 8.2,
       cornerRating: 8.7,
       edgeRating: 8.4,
@@ -169,7 +169,7 @@ test.group('CertificateService', (group) => {
     assert.equal(certificate.certifiedById, userId)
     assert.equal(certificate.cardId, card.id)
     assert.equal(certificate.gradeId, grade.id)
-    assert.equal(certificate.globalRating, scanGradeDTO.globaleRating)
+    assert.equal(certificate.globalRating, scanGradeDTO.globalRating)
     assert.equal(certificate.centeringRating, scanGradeDTO.centerRating)
     assert.equal(certificate.cornerRating, scanGradeDTO.cornerRating)
     assert.equal(certificate.edgeRating, scanGradeDTO.edgeRating)

@@ -413,7 +413,7 @@ test.group('Scan controller', (group) => {
     }).create()
 
     const mockGradeResponse = {
-      globaleRating: 8.5,
+      globalRating: 8.5,
       centerRating: 8.2,
       cornerRating: 8.7,
       edgeRating: 8.4,
@@ -457,7 +457,7 @@ test.group('Scan controller', (group) => {
   })
 
   test('grade - should return 422 when user has no grading tokens', async ({ client }) => {
-    await User.query().where('id', TEST_AUTH_USER_ID).update({ remaningCertificateToken: 0 })
+    await User.query().where('id', TEST_AUTH_USER_ID).update({ remainingCertificateToken: 0 })
     await ArtistFactory.create()
     await RarityFactory.create()
     await LegalityFactory.create()

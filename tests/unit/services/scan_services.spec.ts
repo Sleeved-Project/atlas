@@ -173,7 +173,7 @@ test.group('ScanService', (group) => {
     }
 
     const expectedGradeResult = {
-      globaleRating: 8,
+      globalRating: 8,
       surfaceRating: 7.6,
       edgeRating: 8.2,
       cornerRating: 8.1,

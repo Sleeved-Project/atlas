@@ -62,7 +62,7 @@ test.group('MeService', (group) => {
     const user = await User.create({
       id: 'test-user-id',
       username: 'testuser',
-      remaningCertificateToken: 5,
+      remainingCertificateToken: 5,
     })
 
     const tokenCount = await meService.getGradingTokenCount(user.id)
@@ -78,13 +78,13 @@ test.group('MeService', (group) => {
     const user = await User.create({
       id: 'test-user-id',
       username: 'testuser',
-      remaningCertificateToken: 3,
+      remainingCertificateToken: 3,
     })
 
     await meService.decrementGradingTokenCount(user.id)
 
     const updatedUser = await User.findOrFail(user.id)
-    assert.equal(updatedUser.remaningCertificateToken, 2)
+    assert.equal(updatedUser.remainingCertificateToken, 2)
   })
 
   test('decrementGradingTokenCount - should throw error for non-existent user', async ({

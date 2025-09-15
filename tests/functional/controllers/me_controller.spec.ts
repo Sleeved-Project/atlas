@@ -236,4 +236,37 @@ test.group('User controller', (group) => {
     response.assertStatus(200)
     assert.isFalse(response.body().hasStripeAccount)
   })
+
+  test('tokens - it should return remaining grading tokens count', async ({ client, assert }) => {
+    await UserFactory.merge({
+      id: TEST_AUTH_USER_ID,
+      username: TEST_AUTH_USER_USERNAME,
+      remainingCertificateToken: 5,
+    }).create()
+
+    const response = await client
+      .get(`/api/v1/me/tokens`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+    assert.properties(response.body(), ['remainingCertificateToken'])
+    assert.equal(response.body().remainingCertificateToken, 5)
+  })
+
+  test('tokens - it should return 404 when user does not exist', async ({ client }) => {
+    const response = await client
+      .get('/api/v1/me/tokens')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(404)
+    response.assertBodyContains({
+      code: 'E_ROW_NOT_FOUND',
+    })
+  })
+
+  test('tokens - it should require authentication', async ({ client }) => {
+    const response = await client.get('/api/v1/me/tokens')
+
+    response.assertStatus(401)
+  })
 })

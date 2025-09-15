@@ -80,4 +80,16 @@ export default class MeController {
       throw error
     }
   }
+
+  async tokens({ response, authUser }: HttpContext) {
+    try {
+      const remainingCertificateToken = await this.meService.getGradingTokenCount(authUser.id)
+      return response.ok({ remainingCertificateToken })
+    } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
 }
