@@ -175,4 +175,38 @@ test.group('AdService', (group) => {
 
     assert.equal(result.data.length, 0)
   })
+
+  test('getAdById - should return ad with correct details', async ({ assert }) => {
+    const artist = await ArtistFactory.create()
+    const rarity = await RarityFactory.create()
+    const legality = await LegalityFactory.create()
+    const set = await SetFactory.merge({ id: 'base5' }).create()
+
+    const condition = await CardConditionBasicFactory.create()
+    const finish = await CardFinishBasicFactory.create()
+    const status = await AdStatusFactory.merge({ id: 5, label: 'Published' }).create()
+
+    const card = await CardFactory.merge({
+      name: 'Bulbasaur',
+      artistId: artist.id,
+      rarityId: rarity.id,
+      legalityId: legality.id,
+      setId: set.id,
+    }).create()
+
+    const ad = await AdFactory.merge({
+      cardId: card.id,
+      conditionId: condition.id,
+      finishId: finish.id,
+      statusId: status.id,
+    })
+      .with('seller')
+      .create()
+
+    const fetchedAd = await adService.getAdById(ad.id)
+
+    assert.isNotNull(fetchedAd)
+    assert.equal(fetchedAd?.id, ad.id)
+    assert.equal(fetchedAd?.card.name, 'Bulbasaur')
+  })
 })

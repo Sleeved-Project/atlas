@@ -1,4 +1,5 @@
 import vine from '@vinejs/vine'
+import { baseParamsSchema } from './common_validator.js'
 
 export const adCardSchema = vine.object({
   cardId: vine.string(),
@@ -7,6 +8,8 @@ export const adCardSchema = vine.object({
   finishId: vine.number().positive(),
   certificateId: vine.string().optional(),
 })
+
+export const getAdBaseParamsValidator = vine.compile(baseParamsSchema)
 
 export const adFilesSchema = vine.object({
   rectoFile: vine.file({

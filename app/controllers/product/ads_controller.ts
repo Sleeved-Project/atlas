@@ -6,7 +6,12 @@ import CardService from '#services/card_service'
 import CertificateService from '#services/certificate_service'
 import FileService from '#services/file_service'
 import { SuccessOutputDTO } from '#types/success_output_dto_type'
-import { createAdValidator, listAdsValidator, searchAdsValidator } from '#validators/ad_validator'
+import {
+  createAdValidator,
+  getAdBaseParamsValidator,
+  listAdsValidator,
+  searchAdsValidator,
+} from '#validators/ad_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { errors as lucidErrors } from '@adonisjs/lucid'
@@ -97,6 +102,19 @@ export default class AdsController {
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)
+      }
+      throw error
+    }
+  }
+
+  async show({ params, response }: HttpContext) {
+    try {
+      const validatedParams = await getAdBaseParamsValidator.validate(params)
+      const ad = await this.adService.getAdById(validatedParams.id)
+      return response.ok(ad)
+    } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
       }
       throw error
     }

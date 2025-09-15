@@ -103,4 +103,16 @@ export default class AdService {
 
     return ad
   }
+
+  public async getAdById(adId: string): Promise<Ad> {
+    return await Ad.query()
+      .preload('status')
+      .preload('condition')
+      .preload('finish')
+      .preload('card', (query) => query.select('id', 'name'))
+      .preload('certificate')
+      .preload('seller', (query) => query.select('id', 'username'))
+      .where('id', adId)
+      .firstOrFail()
+  }
 }
