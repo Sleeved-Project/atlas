@@ -9,7 +9,7 @@ export class StripeException extends Exception {
   }
 
   async handle(error: this, ctx: HttpContext) {
-    console.error(error)
+    console.error('Stripe specific error : ', error)
     ctx.response.status(error.status).send({
       code: error.code,
       message: error.message,
