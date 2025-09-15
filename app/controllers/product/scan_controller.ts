@@ -14,6 +14,7 @@ import { errors as lucidErrors } from '@adonisjs/lucid'
 import { errors as vineErrors } from '@vinejs/vine'
 import TokenProcessor from '#processors/token_processor'
 import CertificationProcessor from '#processors/certification_processor'
+import IdentificationProcessor from '#processors/identification_processor'
 
 @inject()
 export default class ScanController {
@@ -22,7 +23,8 @@ export default class ScanController {
     private scanService: ScanService,
     private fileService: FileService,
     private tokenProcessor: TokenProcessor,
-    private certificationProcessor: CertificationProcessor
+    private certificationProcessor: CertificationProcessor,
+    private identificationProcessor: IdentificationProcessor
   ) {}
 
   async analyze({ response, request }: HttpContext) {
@@ -73,23 +75,10 @@ export default class ScanController {
         throw new ScanNoMatchException()
       }
 
-      if (cardIdentificationResult.id === 'back-side') {
-        const formattedBackSideCardResult =
-          CardMapper.toBackSideCardIdentifyResultOutputDTO(cardIdentificationResult)
+      const formattedCardResult =
+        await this.identificationProcessor.processIdentification(cardIdentificationResult)
 
-        return response.ok(formattedBackSideCardResult)
-      }
-
-      const cardDetails = await this.cardService.getMinimalCardDetailById(
-        cardIdentificationResult.id
-      )
-
-      const formattedFrontSideCardResult = CardMapper.toCardScanIdentifyResultOutputDTO(
-        cardDetails,
-        cardIdentificationResult
-      )
-
-      return response.ok(formattedFrontSideCardResult)
+      return response.ok(formattedCardResult)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)
