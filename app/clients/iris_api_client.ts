@@ -50,7 +50,7 @@ export default class IrisApiClient {
 
       const data = (await response.json()) as ScanGradeIrisResponse
 
-      if (!data.cards || data.cards.length === 0) {
+      if (!data) {
         throw new IrisNoMatchException()
       }
 

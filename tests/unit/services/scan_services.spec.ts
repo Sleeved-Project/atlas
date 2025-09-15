@@ -160,14 +160,19 @@ test.group('ScanService', (group) => {
 
     const mockGradeResponse = {
       message: 'Gradation complétée. Score: 8',
-      cards: [
+      average_grade_score: 8,
+      surface_score: 7.6,
+      contour_score: 8.2,
+      corner_score: 8.1,
+      center_score: 8.1,
+      top_class_matchs: [
         {
-          average_card_score: 8,
-          surface_score: 7.6,
-          contour_score: 8.2,
-          corner_score: 8.1,
-          center_score: 8.1,
-          top_class_matchs: [],
+          grade_class: 'PSA_8',
+          confidence: 99.51,
+        },
+        {
+          grade_class: 'PSA_9',
+          confidence: 0.25,
         },
       ],
     }
