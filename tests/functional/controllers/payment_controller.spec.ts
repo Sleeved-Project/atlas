@@ -260,7 +260,7 @@ test.group('Payment controller', (group) => {
 
     response.assertStatus(403)
     const body = response.body()
-    assert.equal(body.message, 'Payment intent already exists for ad ad_12345')
+    assert.equal(body.message, 'Ad #ad_12345 is not currently available for purchase')
     assert.equal(body.code, 'E_PAYMENT_INTENT_DUPLICATE')
   })
 
