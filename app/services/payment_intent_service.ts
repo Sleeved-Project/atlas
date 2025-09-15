@@ -32,4 +32,8 @@ export default class PaymentIntentService {
 
     return paymentIntent
   }
+
+  async getCurrentPaymentIntentStatus(id: string): Promise<PaymentIntent> {
+    return await PaymentIntent.query().select('status').where('id', id).firstOrFail()
+  }
 }
