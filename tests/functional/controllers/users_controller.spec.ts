@@ -156,4 +156,37 @@ test.group('Users controller', (group) => {
     assert.notProperty(response.body(), 'phone')
     assert.notProperty(response.body(), 'updatedAt')
   })
+
+  test('ads - it should return paginated user ads', async ({ client, assert }) => {
+    const user = await UserFactory.create()
+
+    const response = await client
+      .get(`/api/v1/users/${user.id}/ads?page=1&limit=20`)
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(200)
+    assert.isArray(response.body().data)
+    assert.property(response.body().meta, 'currentPage')
+    assert.property(response.body().meta, 'perPage')
+    assert.property(response.body().meta, 'total')
+    assert.equal(response.body().meta.total, 0)
+  })
+
+  test('ads - it should validate user ID format', async ({ client }) => {
+    const response = await client
+      .get('/api/v1/users/invalid-id/ads?page=1&limit=20')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(422)
+    response.assertBodyContains({
+      code: 'E_VALIDATION_ERROR',
+    })
+  })
+
+  test('ads - it should require authentication', async ({ client }) => {
+    const response = await client.get(
+      '/api/v1/users/123e4567-e89b-12d3-a456-426614174000/ads?page=1&limit=20'
+    )
+    response.assertStatus(401)
+  })
 })
