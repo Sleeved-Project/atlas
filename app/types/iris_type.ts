@@ -33,11 +33,7 @@ export interface ScanCardInfoDTO {
 
 export interface ScanGradeIrisResponse {
   message: string
-  cards: ScanGradeIrisCard[]
-}
-
-export interface ScanGradeIrisCard {
-  average_card_score: number
+  average_grade_score: number
   surface_score: number
   contour_score: number
   corner_score: number

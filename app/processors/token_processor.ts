@@ -1,6 +1,6 @@
 import { inject } from '@adonisjs/core'
-import NotenoughTokenException from '#exceptions/not_enough_token_exception'
 import MeService from '#services/me_service'
+import NotEnoughTokenException from '#exceptions/not_enough_token_exception'
 
 @inject()
 export default class TokenProcessor {
@@ -12,7 +12,7 @@ export default class TokenProcessor {
   public async verifyGradingTokens(userId: string): Promise<void> {
     const tokenCount = await this.meService.getGradingTokenCount(userId)
     if (tokenCount <= 0) {
-      throw new NotenoughTokenException()
+      throw new NotEnoughTokenException()
     }
   }
 }

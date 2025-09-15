@@ -41,13 +41,12 @@ export default class IrisMapper {
   public static scanGradeIrisResponseToGradeInputDTO(
     gradingIrisResponse: ScanGradeIrisResponse
   ): ScanGradeDTO {
-    const gradeData = gradingIrisResponse.cards[0]
     return {
-      globalRating: gradeData.average_card_score,
-      surfaceRating: gradeData.surface_score,
-      edgeRating: gradeData.contour_score,
-      cornerRating: gradeData.corner_score,
-      centerRating: gradeData.center_score,
+      globalRating: gradingIrisResponse.average_grade_score,
+      surfaceRating: gradingIrisResponse.surface_score,
+      edgeRating: gradingIrisResponse.contour_score,
+      cornerRating: gradingIrisResponse.corner_score,
+      centerRating: gradingIrisResponse.center_score,
     }
   }
 }
