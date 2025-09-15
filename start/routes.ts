@@ -37,6 +37,7 @@ router
           .group(() => {
             router.get('/', [UsersController, 'search']).use(middleware.auth())
             router.get('/:id', [UsersController, 'show']).use(middleware.auth())
+            router.get('/:id/ads', [UsersController, 'ads']).use(middleware.auth())
           })
           .prefix('/users')
         router

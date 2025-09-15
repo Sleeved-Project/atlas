@@ -1,11 +1,16 @@
 import NotFoundException from '#exceptions/not_found_exception'
 import ValidationException from '#exceptions/validation_exception'
-import UsersService from '#services/user_service'
+import UsersService from '#services/users_service'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { errors as lucidErrors } from '@adonisjs/lucid'
 import { errors as vineErrors } from '@vinejs/vine'
-import { searchUsersValidator, getUserParamsValidator } from '#validators/users_validator'
+import {
+  searchUsersValidator,
+  getUserParamsValidator,
+  getUserAdsValidator,
+  getUserAdsParamsValidator,
+} from '#validators/users_validator'
 
 @inject()
 export default class UsersController {
@@ -38,6 +43,27 @@ export default class UsersController {
         createdAt: user.createdAt,
       }
       return response.ok(publicUserData)
+    } catch (error) {
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async ads({ request, response }: HttpContext) {
+    try {
+      const urlParams = await getUserAdsParamsValidator.validate(request.params())
+      const queryParams = await getUserAdsValidator.validate(request.qs())
+
+      const ads = await this.usersService.getUserAds({
+        userId: urlParams.id,
+        ...queryParams,
+      })
+      return response.ok(ads)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)

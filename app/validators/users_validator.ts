@@ -8,6 +8,19 @@ export const searchUsersValidator = vine.compile(
   })
 )
 
+export const getUserAdsValidator = vine.compile(
+  vine.object({
+    page: vine.number().min(1).optional(),
+    limit: vine.number().min(1).max(100).optional(),
+  })
+)
+
+export const getUserAdsParamsValidator = vine.compile(
+  vine.object({
+    id: vine.string().uuid(),
+  })
+)
+
 export const getUserParamsValidator = vine.compile(
   vine.object({
     id: vine.string().uuid(),
