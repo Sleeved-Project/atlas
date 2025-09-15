@@ -14,6 +14,7 @@ import { stripeWebhookValidator } from '#validators/stripe_webhook_validator'
 import env from '#start/env'
 import PriceUtils from '#utils/price_utils'
 import ValidationException from '#exceptions/validation_exception'
+import PaymentIntentDuplicateException from '#exceptions/payment_intent_duplicate_exception'
 
 @inject()
 export default class PaymentController {
@@ -54,6 +55,13 @@ export default class PaymentController {
     try {
       const params = await paymentSchemaValidator.validate(request.params())
       // Fetch the ad to get the amount and seller info
+      const existingPaymentIntent = await this.paymentIntentService.getPaymentIntentByAdId(
+        params.id
+      )
+      if (existingPaymentIntent) {
+        throw new PaymentIntentDuplicateException(params.id)
+      }
+
       const ad = await this.adService.getStripePaymentRelevantColumnsAdById(params.id)
 
       const { paymentIntentClientSecret, paymentIntentId, ephemeralKey, customer } =
