@@ -9,9 +9,11 @@ import { ScanGradeIrisResponse, ScanAnalyseIrisResponse } from '#types/iris_type
 export default class IrisApiClient {
   private readonly baseUrl = env.get('IRIS_API_BASE_URL')
 
-  public async scanCard(formData: FormData): Promise<ScanAnalyseIrisResponse> {
+  public async scanCard(formData: FormData, threshold?: number): Promise<ScanAnalyseIrisResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/images/analyze`, {
+      const url = new URL(`${this.baseUrl}/images/analyze`)
+      if (threshold !== undefined) url.searchParams.set('threshold', String(threshold))
+      const response = await fetch(url.toString(), {
         method: 'POST',
         body: formData,
       })

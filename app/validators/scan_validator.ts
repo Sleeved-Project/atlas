@@ -6,5 +6,6 @@ export const scanValidator = vine.compile(
       size: '5mb',
       extnames: ['png', 'jpg', 'jpeg'],
     }),
+    threshold: vine.number().min(0).max(1).optional(),
   })
 )

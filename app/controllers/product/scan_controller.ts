@@ -14,6 +14,7 @@ import { errors as lucidErrors } from '@adonisjs/lucid'
 import { errors as vineErrors } from '@vinejs/vine'
 import TokenProcessor from '#processors/token_processor'
 import CertificationProcessor from '#processors/certification_processor'
+import IdentificationProcessor from '#processors/identification_processor'
 
 @inject()
 export default class ScanController {
@@ -22,7 +23,8 @@ export default class ScanController {
     private scanService: ScanService,
     private fileService: FileService,
     private tokenProcessor: TokenProcessor,
-    private certificationProcessor: CertificationProcessor
+    private certificationProcessor: CertificationProcessor,
+    private identificationProcessor: IdentificationProcessor
   ) {}
 
   async analyze({ response, request }: HttpContext) {
@@ -59,27 +61,22 @@ export default class ScanController {
 
   async identify({ response, request }: HttpContext) {
     try {
-      const { file } = await request.validateUsing(scanValidator)
+      const { file, threshold } = await request.validateUsing(scanValidator)
       const filePath = await this.fileService.saveFile(file)
 
       const cardIdentificationResult = await this.scanService.getIdentifyResult(
         filePath,
         file.clientName,
-        file.headers['content-type']
+        file.headers['content-type'],
+        threshold
       )
 
       if (!cardIdentificationResult) {
         throw new ScanNoMatchException()
       }
 
-      const cardDetails = await this.cardService.getMinimalCardDetailById(
-        cardIdentificationResult.id
-      )
-
-      const formattedCardResult = CardMapper.toCardScanIdentifyResultOutputDTO(
-        cardDetails,
-        cardIdentificationResult
-      )
+      const formattedCardResult =
+        await this.identificationProcessor.processIdentification(cardIdentificationResult)
 
       return response.ok(formattedCardResult)
     } catch (error) {

@@ -22,10 +22,11 @@ export type CardScanResultOutputDTO = {
 
 export type CardScanIdentifyResultOutputDTO = {
   id: string
-  potentialMatchedCard: string
-  name: string
+  potentialMatchedCard: string | null
+  name: string | null
   similarity: number
   extractedTempImageUrl: string
+  is_back_side: boolean
 }
 
 export interface CardBaseOuputDTO {

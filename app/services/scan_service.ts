@@ -15,12 +15,13 @@ export default class ScanService {
   public async getAnalyseResults(
     filePath: string,
     fileName: string,
-    fileType: string | undefined
+    fileType: string | undefined,
+    threshold?: number
   ): Promise<ScanCardInfoDTO[]> {
     try {
       const formData = this.fileService.createFormDataWithFile(filePath, fileName, fileType)
 
-      const scanAnalyseResponse = await this.irisApiClient.scanCard(formData)
+      const scanAnalyseResponse = await this.irisApiClient.scanCard(formData, threshold)
 
       return IrisMapper.scanAnalyseIrisResponseToScanCardInfoDTO(scanAnalyseResponse)
     } catch (error) {
@@ -31,12 +32,13 @@ export default class ScanService {
   public async getIdentifyResult(
     filePath: string,
     fileName: string,
-    fileType: string | undefined
+    fileType: string | undefined,
+    threshold?: number
   ): Promise<ScanCardInfoDTO | null> {
     try {
       const formData = this.fileService.createFormDataWithFile(filePath, fileName, fileType)
 
-      const scanAnalyseResponse = await this.irisApiClient.scanCard(formData)
+      const scanAnalyseResponse = await this.irisApiClient.scanCard(formData, threshold)
 
       return IrisMapper.scanAnalyseIrisResponseToIdentifyDTO(scanAnalyseResponse)
     } catch (error) {
