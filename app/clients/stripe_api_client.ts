@@ -38,7 +38,7 @@ export default class StripeApiClient {
       })
       return account.id
     } catch (error) {
-      throw new StripeException()
+      throw new StripeException(error)
     }
   }
 
