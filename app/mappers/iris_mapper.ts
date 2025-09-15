@@ -1,4 +1,9 @@
-import { ScanAnalyseIrisResponse, ScanCardInfoDTO } from '#types/iris_type'
+import {
+  ScanAnalyseIrisResponse,
+  ScanCardInfoDTO,
+  ScanGradeDTO,
+  ScanGradeIrisResponse,
+} from '#types/iris_type'
 
 export default class IrisMapper {
   public static scanAnalyseIrisResponseToScanCardInfoDTO(
@@ -30,6 +35,19 @@ export default class IrisMapper {
       id: bestMatch.card_id,
       similarity: bestMatch.similarity_percentage,
       extractedTempImageUrl: scanAnalyseIrisResponse.cards[0].extracted_temp_image_url,
+    }
+  }
+
+  public static scanGradeIrisResponseToGradeInputDTO(
+    gradingIrisResponse: ScanGradeIrisResponse
+  ): ScanGradeDTO {
+    const gradeData = gradingIrisResponse.cards[0]
+    return {
+      globaleRating: gradeData.average_card_score,
+      surfaceRating: gradeData.surface_score,
+      edgeRating: gradeData.contour_score,
+      cornerRating: gradeData.corner_score,
+      centerRating: gradeData.center_score,
     }
   }
 }

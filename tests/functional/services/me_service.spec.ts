@@ -57,4 +57,42 @@ test.group('MeService', (group) => {
   test('getUserById throws exception for non-existent user', async ({ assert }) => {
     await assert.rejects(() => meService.getUserById('non-existent-id'), 'Row not found')
   })
+
+  test('getGradingTokenCount - should return remaining tokens for user', async ({ assert }) => {
+    const user = await User.create({
+      id: 'test-user-id',
+      username: 'testuser',
+      remaningCertificateToken: 5,
+    })
+
+    const tokenCount = await meService.getGradingTokenCount(user.id)
+
+    assert.equal(tokenCount, 5)
+  })
+
+  test('getGradingTokenCount - should throw error for non-existent user', async ({ assert }) => {
+    await assert.rejects(() => meService.getGradingTokenCount('non-existent-id'), 'Row not found')
+  })
+
+  test('decrementGradingTokenCount - should decrease token count by 1', async ({ assert }) => {
+    const user = await User.create({
+      id: 'test-user-id',
+      username: 'testuser',
+      remaningCertificateToken: 3,
+    })
+
+    await meService.decrementGradingTokenCount(user.id)
+
+    const updatedUser = await User.findOrFail(user.id)
+    assert.equal(updatedUser.remaningCertificateToken, 2)
+  })
+
+  test('decrementGradingTokenCount - should throw error for non-existent user', async ({
+    assert,
+  }) => {
+    await assert.rejects(
+      () => meService.decrementGradingTokenCount('non-existent-id'),
+      'Row not found'
+    )
+  })
 })
