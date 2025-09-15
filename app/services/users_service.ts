@@ -1,6 +1,8 @@
 import Ad from '#models/ad'
 import User from '#models/user'
 import { SearchUsersFilters, UserAdsQuery } from '#types/users_type'
+import AdMapper from '#mappers/ad_mapper'
+import UsersMapper from '#mappers/users_mapper'
 
 export default class UsersService {
   async searchUsers(filters: SearchUsersFilters) {
@@ -12,14 +14,7 @@ export default class UsersService {
     const result = await usersQuery.paginate(page, limit)
 
     return {
-      data: result.all().map((user) => ({
-        id: user.id,
-        username: user.username,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        profilePictureUrl: user.profilePictureUrl,
-        createdAt: user.createdAt,
-      })),
+      data: result.all().map(UsersMapper.toPublicUserData),
       meta: result.getMeta(),
     }
   }
@@ -47,20 +42,7 @@ export default class UsersService {
       .paginate(page, limit)
 
     return {
-      data: ads.all().map((ad) => ({
-        id: ad.id,
-        originalPrice: ad.originalPrice,
-        rectoImageUrl: ad.rectoImageUrl,
-        versoImageUrl: ad.versoImageUrl,
-        status: ad.status,
-        condition: ad.condition,
-        finish: ad.finish,
-        card: ad.card,
-        certificate: ad.certificate,
-        seller: ad.seller,
-        createdAt: ad.createdAt,
-        updatedAt: ad.updatedAt,
-      })),
+      data: ads.all().map(AdMapper.toListData),
       meta: ads.getMeta(),
     }
   }
