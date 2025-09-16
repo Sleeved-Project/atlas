@@ -3,7 +3,7 @@ import env from '#start/env'
 import Stripe from 'stripe'
 
 export default class StripeApiClient {
-  private readonly publishableKey = env.get('STRIPE_PUBLISHABLE_KEY')
+  private readonly stripeWebhookSecret = env.get('STRIPE_WEBHOOK_SECRET')
 
   private readonly stripe = new Stripe(env.get('STRIPE_SECRET_KEY'), {
     apiVersion: '2025-07-30.basil',
@@ -111,7 +111,11 @@ export default class StripeApiClient {
     signature: string | string[]
   ): Promise<Record<string, any>> {
     try {
-      const event = this.stripe.webhooks.constructEvent(rawBody, signature, this.publishableKey)
+      const event = this.stripe.webhooks.constructEvent(
+        rawBody,
+        signature,
+        this.stripeWebhookSecret
+      )
 
       return event
     } catch (err) {

@@ -3,3 +3,9 @@ export interface SearchUsersFilters {
   page?: number
   limit?: number
 }
+
+export interface UserAdsQuery {
+  userId: string
+  page?: number
+  limit?: number
+}
