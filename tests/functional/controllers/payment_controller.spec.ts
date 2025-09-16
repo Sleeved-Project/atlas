@@ -20,6 +20,7 @@ import { UserFactory } from '#database/factories/user'
 import AdService from '#services/ad_service'
 import PaymentIntentService from '#services/payment_intent_service'
 import { PaymentIntentFactory } from '#database/factories/payment_intent'
+import PaymentIntentDuplicateException from '#exceptions/payment_intent_duplicate_exception'
 
 test.group('Payment controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
@@ -31,6 +32,7 @@ test.group('Payment controller', (group) => {
   let paymentIntentServiceStub: sinon.SinonStub
   let paymentServiceCreatePaymentSheetStub: sinon.SinonStub
   let stripeWebhookStub: sinon.SinonStub
+  let paymentIntentExistingServiceStub: sinon.SinonStub
 
   group.setup(() => {
     wardenApiClientStub = AuthServiceMock.setupWardenApiClientStub()
@@ -43,6 +45,10 @@ test.group('Payment controller', (group) => {
       'getStripePaymentRelevantColumnsAdById'
     )
     paymentIntentServiceStub = sinon.stub(PaymentIntentService.prototype, 'createPaymentIntent')
+    paymentIntentExistingServiceStub = sinon.stub(
+      PaymentIntentService.prototype,
+      'getPaymentIntentByAdId'
+    )
     paymentServiceCreatePaymentSheetStub = sinon.stub(
       PaymentService.prototype,
       'createPaymentSheet'
@@ -240,6 +246,22 @@ test.group('Payment controller', (group) => {
     const body = response.body()
     assert.equal(body.message, 'Unknown error occured with Stripe')
     assert.equal(body.code, 'E_STRIPE_EXCEPTION')
+  })
+
+  test('createPaymentSheet - should throw error if payment intent already exists', async ({
+    client,
+    assert,
+  }) => {
+    paymentIntentExistingServiceStub.rejects(new PaymentIntentDuplicateException('ad_12345'))
+
+    const response = await client
+      .get('/api/v1/payment/ad_12345/sheet')
+      .header('Authorization', 'Bearer fake-token-for-testing')
+
+    response.assertStatus(409)
+    const body = response.body()
+    assert.equal(body.message, 'Ad #ad_12345 is not currently available for purchase')
+    assert.equal(body.code, 'E_PAYMENT_INTENT_DUPLICATE')
   })
 
   test('stripeWebhook - should handle webhook event', async ({ client, assert }) => {

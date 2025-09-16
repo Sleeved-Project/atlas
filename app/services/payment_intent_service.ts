@@ -1,4 +1,5 @@
 import PaymentIntent from '#models/payment_intent'
+import { PaymentIntentStatus } from '#types/payment_intent_status'
 
 interface CreatePaymentIntentParams {
   id: string
@@ -31,6 +32,17 @@ export default class PaymentIntentService {
     await paymentIntent.save()
 
     return paymentIntent
+  }
+
+  async getPaymentIntentByAdId(adId: string): Promise<PaymentIntent | null> {
+    return await PaymentIntent.query()
+      .where('ad_id', adId)
+      .whereIn('status', [
+        PaymentIntentStatus.CREATED,
+        PaymentIntentStatus.PROCESSING,
+        PaymentIntentStatus.SUCCEEDED,
+      ])
+      .first()
   }
 
   async getCurrentPaymentIntentStatus(id: string): Promise<PaymentIntent> {
