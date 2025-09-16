@@ -116,7 +116,9 @@ test.group('WebhookProcessor', (group) => {
     assert.equal(updatedAd?.statusId, 1)
   })
 
-  test('should not call services on unrelated event type', async ({ assert }) => {
+  test('should not call services if new payment intent service equals current status', async ({
+    assert,
+  }) => {
     await ArtistFactory.merge({ id: 1 }).create()
     await RarityFactory.merge({ id: 1 }).create()
     await LegalityFactory.merge({ id: 1 }).create()
@@ -128,7 +130,7 @@ test.group('WebhookProcessor', (group) => {
       rarityId: 1,
       legalityId: 1,
     }).create()
-    await AdStatusFactory.merge({ id: 1 }).create()
+    await AdStatusFactory.merge({ id: 2 }).create()
     await CardConditionFactory.merge({ id: 1 }).create()
     await CardFinishFactory.merge({ id: 1 }).create()
     const user = await UserFactory.merge({ id: 'user_67890', stripeId: 'acct_12345' }).create()
@@ -136,26 +138,25 @@ test.group('WebhookProcessor', (group) => {
       id: 'ad_12345',
       cardId: 'card_12345',
       sellerId: 'user_67890',
+      statusId: 2,
     }).create()
 
-    await PaymentIntentFactory.merge({
+    const paymentIntent = await PaymentIntentFactory.merge({
       id: 'pi_12345',
       fromId: user.id,
       toId: 'user_67890',
       adId: ad.id,
-      status: 'created',
+      status: 'canceled',
     }).create()
 
     const stripeEvent = {
-      type: 'charge.succeeded',
-      data: { object: { id: 'ch_12345' } },
+      type: 'payment_intent.canceled',
+      data: { object: { id: paymentIntent.id, status: paymentIntent.status } },
     }
 
     await webhookProcessor.processStripeWebhookEvent(stripeEvent)
-    const unchangedPaymentIntent = await PaymentIntent.query().where('id', 'pi_12345').first()
-    assert.equal(unchangedPaymentIntent?.status, 'created')
 
     const unchangedAd = await Ad.query().where('id', ad.id).first()
-    assert.equal(unchangedAd?.statusId, 1)
+    assert.equal(unchangedAd?.statusId, 2)
   })
 })

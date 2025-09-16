@@ -11,6 +11,13 @@ export default class WebhookProcessor {
 
   public async processStripeWebhookEvent(stripeEvent: Record<string, any>) {
     const paymentIntent = stripeEvent.data.object
+    const currentPaymentIntentStatus =
+      await this.paymentIntentService.getCurrentPaymentIntentStatus(paymentIntent.id)
+
+    // If the current status equals the new status, do nothing
+    if (currentPaymentIntentStatus.status === paymentIntent.status) {
+      return
+    }
 
     switch (stripeEvent.type) {
       case 'payment_intent.succeeded':
