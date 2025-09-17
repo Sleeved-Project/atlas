@@ -82,32 +82,86 @@ test.group('StripeApiClient', (group) => {
     }, StripeException.message)
   })
 
-  test('createPaymentSheet - should return customer, ephemeralKey and paymentIntent when successful', async ({
+  test('createPaymentSheet - should create payment sheet with existing customer', async ({
     assert,
   }) => {
-    customer.resolves({ id: 'cus_123' })
-    ephemeralKey.resolves({ secret: 'ephkey_123' })
-    paymentIntent.resolves({ client_secret: 'secret_123', id: 'pi_123' })
-    const result = await stripeApiClient.createPaymentSheet(1000)
+    const existingCustomerId = 'cus_existing'
+    const paymentIntentId = 'pi_test123'
+    const ephemeralKeySecret = 'ek_test123'
+    const clientSecret = 'pi_test123_secret'
 
-    assert.deepEqual(result, {
-      customer: 'cus_123',
-      ephemeralKey: 'ephkey_123',
-      paymentIntentClientSecret: 'secret_123',
-      paymentIntentId: 'pi_123',
+    // Utilisation des stubs existants
+    ephemeralKey.resolves({ secret: ephemeralKeySecret })
+    paymentIntent.resolves({
+      id: paymentIntentId,
+      client_secret: clientSecret,
     })
+
+    const result = await stripeApiClient.createPaymentSheet(1000, existingCustomerId)
+
+    assert.equal(result.customer, existingCustomerId)
+    assert.equal(result.paymentIntentId, paymentIntentId)
+    assert.equal(result.paymentIntentClientSecret, clientSecret)
+    assert.equal(result.ephemeralKey, ephemeralKeySecret)
+
+    assert.isFalse(customer.called)
+    assert.isTrue(
+      ephemeralKey.calledWith({ customer: existingCustomerId }, { apiVersion: '2024-06-20' })
+    )
+    assert.isTrue(
+      paymentIntent.calledWith({
+        amount: 1000,
+        currency: 'eur',
+        customer: existingCustomerId,
+        automatic_payment_methods: { enabled: true },
+      })
+    )
   })
 
-  test('createPaymentSheet - should throw StripeException when Stripe fails', async ({
-    assert,
-  }) => {
-    customer.rejects(new Error('Stripe customer error'))
+  test('createPaymentSheet - should create payment sheet with new customer', async ({ assert }) => {
+    const newCustomerId = 'cus_new'
+    const paymentIntentId = 'pi_test123'
+    const ephemeralKeySecret = 'ek_test123'
+    const clientSecret = 'pi_test123_secret'
 
-    await assert.rejects(async () => {
-      await stripeApiClient.createPaymentSheet(1000)
-    }, StripeException.message)
+    // Utilisation des stubs existants
+    customer.resolves({ id: newCustomerId })
+    ephemeralKey.resolves({ secret: ephemeralKeySecret })
+    paymentIntent.resolves({
+      id: paymentIntentId,
+      client_secret: clientSecret,
+    })
+
+    const result = await stripeApiClient.createPaymentSheet(1000, null)
+
+    assert.equal(result.customer, newCustomerId)
+    assert.equal(result.paymentIntentId, paymentIntentId)
+    assert.equal(result.paymentIntentClientSecret, clientSecret)
+    assert.equal(result.ephemeralKey, ephemeralKeySecret)
+
+    assert.isTrue(customer.calledOnce)
+    assert.isTrue(
+      ephemeralKey.calledWith({ customer: newCustomerId }, { apiVersion: '2024-06-20' })
+    )
+    assert.isTrue(
+      paymentIntent.calledWith({
+        amount: 1000,
+        currency: 'eur',
+        customer: newCustomerId,
+        automatic_payment_methods: { enabled: true },
+      })
+    )
   })
 
+  test('createPaymentSheet - should throw StripeException on error', async ({ assert }) => {
+    // Utilisation du stub existant
+    customer.rejects(new Error('Stripe API error'))
+
+    await assert.rejects(
+      () => stripeApiClient.createPaymentSheet(1000, null),
+      'Unknown error occured with Stripe'
+    )
+  })
   test('stripeWebhook - should return void when successful', async ({ assert }) => {
     const payload = { id: 'evt_123', type: 'payment_intent.succeeded' }
 

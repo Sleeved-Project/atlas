@@ -3,6 +3,7 @@ import MeService from '#services/me_service'
 import User from '#models/user'
 import sinon from 'sinon'
 import testUtils from '@adonisjs/core/services/test_utils'
+import { UserFactory } from '#database/factories/user'
 
 test.group('MeService', (group) => {
   let meService: MeService
@@ -94,5 +95,34 @@ test.group('MeService', (group) => {
       () => meService.decrementGradingTokenCount('non-existent-id'),
       'Row not found'
     )
+  })
+
+  test('getCustomerIdByUserId - should return customer ID when it exists', async ({ assert }) => {
+    const customerId = 'cus_test123'
+    const user = await UserFactory.merge({
+      id: 'test-user-id',
+      username: 'testuser',
+      customerId: customerId,
+    }).create()
+
+    const result = await meService.getCustomerIdByUserId(user.id)
+    assert.equal(result, customerId)
+  })
+
+  test('getCustomerIdByUserId - should return null when customer ID does not exist', async ({
+    assert,
+  }) => {
+    const user = await UserFactory.merge({
+      id: 'test-user-id',
+      username: 'testuser',
+      customerId: null,
+    }).create()
+
+    const result = await meService.getCustomerIdByUserId(user.id)
+    assert.isNull(result)
+  })
+
+  test('getCustomerIdByUserId - should throw error for non-existent user', async ({ assert }) => {
+    await assert.rejects(() => meService.getCustomerIdByUserId('non-existent-id'), 'Row not found')
   })
 })

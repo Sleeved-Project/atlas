@@ -31,4 +31,9 @@ export default class MeService {
     user.remainingCertificateToken -= 1
     await user.save()
   }
+
+  async getCustomerIdByUserId(id: string): Promise<string | null> {
+    const user = await User.query().select('customer_id').where({ id }).firstOrFail()
+    return user.customerId
+  }
 }
