@@ -11,26 +11,20 @@ import { CardFolioFactory } from './card_folio.js'
 import { TypeFactory } from './type.js'
 
 export const CardFactory = Factory.define(Card, ({ faker }) => {
-  // This is a simplified example. In a real application, you would likely
-
   return {
     id: faker.string.uuid(),
-    name: `Pikachu`,
-    supertype: `Pokémon`,
-    level: `10`,
-    hp: `120`,
+    name: faker.lorem.words(10),
+    supertype: faker.lorem.words(10),
+    level: faker.number.int({ min: 1, max: 100 }).toString(),
+    hp: faker.number.int({ min: 10, max: 300 }).toString(),
     evolvesFrom: null,
-    evolvesTo: `Raichu`,
-    convertedRetreatCost: 2,
-    number: `1`,
-    imageLarge: `https://images.pokemontcg.io/base1/1_hires.png`,
-    imageSmall: `https://images.pokemontcg.io/base1/1.png`,
+    evolvesTo: faker.lorem.words(10),
+    convertedRetreatCost: faker.number.int({ min: 0, max: 4 }),
+    number: faker.number.int({ min: 10, max: 300 }).toString(),
+    imageLarge: faker.image.urlPicsumPhotos(),
+    imageSmall: faker.image.urlPicsumPhotos(),
     flavorText: null,
     nationalPokedexNumbers: null,
-    artistId: 1,
-    rarityId: 1,
-    setId: `base1`,
-    legalityId: 1,
   }
 })
   .relation('artist', () => ArtistFactory)

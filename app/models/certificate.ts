@@ -45,7 +45,9 @@ export default class Certificate extends BaseModel {
   @belongsTo(() => Card)
   declare card: BelongsTo<typeof Card>
 
-  @belongsTo(() => User)
+  @belongsTo(() => User, {
+    foreignKey: 'certifiedById',
+  })
   declare certifiedBy: BelongsTo<typeof User>
 
   @belongsTo(() => Grade)

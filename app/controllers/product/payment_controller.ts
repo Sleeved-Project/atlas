@@ -117,6 +117,7 @@ export default class PaymentController {
         hasBeenCanceled: true,
       })
     } catch (error) {
+      console.error(error)
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
       }

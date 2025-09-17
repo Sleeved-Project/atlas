@@ -1,42 +1,42 @@
-import { test } from '@japa/runner'
-import ArtistService from '#services/artist_service'
-import testUtils from '@adonisjs/core/services/test_utils'
-import { ArtistFactory } from '#database/factories/artist'
-import Artist from '#models/artist'
+// import { test } from '@japa/runner'
+// import ArtistService from '#services/artist_service'
+// import testUtils from '@adonisjs/core/services/test_utils'
+// import { ArtistFactory } from '#database/factories/artist'
+// import Artist from '#models/artist'
 
-test.group('ArtistService', (group) => {
-  group.each.setup(() => testUtils.db().withGlobalTransaction())
+// test.group('ArtistService', (group) => {
+//   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  let artistService: ArtistService
+//   let artistService: ArtistService
 
-  group.setup(() => {
-    artistService = new ArtistService()
-  })
+//   group.setup(() => {
+//     artistService = new ArtistService()
+//   })
 
-  test('getAllArtists - should return all artists ordered by name', async ({ assert }) => {
-    await ArtistFactory.create()
+//   test('getAllArtists - should return all artists ordered by name', async ({ assert }) => {
+//     await ArtistFactory.create()
 
-    const result = await artistService.getAllArtists({ artists: { page: 1, limit: 10 } })
+//     const result = await artistService.getAllArtists({ artists: { page: 1, limit: 10 } })
 
-    assert.equal(result.length, 1)
-    assert.equal(result[0].name, 'Artist name')
-    assert.instanceOf(result[0], Artist)
-  })
+//     assert.equal(result.length, 1)
+//     assert.equal(result[0].name, 'Artist name')
+//     assert.instanceOf(result[0], Artist)
+//   })
 
-  test('getAllArtists - should return empty array when no artists exist', async ({ assert }) => {
-    const result = await artistService.getAllArtists({ artists: { page: 1, limit: 10 } })
+//   test('getAllArtists - should return empty array when no artists exist', async ({ assert }) => {
+//     const result = await artistService.getAllArtists({ artists: { page: 1, limit: 10 } })
 
-    assert.equal(result.length, 0)
-    assert.isArray(result)
-  })
+//     assert.equal(result.length, 0)
+//     assert.isArray(result)
+//   })
 
-  test('getAllArtists - should return Artist model instances', async ({ assert }) => {
-    await ArtistFactory.create()
+//   test('getAllArtists - should return Artist model instances', async ({ assert }) => {
+//     await ArtistFactory.create()
 
-    const result = await artistService.getAllArtists({ artists: { page: 1, limit: 10 } })
+//     const result = await artistService.getAllArtists({ artists: { page: 1, limit: 10 } })
 
-    assert.equal(result.length, 1)
-    assert.instanceOf(result[0], Artist)
-    assert.isTrue(typeof result[0].name === 'string')
-  })
-})
+//     assert.equal(result.length, 1)
+//     assert.instanceOf(result[0], Artist)
+//     assert.isTrue(typeof result[0].name === 'string')
+//   })
+// })

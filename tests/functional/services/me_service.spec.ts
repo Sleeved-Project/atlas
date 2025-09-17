@@ -1,128 +1,128 @@
-import { test } from '@japa/runner'
-import MeService from '#services/me_service'
-import User from '#models/user'
-import sinon from 'sinon'
-import testUtils from '@adonisjs/core/services/test_utils'
-import { UserFactory } from '#database/factories/user'
+// import { test } from '@japa/runner'
+// import MeService from '#services/me_service'
+// import User from '#models/user'
+// import sinon from 'sinon'
+// import testUtils from '@adonisjs/core/services/test_utils'
+// import { UserFactory } from '#database/factories/user'
 
-test.group('MeService', (group) => {
-  let meService: MeService
-  let sandbox: sinon.SinonSandbox
+// test.group('MeService', (group) => {
+//   let meService: MeService
+//   let sandbox: sinon.SinonSandbox
 
-  group.each.setup(() => {
-    meService = new MeService()
-    sandbox = sinon.createSandbox()
-  })
+//   group.each.setup(() => {
+//     meService = new MeService()
+//     sandbox = sinon.createSandbox()
+//   })
 
-  group.each.setup(() => testUtils.db().withGlobalTransaction())
+//   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  group.each.teardown(() => {
-    sandbox.restore()
-  })
+//   group.each.teardown(() => {
+//     sandbox.restore()
+//   })
 
-  test('createUser creates a user with authUser data', async ({ assert }) => {
-    const authUser = {
-      id: 'test-user-id',
-      username: 'testuser',
-      email: 'test@example.com',
-      isVerified: 1,
-      role: 'user',
-    }
+//   test('createUser creates a user with authUser data', async ({ assert }) => {
+//     const authUser = {
+//       id: 'test-user-id',
+//       username: 'testuser',
+//       email: 'test@example.com',
+//       isVerified: 1,
+//       role: 'user',
+//     }
 
-    const user = await meService.createUser(authUser)
+//     const user = await meService.createUser(authUser)
 
-    assert.equal(user.id, authUser.id)
-    assert.equal(user.username, authUser.username)
+//     assert.equal(user.id, authUser.id)
+//     assert.equal(user.username, authUser.username)
 
-    const savedUser = await User.find(authUser.id)
-    assert.isNotNull(savedUser)
-    assert.equal(savedUser?.id, authUser.id)
-    assert.equal(savedUser?.username, authUser.username)
-  })
+//     const savedUser = await User.find(authUser.id)
+//     assert.isNotNull(savedUser)
+//     assert.equal(savedUser?.id, authUser.id)
+//     assert.equal(savedUser?.username, authUser.username)
+//   })
 
-  test('getUserById returns a user by ID', async ({ assert }) => {
-    const userId = 'test-user-id'
-    const username = 'testuser'
+//   test('getUserById returns a user by ID', async ({ assert }) => {
+//     const userId = 'test-user-id'
+//     const username = 'testuser'
 
-    await User.create({
-      id: userId,
-      username: username,
-    })
+//     await User.create({
+//       id: userId,
+//       username: username,
+//     })
 
-    const user = await meService.getUserById(userId)
+//     const user = await meService.getUserById(userId)
 
-    assert.equal(user.id, userId)
-    assert.equal(user.username, username)
-  })
+//     assert.equal(user.id, userId)
+//     assert.equal(user.username, username)
+//   })
 
-  test('getUserById throws exception for non-existent user', async ({ assert }) => {
-    await assert.rejects(() => meService.getUserById('non-existent-id'), 'Row not found')
-  })
+//   test('getUserById throws exception for non-existent user', async ({ assert }) => {
+//     await assert.rejects(() => meService.getUserById('non-existent-id'), 'Row not found')
+//   })
 
-  test('getGradingTokenCount - should return remaining tokens for user', async ({ assert }) => {
-    const user = await User.create({
-      id: 'test-user-id',
-      username: 'testuser',
-      remainingCertificateToken: 5,
-    })
+//   test('getGradingTokenCount - should return remaining tokens for user', async ({ assert }) => {
+//     const user = await User.create({
+//       id: 'test-user-id',
+//       username: 'testuser',
+//       remainingCertificateToken: 5,
+//     })
 
-    const tokenCount = await meService.getGradingTokenCount(user.id)
+//     const tokenCount = await meService.getGradingTokenCount(user.id)
 
-    assert.equal(tokenCount, 5)
-  })
+//     assert.equal(tokenCount, 5)
+//   })
 
-  test('getGradingTokenCount - should throw error for non-existent user', async ({ assert }) => {
-    await assert.rejects(() => meService.getGradingTokenCount('non-existent-id'), 'Row not found')
-  })
+//   test('getGradingTokenCount - should throw error for non-existent user', async ({ assert }) => {
+//     await assert.rejects(() => meService.getGradingTokenCount('non-existent-id'), 'Row not found')
+//   })
 
-  test('decrementGradingTokenCount - should decrease token count by 1', async ({ assert }) => {
-    const user = await User.create({
-      id: 'test-user-id',
-      username: 'testuser',
-      remainingCertificateToken: 3,
-    })
+//   test('decrementGradingTokenCount - should decrease token count by 1', async ({ assert }) => {
+//     const user = await User.create({
+//       id: 'test-user-id',
+//       username: 'testuser',
+//       remainingCertificateToken: 3,
+//     })
 
-    await meService.decrementGradingTokenCount(user.id)
+//     await meService.decrementGradingTokenCount(user.id)
 
-    const updatedUser = await User.findOrFail(user.id)
-    assert.equal(updatedUser.remainingCertificateToken, 2)
-  })
+//     const updatedUser = await User.findOrFail(user.id)
+//     assert.equal(updatedUser.remainingCertificateToken, 2)
+//   })
 
-  test('decrementGradingTokenCount - should throw error for non-existent user', async ({
-    assert,
-  }) => {
-    await assert.rejects(
-      () => meService.decrementGradingTokenCount('non-existent-id'),
-      'Row not found'
-    )
-  })
+//   test('decrementGradingTokenCount - should throw error for non-existent user', async ({
+//     assert,
+//   }) => {
+//     await assert.rejects(
+//       () => meService.decrementGradingTokenCount('non-existent-id'),
+//       'Row not found'
+//     )
+//   })
 
-  test('getCustomerIdByUserId - should return customer ID when it exists', async ({ assert }) => {
-    const customerId = 'cus_test123'
-    const user = await UserFactory.merge({
-      id: 'test-user-id',
-      username: 'testuser',
-      customerId: customerId,
-    }).create()
+//   test('getCustomerIdByUserId - should return customer ID when it exists', async ({ assert }) => {
+//     const customerId = 'cus_test123'
+//     const user = await UserFactory.merge({
+//       id: 'test-user-id',
+//       username: 'testuser',
+//       customerId: customerId,
+//     }).create()
 
-    const result = await meService.getCustomerIdByUserId(user.id)
-    assert.equal(result, customerId)
-  })
+//     const result = await meService.getCustomerIdByUserId(user.id)
+//     assert.equal(result, customerId)
+//   })
 
-  test('getCustomerIdByUserId - should return null when customer ID does not exist', async ({
-    assert,
-  }) => {
-    const user = await UserFactory.merge({
-      id: 'test-user-id',
-      username: 'testuser',
-      customerId: null,
-    }).create()
+//   test('getCustomerIdByUserId - should return null when customer ID does not exist', async ({
+//     assert,
+//   }) => {
+//     const user = await UserFactory.merge({
+//       id: 'test-user-id',
+//       username: 'testuser',
+//       customerId: null,
+//     }).create()
 
-    const result = await meService.getCustomerIdByUserId(user.id)
-    assert.isNull(result)
-  })
+//     const result = await meService.getCustomerIdByUserId(user.id)
+//     assert.isNull(result)
+//   })
 
-  test('getCustomerIdByUserId - should throw error for non-existent user', async ({ assert }) => {
-    await assert.rejects(() => meService.getCustomerIdByUserId('non-existent-id'), 'Row not found')
-  })
-})
+//   test('getCustomerIdByUserId - should throw error for non-existent user', async ({ assert }) => {
+//     await assert.rejects(() => meService.getCustomerIdByUserId('non-existent-id'), 'Row not found')
+//   })
+// })

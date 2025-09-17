@@ -1,4 +1,5 @@
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { v4 as uuidv4 } from 'uuid'
+import { BaseModel, beforeCreate, column } from '@adonisjs/lucid/orm'
 
 export default class Grade extends BaseModel {
   /**
@@ -23,4 +24,9 @@ export default class Grade extends BaseModel {
 
   @column()
   declare code: string
+
+  @beforeCreate()
+  static assignUuid(grade: Grade) {
+    grade.id = uuidv4()
+  }
 }

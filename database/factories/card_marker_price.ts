@@ -1,10 +1,11 @@
 import CardMarketPrice from '#models/card_market_price'
 import Factory from '@adonisjs/lucid/factories'
 import { DateTime } from 'luxon'
+import { CardFactory } from './card.js'
 
 export const CardMarketPriceFactory = Factory.define(CardMarketPrice, ({ faker }) => {
   return {
-    url: `https://cardmarket.com/base1-1`,
+    url: faker.internet.url(),
     averageSellPrice:
       Math.random() > 0.1 ? faker.number.float({ min: 0.5, max: 100, fractionDigits: 2 }) : null,
     lowPrice:
@@ -34,4 +35,6 @@ export const CardMarketPriceFactory = Factory.define(CardMarketPrice, ({ faker }
       Math.random() > 0.4 ? faker.number.float({ min: 1, max: 200, fractionDigits: 2 }) : null,
     updatedAt: DateTime.now(),
   }
-}).build()
+})
+  .relation('card', () => CardFactory)
+  .build()

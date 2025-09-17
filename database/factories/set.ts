@@ -6,16 +6,15 @@ import { LegalityFactory } from './legality.js'
 export const SetFactory = Factory.define(Set, ({ faker }) => {
   return {
     id: faker.string.uuid(),
-    name: `Base Set`,
-    series: `Base`,
-    printedTotal: 120,
-    total: 120,
-    ptcgoCode: `BASE`,
-    releaseDate: DateTime.fromJSDate(new Date('1996-01-09')),
+    name: faker.lorem.words(10),
+    series: faker.lorem.words(10),
+    printedTotal: faker.number.int({ min: 100, max: 200 }),
+    total: faker.number.int({ min: 100, max: 200 }),
+    ptcgoCode: faker.lorem.words(1),
+    releaseDate: DateTime.fromJSDate(faker.date.past({ years: 30, refDate: new Date() })),
     updatedAt: DateTime.now(),
-    imageSymbol: `https://images.pokemontcg.io/symbols/base1-1.png`,
-    imageLogo: `https://images.pokemontcg.io/logos/base1-1.png`,
-    legalityId: 1,
+    imageSymbol: faker.image.urlPicsumPhotos(),
+    imageLogo: faker.image.urlPicsumPhotos(),
   }
 })
   .relation('legality', () => LegalityFactory)

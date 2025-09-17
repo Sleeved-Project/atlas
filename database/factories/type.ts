@@ -1,9 +1,8 @@
 import Type from '#models/type'
 import Factory from '@adonisjs/lucid/factories'
 
-export const TypeFactory = Factory.define(Type, () => {
+export const TypeFactory = Factory.define(Type, ({ faker }) => {
   return {
-    id: 1,
-    label: `Psy`,
+    label: faker.lorem.word(10),
   }
 }).build()

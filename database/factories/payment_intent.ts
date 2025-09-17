@@ -6,11 +6,7 @@ import { UserFactory } from './user.js'
 
 export const PaymentIntentFactory = Factory.define(PaymentIntent, ({ faker }) => {
   return {
-    id: faker.string.uuid(),
-    fromId: faker.string.uuid(),
-    toId: faker.string.uuid(),
-    adId: faker.string.uuid(),
-    status: 'created',
+    status: faker.lorem.word(10),
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
   }

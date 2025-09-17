@@ -7,19 +7,15 @@ import { CardConditionFactory } from './card_condition.js'
 import { CardFinishFactory } from './card_finish.js'
 import { UserFactory } from './user.js'
 import { CertificateFactory } from './certificate.js'
+import { DateTime } from 'luxon'
 
 export const AdFactory = Factory.define(Ad, ({ faker }) => {
   return {
-    id: faker.string.uuid(),
     originalPrice: faker.number.int({ min: 100, max: 10000 }),
     rectoImageUrl: faker.image.urlPicsumPhotos(),
     versoImageUrl: faker.image.urlPicsumPhotos(),
-    cardId: faker.string.uuid(),
-    statusId: 1,
-    conditionId: 1,
-    finishId: 1,
-    sellerId: faker.string.uuid(),
-    certificateId: null,
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
   }
 })
   .relation('card', () => CardFactory)

@@ -1,9 +1,10 @@
 import { v4 as uuidv4 } from 'uuid'
-import { BaseModel, beforeCreate, column, hasMany } from '@adonisjs/lucid/orm'
-import type { HasMany } from '@adonisjs/lucid/types/relations'
+import { BaseModel, beforeCreate, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 
 import CardFolio from './card_folio.js'
 import { DateTime } from 'luxon'
+import User from './user.js'
 
 export default class Folio extends BaseModel {
   /**
@@ -31,6 +32,11 @@ export default class Folio extends BaseModel {
 
   @column({ columnName: 'user_id' })
   declare userId: string
+
+  @belongsTo(() => User, {
+    foreignKey: 'userId',
+  })
+  declare user: BelongsTo<typeof User>
 
   @hasMany(() => CardFolio, {
     foreignKey: 'folioId',
