@@ -27,7 +27,7 @@ export default class User extends BaseModel {
   @column()
   declare description: string | null
 
-  @column()
+  @column({ columnName: 'stripe_id' })
   declare stripeId: string | null
 
   @column({ columnName: 'remaning_certificate_token' })
@@ -35,6 +35,9 @@ export default class User extends BaseModel {
 
   @column({ columnName: 'profile_picture_url' })
   declare profilePictureUrl: string | null
+
+  @column({ columnName: 'customer_id' })
+  declare customerId: string | null
 
   @column.dateTime({ columnName: 'created_at', autoCreate: true })
   declare createdAt: DateTime

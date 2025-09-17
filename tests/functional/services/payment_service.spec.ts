@@ -71,11 +71,12 @@ test.group('Payment service', (group) => {
   })
 
   test('createPaymentSheet - should create payment sheet successfully', async ({ assert }) => {
+    const customerId = 'cus_existing'
     const paymentSheetResponse = {
       paymentIntentClientSecret: 'pi_12345',
       paymentIntentId: 'pi_12345',
       ephemeralKey: 'ek_12345',
-      customer: 'cus_12345',
+      customer: customerId,
     }
 
     const createPaymentSheetStub = sinon
@@ -83,10 +84,33 @@ test.group('Payment service', (group) => {
       .resolves(paymentSheetResponse)
 
     const service = new PaymentService()
-    const result = await service.createPaymentSheet(1000)
+    const result = await service.createPaymentSheet(1000, customerId)
 
     assert.deepEqual(result, paymentSheetResponse)
-    assert.isTrue(createPaymentSheetStub.calledOnceWith(1000))
+    assert.isTrue(createPaymentSheetStub.calledOnceWith(1000, customerId))
+
+    createPaymentSheetStub.restore()
+  })
+
+  test('createPaymentSheet - should create payment sheet with null customerId', async ({
+    assert,
+  }) => {
+    const paymentSheetResponse = {
+      paymentIntentClientSecret: 'pi_12345',
+      paymentIntentId: 'pi_12345',
+      ephemeralKey: 'ek_12345',
+      customer: 'cus_new',
+    }
+
+    const createPaymentSheetStub = sinon
+      .stub(StripeApiClient.prototype, 'createPaymentSheet')
+      .resolves(paymentSheetResponse)
+
+    const service = new PaymentService()
+    const result = await service.createPaymentSheet(1000, null)
+
+    assert.deepEqual(result, paymentSheetResponse)
+    assert.isTrue(createPaymentSheetStub.calledOnceWith(1000, null))
 
     createPaymentSheetStub.restore()
   })
@@ -99,10 +123,10 @@ test.group('Payment service', (group) => {
     const service = new PaymentService()
 
     try {
-      await service.createPaymentSheet(1000)
+      await service.createPaymentSheet(1000, null)
       assert.fail('Expected createPaymentSheet to throw')
     } catch (err: any) {
-      assert.isTrue(createPaymentSheetStub.calledOnceWith(1000))
+      assert.isTrue(createPaymentSheetStub.calledOnceWith(1000, null))
       assert.include(err.message, 'Stripe payment sheet error')
     }
 

@@ -64,8 +64,19 @@ export default class PaymentController {
 
       const ad = await this.adService.getStripePaymentRelevantColumnsAdById(params.id)
 
+      // get customer id, could be a string or null
+      const authUserCustomerId = await this.userService.getCustomerIdByUserId(authUser.id)
+
       const { paymentIntentClientSecret, paymentIntentId, ephemeralKey, customer } =
-        await this.paymentService.createPaymentSheet(PriceUtils.getPriceInCents(ad.originalPrice))
+        await this.paymentService.createPaymentSheet(
+          PriceUtils.getPriceInCents(ad.originalPrice),
+          authUserCustomerId
+        )
+
+      // create customer id in db if not existing
+      if (!authUserCustomerId) {
+        await this.userService.updateUser(authUser.id, { customerId: customer })
+      }
 
       // Update existing ad with new status
       const updatedAd = await this.adService.updateAd(params.id, { statusId: 2 })

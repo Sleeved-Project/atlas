@@ -33,6 +33,7 @@ test.group('Payment controller', (group) => {
   let paymentServiceCreatePaymentSheetStub: sinon.SinonStub
   let stripeWebhookStub: sinon.SinonStub
   let paymentIntentExistingServiceStub: sinon.SinonStub
+  let meServiceGetCustomerIdStub: sinon.SinonStub
 
   group.setup(() => {
     wardenApiClientStub = AuthServiceMock.setupWardenApiClientStub()
@@ -54,6 +55,7 @@ test.group('Payment controller', (group) => {
       'createPaymentSheet'
     )
     stripeWebhookStub = sinon.stub(StripeApiClient.prototype, 'stripeWebhook')
+    meServiceGetCustomerIdStub = sinon.stub(MeService.prototype, 'getCustomerIdByUserId')
   })
 
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -67,6 +69,8 @@ test.group('Payment controller', (group) => {
     paymentIntentServiceStub.restore()
     paymentServiceCreatePaymentSheetStub.restore()
     stripeWebhookStub.restore()
+    paymentIntentExistingServiceStub.restore()
+    meServiceGetCustomerIdStub.restore()
   })
 
   test('createAccount - should create Stripe account and update user', async ({
@@ -141,7 +145,7 @@ test.group('Payment controller', (group) => {
     await ArtistFactory.merge({ id: 1 }).create()
     await RarityFactory.merge({ id: 1 }).create()
     await LegalityFactory.merge({ id: 1 }).create()
-    await SetFactory.merge({ id: 'base1' }).create()
+    await SetFactory.merge({ id: 'base1', legalityId: 1 }).create()
     await CardFactory.merge({
       id: 'card_12345',
       setId: 'base1',
@@ -160,6 +164,8 @@ test.group('Payment controller', (group) => {
       originalPrice: 10,
     }).create()
 
+    paymentIntentExistingServiceStub.resolves(null)
+
     paymentServiceCreatePaymentSheetStub.resolves({
       paymentIntentClientSecret: 'psec_12345',
       paymentIntentId: 'pi_12345',
@@ -170,6 +176,9 @@ test.group('Payment controller', (group) => {
     adServiceGetStripePaymentRelevantColumnsStub.resolves({
       originalPrice: 10,
     })
+
+    meServiceGetCustomerIdStub.resolves(null)
+
     adServiceUpdateAdStub.resolves({
       id: 'ad_12345',
       cardId: 'card_12345',
@@ -177,6 +186,7 @@ test.group('Payment controller', (group) => {
       statusId: 2,
       originalPrice: 10,
     })
+
     paymentIntentServiceStub.resolves({
       id: 'pi_12345',
       fromId: '123',

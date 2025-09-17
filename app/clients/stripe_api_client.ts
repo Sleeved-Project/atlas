@@ -69,7 +69,10 @@ export default class StripeApiClient {
     }
   }
 
-  public async createPaymentSheet(adAmount: number): Promise<{
+  public async createPaymentSheet(
+    adAmount: number,
+    existingCustomerId: string | null
+  ): Promise<{
     paymentIntentClientSecret: string | null
     paymentIntentId: string
     ephemeralKey: string | undefined
@@ -77,11 +80,12 @@ export default class StripeApiClient {
   }> {
     try {
       // Create a new customer in Stripe (we will save the customer ID in our DB later)
-      const newCustomer = await this.stripe.customers.create()
-
+      const customerId = existingCustomerId
+        ? existingCustomerId
+        : await this.stripe.customers.create().then((customer) => customer.id)
       // Create an ephemeral key for the customer (used by the Stripe SDK on the client side)
       const ephemeralKey = await this.stripe.ephemeralKeys.create(
-        { customer: newCustomer.id },
+        { customer: customerId },
         { apiVersion: '2024-06-20' }
       )
 
@@ -89,7 +93,7 @@ export default class StripeApiClient {
       const paymentIntent = await this.stripe.paymentIntents.create({
         amount: adAmount,
         currency: 'eur',
-        customer: newCustomer.id,
+        customer: customerId,
         automatic_payment_methods: {
           enabled: true,
         },
@@ -99,7 +103,7 @@ export default class StripeApiClient {
         paymentIntentClientSecret: paymentIntent.client_secret,
         paymentIntentId: paymentIntent.id,
         ephemeralKey: ephemeralKey.secret,
-        customer: newCustomer.id,
+        customer: customerId,
       }
     } catch (error) {
       throw new StripeException()
