@@ -48,4 +48,15 @@ export default class PaymentIntentService {
   async getCurrentPaymentIntentStatus(id: string): Promise<PaymentIntent> {
     return await PaymentIntent.query().select('status').where('id', id).firstOrFail()
   }
+
+  async cancelPaymentIntent(adId: string, userId: string): Promise<PaymentIntent> {
+    const paymentIntent = await PaymentIntent.query()
+      .where('ad_id', adId)
+      .where('fromId', userId)
+      .whereIn('status', [PaymentIntentStatus.CREATED, PaymentIntentStatus.PROCESSING])
+      .firstOrFail()
+    paymentIntent.status = PaymentIntentStatus.CANCELED
+    await paymentIntent.save()
+    return paymentIntent
+  }
 }

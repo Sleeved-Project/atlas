@@ -92,6 +92,9 @@ router
             router
               .get('/:id/sheet/', [PaymentController, 'createPaymentSheet'])
               .use(middleware.auth())
+            router
+              .patch('/sheet/', [PaymentController, 'cancelPaymentSheet'])
+              .use(middleware.auth())
             router.get('/publishablekey/', [PaymentController, 'getPublishableKey'])
             router.get('/account/success', [PaymentController, 'stripeAccountLinkSuccess'])
             router.get('/account/refresh', [PaymentController, 'stripeAccountLinkRefresh'])

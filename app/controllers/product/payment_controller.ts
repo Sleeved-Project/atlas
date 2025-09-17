@@ -103,6 +103,27 @@ export default class PaymentController {
     }
   }
 
+  async cancelPaymentSheet({ request, authUser, response }: HttpContext) {
+    try {
+      const payload = await paymentSchemaValidator.validate(request.body())
+
+      // Get the payment intent associated with the ad id
+      await this.paymentIntentService.cancelPaymentIntent(payload.id, authUser.id)
+
+      // Update the ad status to "available"
+      await this.adService.updateAd(payload.id, { statusId: 1 })
+
+      response.json({
+        hasBeenCanceled: true,
+      })
+    } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
   async getPublishableKey({ response }: HttpContext) {
     try {
       response.json({
