@@ -15,6 +15,7 @@ const CardFinishesController = () => import('#controllers/product/card_finishes_
 const PaymentController = () => import('#controllers/product/payment_controller')
 const UsersController = () => import('#controllers/product/users_controller')
 const AdsController = () => import('#controllers/product/ads_controller')
+const AddressesController = () => import('#controllers/product/addresses_controller')
 
 router.get('/', [RootController])
 router.get('/health', [HealthCheckController])
@@ -81,6 +82,11 @@ router
             router.get('/:id', [AdsController, 'show']).use(middleware.auth())
           })
           .prefix('ads')
+        router
+          .group(() => {
+            router.post('/', [AddressesController, 'store']).use(middleware.auth())
+          })
+          .prefix('addresses')
         router
           .group(() => {
             router.get('/cards', [FiltersController, 'cards'])

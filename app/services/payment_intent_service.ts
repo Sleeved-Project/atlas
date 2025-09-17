@@ -52,9 +52,10 @@ export default class PaymentIntentService {
   async cancelPaymentIntent(adId: string, userId: string): Promise<PaymentIntent> {
     const paymentIntent = await PaymentIntent.query()
       .where('ad_id', adId)
-      .where('fromId', userId)
-      .whereIn('status', [PaymentIntentStatus.CREATED, PaymentIntentStatus.PROCESSING])
+      .andWhere('fromId', userId)
+      .andWhereIn('status', [PaymentIntentStatus.CREATED, PaymentIntentStatus.PROCESSING])
       .firstOrFail()
+    console.log('Payment intent canceled:', paymentIntent)
     paymentIntent.status = PaymentIntentStatus.CANCELED
     await paymentIntent.save()
     return paymentIntent
