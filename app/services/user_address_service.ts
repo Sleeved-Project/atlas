@@ -17,4 +17,12 @@ export default class UserAddressService {
   ): Promise<UserAddress> {
     return UserAddress.create({ userId, addressId, isMain })
   }
+
+  public async getMainAddress(userId: string): Promise<UserAddress | null> {
+    return await UserAddress.query()
+      .where('user_id', userId)
+      .andWhere('is_main', true)
+      .preload('address')
+      .first()
+  }
 }
