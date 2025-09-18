@@ -98,7 +98,7 @@ export default class MeController {
 
   async mainAddress({ response, authUser }: HttpContext) {
     try {
-      const mainUserAddress = await this.userAddressService.getMainAddress(authUser.id)
+      const mainUserAddress = await this.userAddressService.getMainAddressOrNull(authUser.id)
       const address = UserAddressMapper.toAddressOuputDTO(mainUserAddress)
       return response.ok({ address })
     } catch (error) {

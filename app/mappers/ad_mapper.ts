@@ -1,8 +1,6 @@
 import Ad from '#models/ad'
 import { AdCheckoutDTO } from '#types/ads_type'
-
-export const SHIPPING_COSTS = 3.99
-export const SERVICE_COSTS_PERCENT = 8
+import CostUtils from '#utils/cost_utils'
 
 export default class AdMapper {
   public static toListData(ad: Ad) {
@@ -24,8 +22,8 @@ export default class AdMapper {
   }
 
   public static toAdCheckoutOuputDTO(ad: Ad): AdCheckoutDTO {
-    const serviceCosts = this.calculateServiceCosts(ad.originalPrice)
-    const totalCosts = Number(ad.originalPrice) + serviceCosts + SHIPPING_COSTS
+    const serviceCosts = CostUtils.calculateServiceCosts(ad.originalPrice)
+    const totalCosts = CostUtils.calculateTotalCosts(ad.originalPrice)
 
     return {
       ad: {
@@ -51,14 +49,10 @@ export default class AdMapper {
           : null,
       },
       prices: {
-        shippingCosts: SHIPPING_COSTS.toFixed(2),
+        shippingCosts: CostUtils.SHIPPING_COSTS.toFixed(2),
         serviceCosts: serviceCosts.toFixed(2),
         totalCosts: totalCosts.toFixed(2),
       },
     }
-  }
-
-  private static calculateServiceCosts(price: number): number {
-    return Number(price) * (SERVICE_COSTS_PERCENT / 100)
   }
 }

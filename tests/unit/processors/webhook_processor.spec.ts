@@ -16,6 +16,9 @@ import { AdFactory } from '#database/factories/ad'
 import { PaymentIntentFactory } from '#database/factories/payment_intent'
 import PaymentIntent from '#models/payment_intent'
 import Ad from '#models/ad'
+import OrderProcessor from '#processors/order_processor'
+import UserAddressService from '#services/user_address_service'
+import OrderService from '#services/order_service'
 
 test.group('WebhookProcessor', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -23,11 +26,24 @@ test.group('WebhookProcessor', (group) => {
   let webhookProcessor: WebhookProcessor
   let adService: AdService
   let paymentIntentService: PaymentIntentService
+  let orderProcessor: OrderProcessor
+  let userAddressService: UserAddressService
+  let orderService: OrderService
 
   group.setup(() => {
     adService = new AdService()
     paymentIntentService = new PaymentIntentService()
-    webhookProcessor = new WebhookProcessor(paymentIntentService, adService)
+    userAddressService = new UserAddressService()
+    orderService = new OrderService()
+
+    orderProcessor = new OrderProcessor(
+      adService,
+      paymentIntentService,
+      userAddressService,
+      orderService
+    )
+
+    webhookProcessor = new WebhookProcessor(paymentIntentService, adService, orderProcessor)
   })
 
   test('should update payment intent on succeeded event', async ({ assert }) => {
