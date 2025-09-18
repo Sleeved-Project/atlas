@@ -17,6 +17,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { errors as lucidErrors } from '@adonisjs/lucid'
 import { errors as vineErrors } from '@vinejs/vine'
 import MediaUploadService from '#services/media_upload_service'
+import AdMapper from '#mappers/ad_mapper'
 
 @inject()
 export default class AdsController {
@@ -112,6 +113,20 @@ export default class AdsController {
       const validatedParams = await getAdBaseParamsValidator.validate(params)
       const ad = await this.adService.getAdById(validatedParams.id)
       return response.ok(ad)
+    } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async checkout({ request, response }: HttpContext) {
+    try {
+      const params = await getAdBaseParamsValidator.validate(request.params())
+      const ad = await this.adService.getAdWithCheckoutRelationsById(params.id)
+      const adCheckout = AdMapper.toAdCheckoutOuputDTO(ad)
+      return response.ok(adCheckout)
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
