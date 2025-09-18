@@ -50,6 +50,7 @@ router
             router.get('/:id/details', [CardsController, 'details'])
             router.get('/:id/prices', [CardsController, 'prices'])
             router.get('/:id/advices', [CardsController, 'advices'])
+            router.get('/:id/ads', [CardsController, 'ads']).use(middleware.auth())
           })
           .prefix('cards')
         router

@@ -40,3 +40,10 @@ export const getCardPriceAdviceValidator = vine.compile(
     query: cardAdviceQuerySchema,
   })
 )
+
+export const getCardAdsByCardIdValidator = vine.compile(
+  vine.object({
+    params: baseParamsSchema,
+    query: paginationSchema,
+  })
+)

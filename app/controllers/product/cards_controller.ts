@@ -1,23 +1,24 @@
-import type { HttpContext } from '@adonisjs/core/http'
-import { inject } from '@adonisjs/core'
-import CardService from '#services/card_service'
-import { errors as lucidErrors } from '@adonisjs/lucid'
-import { errors as vineErrors } from '@vinejs/vine'
 import NotFoundException from '#exceptions/not_found_exception'
+import ValidationException from '#exceptions/validation_exception'
+import CardMapper from '#mappers/card_mapper'
+import CardMarketPriceMapper from '#mappers/card_market_price_mapper'
+import CardProcessor from '#processors/card_processor'
+import CardConditionService from '#services/card_condition_service'
+import CardFinishService from '#services/card_finish_service'
+import CardMarketPriceService from '#services/card_market_price_service'
+import CardService from '#services/card_service'
 import {
   getAllCardsFiltersValidator,
+  getCardAdsByCardIdValidator,
   getCardBaseParamsValidator,
   getCardDetailParamsValidator,
   getCardPriceAdviceValidator,
   getCardPriceParamsValidator,
 } from '#validators/card_validator'
-import ValidationException from '#exceptions/validation_exception'
-import CardMapper from '#mappers/card_mapper'
-import CardProcessor from '#processors/card_processor'
-import CardConditionService from '#services/card_condition_service'
-import CardFinishService from '#services/card_finish_service'
-import CardMarketPriceService from '#services/card_market_price_service'
-import CardMarketPriceMapper from '#mappers/card_market_price_mapper'
+import { inject } from '@adonisjs/core'
+import type { HttpContext } from '@adonisjs/core/http'
+import { errors as lucidErrors } from '@adonisjs/lucid'
+import { errors as vineErrors } from '@vinejs/vine'
 
 @inject()
 export default class CardsController {
@@ -117,6 +118,29 @@ export default class CardsController {
       )
 
       return response.ok({ advicePrice })
+    } catch (error) {
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async ads({ response, request, authUser }: HttpContext) {
+    try {
+      const { params, query } = await getCardAdsByCardIdValidator.validate({
+        params: request.params(),
+        query: request.qs(),
+      })
+      const cardAds = await this.cardService.getPaginatedCardAdsByCardId(
+        params.id,
+        authUser.id,
+        query
+      )
+      return response.ok(cardAds)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)
