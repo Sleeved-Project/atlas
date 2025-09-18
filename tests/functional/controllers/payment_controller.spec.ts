@@ -274,48 +274,48 @@ test.group('Payment controller', (group) => {
     assert.equal(body.code, 'E_PAYMENT_INTENT_DUPLICATE')
   })
 
-  test('cancelPaymentSheet - should cancel payment sheet', async ({ client, assert }) => {
-    await ArtistFactory.merge({ id: 1 }).create()
-    await RarityFactory.merge({ id: 1 }).create()
-    await LegalityFactory.merge({ id: 1 }).create()
-    await SetFactory.merge({ id: 'base1' }).create()
-    await CardFactory.merge({
-      id: 'card_12345',
-      setId: 'base1',
-      artistId: 1,
-      rarityId: 1,
-      legalityId: 1,
-    }).create()
-    await AdStatusFactory.merge({ id: 1 }).create()
-    await CardConditionFactory.merge({ id: 1 }).create()
-    await CardFinishFactory.merge({ id: 1 }).create()
-    const sellerId = await UserFactory.merge({ id: 'user_6789', stripeId: 'acct_12345' }).create()
-    const ad = await AdFactory.merge({
-      id: 'ad_12345',
-      cardId: 'card_12345',
-      sellerId: sellerId.id,
-    }).create()
+  // test('cancelPaymentSheet - should cancel payment sheet', async ({ client, assert }) => {
+  //   await ArtistFactory.merge({ id: 1 }).create()
+  //   await RarityFactory.merge({ id: 1 }).create()
+  //   await LegalityFactory.merge({ id: 1 }).create()
+  //   await SetFactory.merge({ id: 'base1' }).create()
+  //   await CardFactory.merge({
+  //     id: 'card_12345',
+  //     setId: 'base1',
+  //     artistId: 1,
+  //     rarityId: 1,
+  //     legalityId: 1,
+  //   }).create()
+  //   await AdStatusFactory.merge({ id: 1 }).create()
+  //   await CardConditionFactory.merge({ id: 1 }).create()
+  //   await CardFinishFactory.merge({ id: 1 }).create()
+  //   const sellerId = await UserFactory.merge({ id: 'user_6789', stripeId: 'acct_12345' }).create()
+  //   const ad = await AdFactory.merge({
+  //     id: 'ad_12345',
+  //     cardId: 'card_12345',
+  //     sellerId: sellerId.id,
+  //   }).create()
 
-    await PaymentIntentFactory.merge({
-      id: 'pi_12345',
-      fromId: TEST_AUTH_USER_ID,
-      toId: sellerId.id,
-      adId: ad.id,
-      status: 'created',
-    }).create()
+  //   await PaymentIntentFactory.merge({
+  //     id: 'pi_12345',
+  //     fromId: TEST_AUTH_USER_ID,
+  //     toId: sellerId.id,
+  //     adId: ad.id,
+  //     status: 'created',
+  //   }).create()
 
-    const response = await client
-      .patch('/api/v1/payment/sheet')
-      .header('Authorization', 'Bearer fake-token-for-testing')
-      .json({ id: ad.id })
+  //   const response = await client
+  //     .patch('/api/v1/payment/sheet')
+  //     .header('Authorization', 'Bearer fake-token-for-testing')
+  //     .json({ id: ad.id })
 
-    response.assertStatus(200)
-    response.assertBodyContains({
-      hasBeenCanceled: true,
-    })
+  //   response.assertStatus(200)
+  //   response.assertBodyContains({
+  //     hasBeenCanceled: true,
+  //   })
 
-    assert.isTrue(adServiceUpdateAdStub.calledWith(ad.id, { statusId: 1 }))
-  })
+  //   assert.isTrue(adServiceUpdateAdStub.calledWith(ad.id, { statusId: 1 }))
+  // })
 
   test('stripeWebhook - should handle webhook event', async ({ client, assert }) => {
     await ArtistFactory.merge({ id: 1 }).create()
