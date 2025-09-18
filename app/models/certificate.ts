@@ -42,13 +42,19 @@ export default class Certificate extends BaseModel {
   @column({ columnName: 'grade_id', serializeAs: null })
   declare gradeId: string
 
-  @belongsTo(() => Card)
+  @belongsTo(() => Card, {
+    foreignKey: 'cardId',
+  })
   declare card: BelongsTo<typeof Card>
 
-  @belongsTo(() => User)
+  @belongsTo(() => User, {
+    foreignKey: 'certifiedById',
+  })
   declare certifiedBy: BelongsTo<typeof User>
 
-  @belongsTo(() => Grade)
+  @belongsTo(() => Grade, {
+    foreignKey: 'gradeId',
+  })
   declare grade: BelongsTo<typeof Grade>
 
   @beforeCreate()

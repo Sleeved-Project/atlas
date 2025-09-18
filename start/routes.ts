@@ -82,6 +82,7 @@ router
             router.get('/', [AdsController, 'index']).use(middleware.auth())
             router.get('/search', [AdsController, 'search']).use(middleware.auth())
             router.get('/:id', [AdsController, 'show']).use(middleware.auth())
+            router.get('/:id/checkout', [AdsController, 'checkout']).use(middleware.auth())
           })
           .prefix('ads')
         router

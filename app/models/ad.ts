@@ -33,22 +33,22 @@ export default class Ad extends BaseModel {
   @column.dateTime({ columnName: 'updated_at', autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
-  @column({ columnName: 'card_id' })
+  @column({ columnName: 'card_id', serializeAs: null })
   declare cardId: string
 
-  @column({ columnName: 'status_id' })
+  @column({ columnName: 'status_id', serializeAs: null })
   declare statusId: number
 
-  @column({ columnName: 'condition_id' })
+  @column({ columnName: 'condition_id', serializeAs: null })
   declare conditionId: number
 
-  @column({ columnName: 'finish_id' })
+  @column({ columnName: 'finish_id', serializeAs: null })
   declare finishId: number
 
-  @column({ columnName: 'seller_id' })
+  @column({ columnName: 'seller_id', serializeAs: null })
   declare sellerId: string
 
-  @column({ columnName: 'certificate_id' })
+  @column({ columnName: 'certificate_id', serializeAs: null })
   declare certificateId: string | null
 
   @belongsTo(() => Card, {

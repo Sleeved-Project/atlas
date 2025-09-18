@@ -115,4 +115,28 @@ export default class AdService {
       .where('id', adId)
       .firstOrFail()
   }
+
+  public async getAdWithCheckoutRelationsById(adId: string): Promise<Ad> {
+    return await Ad.query()
+      .where('id', adId)
+      .select(
+        'id',
+        'original_price',
+        'card_id',
+        'condition_id',
+        'finish_id',
+        'certificate_id',
+        'seller_id'
+      )
+      .preload('condition', (conditionQuery) => conditionQuery.select('id', 'label'))
+      .preload('finish')
+      .preload('card', (cardQuery) => cardQuery.select('id', 'name'))
+      .preload('certificate', (certificateQuery) =>
+        certificateQuery
+          .select('id', 'global_rating', 'grade_id')
+          .preload('grade', (gradeQuery) => gradeQuery.select('id', 'label'))
+      )
+      .preload('seller', (userQuery) => userQuery.select('id', 'username', 'profilePictureUrl'))
+      .firstOrFail()
+  }
 }
