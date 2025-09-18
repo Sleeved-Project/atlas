@@ -9,12 +9,15 @@ import FolioService from '#services/folio_service'
 import { SuccessOutputDTO } from '#types/success_output_dto_type'
 import MeService from '#services/me_service'
 import { updateUserValidator } from '#validators/me_validator'
+import UserAddressService from '#services/user_address_service'
+import UserAddressMapper from '#mappers/user_address_mapper'
 
 @inject()
 export default class MeController {
   constructor(
     private folioService: FolioService,
-    private meService: MeService
+    private meService: MeService,
+    private userAddressService: UserAddressService
   ) {}
 
   async store({ response, authUser }: HttpContext) {
@@ -85,6 +88,19 @@ export default class MeController {
     try {
       const remainingCertificateToken = await this.meService.getGradingTokenCount(authUser.id)
       return response.ok({ remainingCertificateToken })
+    } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async mainAddress({ response, authUser }: HttpContext) {
+    try {
+      const mainUserAddress = await this.userAddressService.getMainAddress(authUser.id)
+      const address = UserAddressMapper.toAddressOuputDTO(mainUserAddress)
+      return response.ok({ address })
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)

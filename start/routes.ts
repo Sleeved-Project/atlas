@@ -30,6 +30,7 @@ router
             router.get('/', [MeController, 'show']).use(middleware.auth())
             router.get('/stripe', [MeController, 'hasStripeAccount']).use(middleware.auth())
             router.get('/tokens', [MeController, 'tokens']).use(middleware.auth())
+            router.get('/addresses/main', [MeController, 'mainAddress']).use(middleware.auth())
             router.post('/init', [MeController, 'store']).use(middleware.auth())
             router.patch('/', [MeController, 'update']).use(middleware.auth())
           })
