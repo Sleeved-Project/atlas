@@ -76,16 +76,11 @@ test.group('Ads Controller', (group) => {
   })
 
   test('store - should create ad with valid data', async ({ client }) => {
-    const artist = await ArtistFactory.create()
-    const rarity = await RarityFactory.create()
-    const legality = await LegalityFactory.create()
-    const set = await SetFactory.merge({ legalityId: legality.id }).create()
-    const card = await CardFactory.merge({
-      artistId: artist.id,
-      rarityId: rarity.id,
-      setId: set.id,
-      legalityId: legality.id,
-    }).create()
+    const card = await CardFactory.with('artist', 1)
+      .with('rarity', 1)
+      .with('legality', 1)
+      .with('set', 1, (set) => set.with('legality', 1))
+      .create()
     await AdStatusFactory.merge({ id: 1 }).create()
     const condition = await CardConditionFactory.create()
     const finish = await CardFinishFactory.create()

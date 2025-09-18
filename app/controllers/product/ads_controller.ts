@@ -69,6 +69,7 @@ export default class AdsController {
       }
       return response.ok(successResponse)
     } catch (error) {
+      console.error(error)
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)
       }
