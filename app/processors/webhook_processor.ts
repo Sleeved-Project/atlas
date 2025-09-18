@@ -1,12 +1,14 @@
 import AdService from '#services/ad_service'
 import PaymentIntentService from '#services/payment_intent_service'
 import { inject } from '@adonisjs/core'
+import OrderProcessor from './order_processor.js'
 
 @inject()
 export default class WebhookProcessor {
   constructor(
     private paymentIntentService: PaymentIntentService,
-    private adService: AdService
+    private adService: AdService,
+    private orderProcessor: OrderProcessor
   ) {}
 
   public async processStripeWebhookEvent(stripeEvent: Record<string, any>) {
@@ -25,6 +27,7 @@ export default class WebhookProcessor {
         await this.paymentIntentService.updatePaymentIntent(paymentIntent.id, {
           status: 'succeeded',
         })
+        await this.orderProcessor.createOrder(paymentIntent.id)
 
         break
 
@@ -38,6 +41,7 @@ export default class WebhookProcessor {
           }
         )
         await this.adService.updateAd(updatedFailedPaymentIntent.adId, { statusId: 1 })
+
         break
 
       case 'payment_intent.canceled':
