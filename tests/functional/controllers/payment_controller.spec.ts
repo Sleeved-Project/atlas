@@ -315,7 +315,7 @@ test.group('Payment controller', (group) => {
     })
 
     assert.isTrue(adServiceUpdateAdStub.calledWith(ad.id, { statusId: 1 }))
-  }).pin()
+  })
 
   test('stripeWebhook - should handle webhook event', async ({ client, assert }) => {
     await ArtistFactory.merge({ id: 1 }).create()
