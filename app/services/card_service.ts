@@ -3,7 +3,10 @@ import Card from '#models/card'
 import ConstantUtils from '#utils/constant_utils'
 import FilterQueryUtils from '#utils/filter_query_utils'
 import PriceQueryUtils from '#utils/price_query_utils'
-import { getAllCardsFiltersValidator } from '#validators/card_validator'
+import {
+  getAllCardsFiltersValidator,
+  getCardAdsByCardIdValidator,
+} from '#validators/card_validator'
 import db from '@adonisjs/lucid/services/db'
 import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 import { Infer } from '@vinejs/vine/types'
@@ -146,22 +149,20 @@ export default class CardService {
   public async getPaginatedCardAdsByCardId(
     cardId: string,
     userId: string,
-    request: { page?: number; limit?: number }
+    filters: Infer<typeof getCardAdsByCardIdValidator>['query']
   ): Promise<ModelPaginatorContract<Ad>> {
-    const { page = 1, limit = 20 } = request
-
     const ads = await Ad.query()
       .where('cardId', cardId)
-      .where('statusId', 1)
+      .andWhere('statusId', 1)
       .andWhere('sellerId', '!=', userId)
       .preload('condition')
       .preload('finish')
       .preload('certificate')
-      .preload('seller', (sellerQuery) => {
-        sellerQuery.select(['id', 'username'])
+      .preload('seller', (query) => {
+        query.select(['id', 'username'])
       })
       .orderBy('createdAt', 'desc')
-      .paginate(page, limit)
+      .paginate(filters.page || 1, filters.limit || 10)
 
     return ads
   }
