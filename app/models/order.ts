@@ -25,16 +25,16 @@ export default class Order extends BaseModel {
   @column({ columnName: 'shipping_costs' })
   declare shippingCosts: number
 
-  @column({ columnName: 'payment_intent_id' })
+  @column({ columnName: 'payment_intent_id', serializeAs: null })
   declare paymentIntentId: string
 
-  @column({ columnName: 'delivery_address_id' })
+  @column({ columnName: 'delivery_address_id', serializeAs: null })
   declare deliveryAddressId: string
 
-  @column({ columnName: 'order_address_id' })
+  @column({ columnName: 'order_address_id', serializeAs: null })
   declare orderAddressId: string
 
-  @column({ columnName: 'status_id' })
+  @column({ columnName: 'status_id', serializeAs: null })
   declare statusId: number
 
   @column.dateTime({ columnName: 'created_at', autoCreate: true })
