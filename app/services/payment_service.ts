@@ -35,8 +35,7 @@ export default class PaymentService {
       returnUrl,
       refreshUrl
     )
-
-    return accountLink.url
+    return accountLink
   }
 
   async createPaymentSheet(

@@ -98,7 +98,6 @@ export default class AdService {
 
   public async updateAd(id: string, data: Partial<Ad>): Promise<Ad> {
     const ad = await Ad.findOrFail(id)
-    console.log('ad:', ad)
     ad.merge(data)
     await ad.save()
     return ad

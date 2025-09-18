@@ -46,7 +46,7 @@ export default class StripeApiClient {
     accountId: string,
     returnUrl: string,
     refreshUrl: string
-  ): Promise<any> {
+  ): Promise<string> {
     try {
       const accountLink = await this.stripe.accountLinks.create({
         account: accountId,
@@ -54,7 +54,7 @@ export default class StripeApiClient {
         refresh_url: refreshUrl,
         type: 'account_onboarding',
       })
-      return accountLink
+      return accountLink.url
     } catch (error) {
       throw new StripeException()
     }

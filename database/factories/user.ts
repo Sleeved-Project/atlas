@@ -4,6 +4,7 @@ import { DateTime } from 'luxon'
 
 export const UserFactory = Factory.define(User, async ({ faker }) => {
   return {
+    id: faker.string.uuid(),
     username: faker.internet.username(),
     firstname: faker.person.firstName(),
     lastname: faker.person.lastName(),
