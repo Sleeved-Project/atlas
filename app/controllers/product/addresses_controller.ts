@@ -26,7 +26,7 @@ export default class AddressesController {
         throw new ValidationException(error)
       }
       if (error.code === 'ER_DUP_ENTRY') {
-        throw new DuplicateEntryException('User already have this address linked')
+        throw new DuplicateEntryException('User has already linked this address')
       }
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
