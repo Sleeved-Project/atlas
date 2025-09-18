@@ -29,7 +29,8 @@ export default class AdMapper {
 
     return {
       ad: {
-        original_price: Number(ad.originalPrice),
+        rectoImageUrl: ad.rectoImageUrl,
+        originalPrice: Number(ad.originalPrice).toFixed(2),
         finish: { label: ad.finish.label },
         condition: { label: ad.condition.label },
         seller: {

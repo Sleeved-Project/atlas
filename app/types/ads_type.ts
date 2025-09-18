@@ -5,7 +5,8 @@ export interface AdsFilters {
 
 export interface AdCheckoutDTO {
   ad: {
-    original_price: number
+    rectoImageUrl: string
+    originalPrice: string
     finish: {
       label: string
     }
