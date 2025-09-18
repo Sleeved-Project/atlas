@@ -121,6 +121,7 @@ export default class AdService {
       .where('id', adId)
       .select(
         'id',
+        'recto_image_url',
         'original_price',
         'card_id',
         'condition_id',
