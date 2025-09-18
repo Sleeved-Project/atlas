@@ -3,8 +3,8 @@ import Ad from '#models/ad'
 import Factory from '@adonisjs/lucid/factories'
 import { CardFactory } from './card.js'
 import { AdStatusFactory } from './ad_status.js'
-import { CardConditionFactory } from './card_condition.js'
-import { CardFinishFactory } from './card_finish.js'
+import { CardConditionBasicFactory } from './card_condition.js'
+import { CardFinishBasicFactory } from './card_finish.js'
 import { UserFactory } from './user.js'
 import { CertificateFactory } from './certificate.js'
 
@@ -24,8 +24,8 @@ export const AdFactory = Factory.define(Ad, ({ faker }) => {
 })
   .relation('card', () => CardFactory)
   .relation('status', () => AdStatusFactory)
-  .relation('condition', () => CardConditionFactory)
-  .relation('finish', () => CardFinishFactory)
+  .relation('condition', () => CardConditionBasicFactory)
+  .relation('finish', () => CardFinishBasicFactory)
   .relation('seller', () => UserFactory)
   .relation('certificate', () => CertificateFactory)
   .build()
