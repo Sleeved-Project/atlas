@@ -247,6 +247,7 @@ test.group('Card controller', (group) => {
     const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
     const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
     const legality = await LegalityFactory.create()
+    console.log('legality', legality)
     const set = await SetFactory.merge({ legalityId: legality.id }).create()
     const commonCard = await CardFactory.merge({
       artistId: artist.id,
@@ -277,21 +278,22 @@ test.group('Card controller', (group) => {
     client,
     assert,
   }) => {
-    await RarityFactory.create()
-    await LegalityFactory.create()
-    await SetFactory.merge({ id: 'base1' }).create()
-
+    const rarity = await RarityFactory.create()
     const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
     const artist2 = await ArtistFactory.merge({ id: 2, name: 'Artist Two' }).create()
-
+    const legality = await LegalityFactory.create()
+    const set = await SetFactory.merge({ legalityId: legality.id }).create()
     const atist1Card = await CardFactory.merge({
-      name: 'Card by Artist One',
       artistId: artist1.id,
+      rarityId: rarity.id,
+      setId: set.id,
+      legalityId: legality.id,
     }).create()
-
     await CardFactory.merge({
-      name: 'Card by Artist Two',
       artistId: artist2.id,
+      rarityId: rarity.id,
+      setId: set.id,
+      legalityId: legality.id,
     }).create()
 
     const response = await client
@@ -310,22 +312,25 @@ test.group('Card controller', (group) => {
     client,
     assert,
   }) => {
-    await ArtistFactory.create()
-    await RarityFactory.create()
-    await LegalityFactory.create()
-    await SetFactory.merge({ id: 'base1' }).create()
-
-    const basicSubtype = await SubtypeFactory.merge({ id: 1, label: 'Basic' }).create()
-    const stage1Subtype = await SubtypeFactory.merge({ id: 2, label: 'Stage 1' }).create()
-
+    const rarity = await RarityFactory.create()
+    const artist = await ArtistFactory.create()
+    const legality = await LegalityFactory.create()
+    const set = await SetFactory.merge({ legalityId: legality.id }).create()
+    const basicSubtype = await SubtypeFactory.create()
+    const stage1Subtype = await SubtypeFactory.create()
     const basicCard = await CardFactory.merge({
-      name: 'Basic Card',
+      artistId: artist.id,
+      rarityId: rarity.id,
+      setId: set.id,
+      legalityId: legality.id,
     })
       .with('subtypes', 1, (subtypes) => subtypes.merge([basicSubtype]))
       .create()
-
     await CardFactory.merge({
-      name: 'Stage 1 Card',
+      artistId: artist.id,
+      rarityId: rarity.id,
+      setId: set.id,
+      legalityId: legality.id,
     })
       .with('subtypes', 1, (subtypes) => subtypes.merge([stage1Subtype]))
       .create()
@@ -346,24 +351,27 @@ test.group('Card controller', (group) => {
     client,
     assert,
   }) => {
-    await ArtistFactory.create()
-    await RarityFactory.create()
-    await LegalityFactory.create()
-    await SetFactory.merge({ id: 'base1' }).create()
-
-    const psychicType = await TypeFactory.merge({ id: 1, label: 'Psychic' }).create()
-    const fireType = await TypeFactory.merge({ id: 2, label: 'Fire' }).create()
-
-    await CardFactory.merge({
-      name: 'Psychic Card',
-    })
-      .with('types', 1, (types) => types.merge([psychicType]))
-      .create()
-
+    const rarity = await RarityFactory.create()
+    const artist = await ArtistFactory.create()
+    const legality = await LegalityFactory.create()
+    const set = await SetFactory.merge({ legalityId: legality.id }).create()
+    const psychicType = await TypeFactory.create()
+    const fireType = await TypeFactory.create()
     const fireCard = await CardFactory.merge({
-      name: 'Fire Card',
+      artistId: artist.id,
+      rarityId: rarity.id,
+      setId: set.id,
+      legalityId: legality.id,
     })
       .with('types', 1, (types) => types.merge([fireType]))
+      .create()
+    await CardFactory.merge({
+      artistId: artist.id,
+      rarityId: rarity.id,
+      setId: set.id,
+      legalityId: legality.id,
+    })
+      .with('types', 1, (types) => types.merge([psychicType]))
       .create()
 
     const response = await client
@@ -379,12 +387,29 @@ test.group('Card controller', (group) => {
   })
 
   test('index - it should apply multiple filters simultaneously', async ({ client, assert }) => {
-    await LegalityFactory.create()
-    await SetFactory.merge({ id: 'base1' }).create()
-
-    const commonRarity = await RarityFactory.merge({ id: 1, label: 'Common' }).create()
-    const rareRarity = await RarityFactory.merge({ id: 2, label: 'Rare' }).create()
-    const artist1 = await ArtistFactory.merge({ id: 1, name: 'Artist One' }).create()
+    const commonRarity = await RarityFactory.create()
+    const rareRarity = await RarityFactory.create()
+    const artist = await ArtistFactory.create()
+    const legality = await LegalityFactory.create()
+    const set = await SetFactory.merge({ legalityId: legality.id }).create()
+    const psychicType = await TypeFactory.create()
+    const fireType = await TypeFactory.create()
+    const fireCard = await CardFactory.merge({
+      artistId: artist.id,
+      rarityId: rarity.id,
+      setId: set.id,
+      legalityId: legality.id,
+    })
+      .with('types', 1, (types) => types.merge([fireType]))
+      .create()
+    await CardFactory.merge({
+      artistId: artist.id,
+      rarityId: rarity.id,
+      setId: set.id,
+      legalityId: legality.id,
+    })
+      .with('types', 1, (types) => types.merge([psychicType]))
+      .create()
 
     await CardFactory.merge({
       name: 'Pikachu Common',

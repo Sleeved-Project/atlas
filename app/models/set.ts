@@ -18,31 +18,33 @@ export default class Set extends BaseModel {
   @column()
   declare series: string
 
-  @column()
+  @column({ columnName: 'printed_total' })
   declare printedTotal: number
 
   @column()
   declare total: number
 
-  @column()
+  @column({ columnName: 'ptcgo_code' })
   declare ptcgoCode: string | null
 
-  @column.date()
+  @column.date({ columnName: 'release_date' })
   declare releaseDate: DateTime
 
-  @column.dateTime()
+  @column.dateTime({ columnName: 'updated_at', autoCreate: true })
   declare updatedAt: DateTime
 
-  @column()
+  @column({ columnName: 'image_symbol' })
   declare imageSymbol: string
 
-  @column()
+  @column({ columnName: 'image_logo' })
   declare imageLogo: string
 
-  @column()
+  @column({ columnName: 'legality_id' })
   declare legalityId: number
 
-  @belongsTo(() => Legality)
+  @belongsTo(() => Legality, {
+    foreignKey: 'legalityId',
+  })
   declare legality: BelongsTo<typeof Legality>
 
   @computed()

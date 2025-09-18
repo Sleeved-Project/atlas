@@ -33,7 +33,9 @@ export default class CardsController {
     try {
       const filters = await getAllCardsFiltersValidator.validate(request.qs())
       const paginatedCards = await this.cardService.getAllCards(filters)
+      console.log('PAGINATE CARDS', paginatedCards)
       const result = await this.cardProcessor.processCardsWithOwnership(paginatedCards, authUser.id)
+      console.log('RESULT', result)
       return response.ok(result)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
