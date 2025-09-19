@@ -66,7 +66,6 @@ export default class PaymentIntentService {
       .andWhere('fromId', userId)
       .andWhereIn('status', [PaymentIntentStatus.CREATED, PaymentIntentStatus.PROCESSING])
       .firstOrFail()
-    console.log('Payment intent canceled:', paymentIntent)
     paymentIntent.status = PaymentIntentStatus.CANCELED
     await paymentIntent.save()
     return paymentIntent

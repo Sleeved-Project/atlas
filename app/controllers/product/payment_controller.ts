@@ -15,6 +15,7 @@ import env from '#start/env'
 import PriceUtils from '#utils/price_utils'
 import ValidationException from '#exceptions/validation_exception'
 import PaymentIntentDuplicateException from '#exceptions/payment_intent_duplicate_exception'
+import CostUtils from '#utils/cost_utils'
 
 @inject()
 export default class PaymentController {
@@ -69,7 +70,7 @@ export default class PaymentController {
 
       const { paymentIntentClientSecret, paymentIntentId, ephemeralKey, customer } =
         await this.paymentService.createPaymentSheet(
-          PriceUtils.getPriceInCents(ad.originalPrice),
+          PriceUtils.getPriceInCents(CostUtils.calculateTotalCosts(ad.originalPrice)),
           authUserCustomerId
         )
 
