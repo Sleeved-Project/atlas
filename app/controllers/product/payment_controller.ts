@@ -16,6 +16,7 @@ import PriceUtils from '#utils/price_utils'
 import ValidationException from '#exceptions/validation_exception'
 import PaymentIntentDuplicateException from '#exceptions/payment_intent_duplicate_exception'
 import CostUtils from '#utils/cost_utils'
+import NotAllowedToPerformException from '#exceptions/not_allowed_to_buy_exception'
 
 @inject()
 export default class PaymentController {
@@ -64,6 +65,10 @@ export default class PaymentController {
       }
 
       const ad = await this.adService.getStripePaymentRelevantColumnsAdById(params.id)
+
+      if (ad.sellerId === authUser.id) {
+        throw new NotAllowedToPerformException()
+      }
 
       // get customer id, could be a string or null
       const authUserCustomerId = await this.userService.getCustomerIdByUserId(authUser.id)
