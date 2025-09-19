@@ -25,10 +25,11 @@ export default class AdService {
     })
   }
 
-  public async listAds(filters: AdsFilters) {
+  public async listAds(filters: AdsFilters, userId: string) {
     const { page = 1, limit = 20 } = filters
     const adsQuery = Ad.query()
       .where('statusId', 1)
+      .andWhereNot('sellerId', userId)
       .preload('status')
       .preload('condition')
       .preload('finish')
