@@ -11,7 +11,7 @@ import Order from '#models/order'
 export interface OrderListOuputDTO {
   id: string
   seller: {
-    name: string
+    username: string
   }
   condition: {
     id: number
@@ -62,7 +62,7 @@ export default class OrderProcessor {
     const data: OrderListOuputDTO[] = paginatedOrders.all().map((order) => ({
       id: order.id,
       seller: {
-        name: order.paymentIntent.to.username,
+        username: order.paymentIntent.to.username,
       },
       condition: {
         id: order.paymentIntent.ad.condition.id,
