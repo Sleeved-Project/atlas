@@ -28,6 +28,7 @@ export default class AdService {
   public async listAds(filters: AdsFilters) {
     const { page = 1, limit = 20 } = filters
     const adsQuery = Ad.query()
+      .where('statusId', 1)
       .preload('status')
       .preload('condition')
       .preload('finish')
