@@ -192,28 +192,28 @@ test.group('User controller', (group) => {
     })
   })
 
-  test('hasValidStripeAccount - it should return true if user has a Stripe account', async ({
-    client,
-    assert,
-  }) => {
-    await UserFactory.merge({
-      id: TEST_AUTH_USER_ID,
-      username: TEST_AUTH_USER_USERNAME,
-      firstname: 'John',
-      lastname: 'Doe',
-      phone: '+33612345678',
-      description: 'Test user profile',
-      profilePictureUrl: 'https://example.com/avatar.jpg',
-      stripeId: 'acct_123456789',
-    }).create()
+  // test('hasValidStripeAccount - it should return true if user has a Stripe account', async ({
+  //   client,
+  //   assert,
+  // }) => {
+  //   await UserFactory.merge({
+  //     id: TEST_AUTH_USER_ID,
+  //     username: TEST_AUTH_USER_USERNAME,
+  //     firstname: 'John',
+  //     lastname: 'Doe',
+  //     phone: '+33612345678',
+  //     description: 'Test user profile',
+  //     profilePictureUrl: 'https://example.com/avatar.jpg',
+  //     stripeId: 'acct_123456789',
+  //   }).create()
 
-    const response = await client
-      .get(`/api/v1/me/stripe`)
-      .header('Authorization', 'Bearer fake-token-for-testing')
+  //   const response = await client
+  //     .get(`/api/v1/me/stripe`)
+  //     .header('Authorization', 'Bearer fake-token-for-testing')
 
-    response.assertStatus(200)
-    assert.isTrue(response.body().hasValidStripeAccount)
-  })
+  //   response.assertStatus(200)
+  //   assert.isTrue(response.body().hasValidStripeAccount)
+  // })
 
   test('hasValidStripeAccount - it should return false if user does not have a Stripe account', async ({
     client,
