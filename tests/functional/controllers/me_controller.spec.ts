@@ -192,7 +192,7 @@ test.group('User controller', (group) => {
     })
   })
 
-  test('hasStripeAccount - it should return true if user has a Stripe account', async ({
+  test('hasValidStripeAccount - it should return true if user has a Stripe account', async ({
     client,
     assert,
   }) => {
@@ -212,10 +212,10 @@ test.group('User controller', (group) => {
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
-    assert.isTrue(response.body().hasStripeAccount)
+    assert.isTrue(response.body().hasValidStripeAccount)
   })
 
-  test('hasStripeAccount - it should return false if user does not have a Stripe account', async ({
+  test('hasValidStripeAccount - it should return false if user does not have a Stripe account', async ({
     client,
     assert,
   }) => {
@@ -234,7 +234,7 @@ test.group('User controller', (group) => {
       .get(`/api/v1/me/stripe`)
       .header('Authorization', 'Bearer fake-token-for-testing')
     response.assertStatus(200)
-    assert.isFalse(response.body().hasStripeAccount)
+    assert.isFalse(response.body().hasValidStripeAccount)
   })
 
   test('tokens - it should return remaining grading tokens count', async ({ client, assert }) => {

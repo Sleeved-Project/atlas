@@ -15,6 +15,9 @@ import OrderService from '#services/order_service'
 import { getOrdersFiltersValidator } from '#validators/order_validator'
 import OrderProcessor from '#processors/order_processor'
 import StripeApiClient from '#clients/stripe_api_client'
+import { getAdBaseParamsValidator } from '#validators/ad_validator'
+import PaymentIntentService from '#services/payment_intent_service'
+import PaymentIntentMapper from '#mappers/payment_intent_mapper'
 
 @inject()
 export default class MeController {
@@ -24,6 +27,7 @@ export default class MeController {
     private userAddressService: UserAddressService,
     private orderService: OrderService,
     private orderProcessor: OrderProcessor,
+    private paymentIntentService: PaymentIntentService,
     private stripeApiClient: StripeApiClient
   ) {
     this.stripeApiClient = new StripeApiClient()
@@ -80,11 +84,11 @@ export default class MeController {
     }
   }
 
-  async hasStripeAccount({ response, authUser }: HttpContext) {
+  async hasValidStripeAccount({ response, authUser }: HttpContext) {
     try {
       const user = await this.meService.getUserById(authUser.id)
       if (!user.stripeId) {
-        return response.ok({ hasStripeAccount: false })
+        return response.ok({ hasValidStripeAccount: false })
       }
       const stripeAccountTOSAcceptance = await this.stripeApiClient.retrieveStripeAccount(
         user.stripeId
@@ -93,9 +97,9 @@ export default class MeController {
       // If this is true then the user has successfully completed the Stripe onboarding
       // If not we redirect him to complete it from the front end
       if (stripeAccountTOSAcceptance && stripeAccountTOSAcceptance.date !== null) {
-        return response.ok({ hasStripeAccount: true })
+        return response.ok({ hasValidStripeAccount: true })
       } else {
-        return response.ok({ hasStripeAccount: false })
+        return response.ok({ hasValidStripeAccount: false })
       }
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
@@ -139,6 +143,28 @@ export default class MeController {
       )
       const orderListOutputDTO = await this.orderProcessor.processOrdersList(paginatedOrders)
       return response.ok(orderListOutputDTO)
+    } catch (error) {
+      console.error(error)
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async adBuyer({ response, request, authUser }: HttpContext) {
+    try {
+      const params = await getAdBaseParamsValidator.validate(request.params())
+      console.log(params.id, authUser.id)
+      const buyerInfos = await this.paymentIntentService.getPaymentIntentBuyerInfosByAdIdAndUserId(
+        authUser.id,
+        params.id
+      )
+      const buyerInfosOutputDTO = PaymentIntentMapper.toPaymentIntentBuyerInfosOutputDTO(buyerInfos)
+      return response.ok(buyerInfosOutputDTO)
     } catch (error) {
       console.error(error)
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {

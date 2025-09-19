@@ -28,10 +28,11 @@ router
         router
           .group(() => {
             router.get('/', [MeController, 'show']).use(middleware.auth())
-            router.get('/stripe', [MeController, 'hasStripeAccount']).use(middleware.auth())
+            router.get('/stripe', [MeController, 'hasValidStripeAccount']).use(middleware.auth())
             router.get('/tokens', [MeController, 'tokens']).use(middleware.auth())
             router.get('/addresses/main', [MeController, 'mainAddress']).use(middleware.auth())
             router.get('/orders', [MeController, 'orders']).use(middleware.auth())
+            router.get('/ads/:id/buyer', [MeController, 'adBuyer']).use(middleware.auth())
             router.post('/init', [MeController, 'store']).use(middleware.auth())
             router.patch('/', [MeController, 'update']).use(middleware.auth())
           })

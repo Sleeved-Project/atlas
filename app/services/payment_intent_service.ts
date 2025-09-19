@@ -1,5 +1,5 @@
 import PaymentIntent from '#models/payment_intent'
-import { PaymentIntentStatus } from '#types/payment_intent_status'
+import { PaymentIntentStatus } from '#types/payment_intent_type'
 
 interface CreatePaymentIntentParams {
   id: string
@@ -69,5 +69,17 @@ export default class PaymentIntentService {
     paymentIntent.status = PaymentIntentStatus.CANCELED
     await paymentIntent.save()
     return paymentIntent
+  }
+
+  async getPaymentIntentBuyerInfosByAdIdAndUserId(
+    userId: string,
+    adId: string
+  ): Promise<PaymentIntent> {
+    return await PaymentIntent.query()
+      .where('ad_id', adId)
+      .andWhere('to_id', userId)
+      .whereIn('status', [PaymentIntentStatus.SUCCEEDED])
+      .preload('from', (userQuery) => userQuery.select('id', 'username', 'profilePictureUrl'))
+      .firstOrFail()
   }
 }
