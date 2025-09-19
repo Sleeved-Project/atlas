@@ -1,4 +1,5 @@
 import StripeApiClient from '#clients/stripe_api_client'
+import Stripe from 'stripe'
 
 interface CreateAccountResponse {
   linkingUrl: string
@@ -22,6 +23,12 @@ export default class PaymentService {
     const accountId = await this.stripeApiClient.createStripeAccount()
     const accountLink = await this.linkAccount(accountId)
     return { linkingUrl: accountLink, accountId }
+  }
+
+  async getStripeAccountTOSAcceptance(
+    accountId: string
+  ): Promise<Stripe.Account.TosAcceptance | null> {
+    return await this.stripeApiClient.retrieveStripeAccount(accountId)
   }
 
   async finishAccountOnboarding(accountId: string): Promise<string> {

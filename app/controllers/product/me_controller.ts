@@ -14,10 +14,10 @@ import UserAddressMapper from '#mappers/user_address_mapper'
 import OrderService from '#services/order_service'
 import { getOrdersFiltersValidator } from '#validators/order_validator'
 import OrderProcessor from '#processors/order_processor'
-import StripeApiClient from '#clients/stripe_api_client'
 import { getAdBaseParamsValidator } from '#validators/ad_validator'
 import PaymentIntentService from '#services/payment_intent_service'
 import PaymentIntentMapper from '#mappers/payment_intent_mapper'
+import PaymentService from '#services/payment_service'
 
 @inject()
 export default class MeController {
@@ -28,10 +28,8 @@ export default class MeController {
     private orderService: OrderService,
     private orderProcessor: OrderProcessor,
     private paymentIntentService: PaymentIntentService,
-    private stripeApiClient: StripeApiClient
-  ) {
-    this.stripeApiClient = new StripeApiClient()
-  }
+    private paymentService: PaymentService
+  ) {}
 
   async store({ response, authUser }: HttpContext) {
     try {
@@ -90,7 +88,7 @@ export default class MeController {
       if (!user.stripeId) {
         return response.ok({ hasValidStripeAccount: false })
       }
-      const stripeAccountTOSAcceptance = await this.stripeApiClient.retrieveStripeAccount(
+      const stripeAccountTOSAcceptance = await this.paymentService.getStripeAccountTOSAcceptance(
         user.stripeId
       )
 
