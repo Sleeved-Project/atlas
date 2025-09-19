@@ -5,3 +5,8 @@ export enum PaymentIntentStatus {
   SUCCEEDED = 'succeeded',
   CREATED = 'created',
 }
+
+export interface PaymentIntentBuyerInfosOutputDTO {
+  username: string
+  profilePictureUrl: string | null
+}
