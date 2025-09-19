@@ -47,9 +47,13 @@ export default class OrderProcessor {
    */
   public async createOrder(paymentItentId: string): Promise<void> {
     const paymentIntent = await this.paymentIntentService.getValidPaymentIntentById(paymentItentId)
+    console.log(paymentIntent)
     const ad = await this.adService.getAdById(paymentIntent.adId)
+    console.log(ad)
     const mainAddress = await this.userAddressService.getMainAddress(paymentIntent.fromId)
+    console.log(mainAddress)
     const costReview = CostUtils.getCostsReview(ad.originalPrice)
+    console.log(costReview)
     await this.orderService.createOrder(paymentIntent.id, costReview, mainAddress.addressId)
   }
 

@@ -19,6 +19,9 @@ import Ad from '#models/ad'
 import OrderProcessor from '#processors/order_processor'
 import UserAddressService from '#services/user_address_service'
 import OrderService from '#services/order_service'
+import { AddressFactory } from '#database/factories/address'
+import { UserAddressFactory } from '#database/factories/user_address'
+import { OrderStatusFactory } from '#database/factories/order_status'
 
 test.group('WebhookProcessor', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -62,6 +65,13 @@ test.group('WebhookProcessor', (group) => {
     await CardConditionFactory.merge({ id: 1 }).create()
     await CardFinishFactory.merge({ id: 1 }).create()
     const user = await UserFactory.merge({ id: 'user_67890', stripeId: 'acct_12345' }).create()
+    const address = await AddressFactory.create()
+    await OrderStatusFactory.apply('pending').create()
+    await UserAddressFactory.merge({
+      userId: user.id,
+      addressId: address.id,
+      isMain: true,
+    }).create()
     const ad = await AdFactory.merge({
       id: 'ad_12345',
       cardId: 'card_12345',
