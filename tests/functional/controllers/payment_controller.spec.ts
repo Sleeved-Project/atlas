@@ -37,11 +37,13 @@ test.group('Payment controller', (group) => {
   let stripeWebhookStub: sinon.SinonStub
   let paymentIntentExistingServiceStub: sinon.SinonStub
   let meServiceGetCustomerIdStub: sinon.SinonStub
+  let meServiceGetUserByIdStub: sinon.SinonStub
 
   group.setup(() => {
     wardenApiClientStub = AuthServiceMock.setupWardenApiClientStub()
     paymentServiceStub = sinon.stub(PaymentService.prototype, 'createAccount')
     meServiceStub = sinon.stub(MeService.prototype, 'updateUser')
+    meServiceGetUserByIdStub = sinon.stub(MeService.prototype, 'getUserById')
     stripeApiClient = new StripeApiClient()
     adServiceUpdateAdStub = sinon.stub(AdService.prototype, 'updateAd')
     adServiceGetStripePaymentRelevantColumnsStub = sinon.stub(
@@ -84,6 +86,7 @@ test.group('Payment controller', (group) => {
       linkingUrl: 'https://stripe.com/linking-url',
       accountId: 'acct_12345',
     })
+    meServiceGetUserByIdStub.resolves({ id: TEST_AUTH_USER_ID })
     meServiceStub.resolves({ id: TEST_AUTH_USER_ID, stripeId: 'acct_12345' })
 
     const response = await client
@@ -91,7 +94,7 @@ test.group('Payment controller', (group) => {
       .header('Authorization', 'Bearer fake-token-for-testing')
 
     response.assertStatus(200)
-    response.assertBodyContains({ linkingUrl: 'https://stripe.com/linking-url' })
+    response.assertBodyContains({ redirectLinkUrl: 'https://stripe.com/linking-url' })
 
     assert.isTrue(paymentServiceStub.calledOnce)
     assert.isTrue(meServiceStub.calledWith(TEST_AUTH_USER_ID, { stripeId: 'acct_12345' }))

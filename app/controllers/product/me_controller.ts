@@ -17,6 +17,7 @@ import OrderProcessor from '#processors/order_processor'
 import { getAdBaseParamsValidator } from '#validators/ad_validator'
 import PaymentIntentService from '#services/payment_intent_service'
 import PaymentIntentMapper from '#mappers/payment_intent_mapper'
+import PaymentService from '#services/payment_service'
 
 @inject()
 export default class MeController {
@@ -26,7 +27,8 @@ export default class MeController {
     private userAddressService: UserAddressService,
     private orderService: OrderService,
     private orderProcessor: OrderProcessor,
-    private paymentIntentService: PaymentIntentService
+    private paymentIntentService: PaymentIntentService,
+    private paymentService: PaymentService
   ) {}
 
   async store({ response, authUser }: HttpContext) {
@@ -80,11 +82,23 @@ export default class MeController {
     }
   }
 
-  async hasStripeAccount({ response, authUser }: HttpContext) {
+  async hasValidStripeAccount({ response, authUser }: HttpContext) {
     try {
       const user = await this.meService.getUserById(authUser.id)
-      const hasAccount = user.stripeId ? true : false
-      return response.ok({ hasStripeAccount: hasAccount })
+      if (!user.stripeId) {
+        return response.ok({ hasValidStripeAccount: false })
+      }
+      const stripeAccountTOSAcceptance = await this.paymentService.getStripeAccountTOSAcceptance(
+        user.stripeId
+      )
+
+      // If this is true then the user has successfully completed the Stripe onboarding
+      // If not we redirect him to complete it from the front end
+      if (stripeAccountTOSAcceptance && stripeAccountTOSAcceptance.date !== null) {
+        return response.ok({ hasValidStripeAccount: true })
+      } else {
+        return response.ok({ hasValidStripeAccount: false })
+      }
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
