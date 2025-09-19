@@ -32,7 +32,7 @@ export default class CardFolioService {
     FilterQueryUtils.applyCardFilters(filters, query)
 
     return query
-      .orderBy('Set.release_date', 'asc')
+      .orderBy('Card_Folio.created_at', 'desc')
       .orderBy(
         db.raw('CAST(NULLIF(REGEXP_REPLACE(Card.number, "[^0-9]", ""), "") AS UNSIGNED)'),
         'asc'

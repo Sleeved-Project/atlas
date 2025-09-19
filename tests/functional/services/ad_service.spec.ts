@@ -66,7 +66,7 @@ test.group('AdService', (group) => {
     const legality = await LegalityFactory.create()
     const set = await SetFactory.merge({ id: 'base2' }).create()
     const cardFinish = await CardFinishFactory.merge({ id: 2, label: 'Holo' }).create()
-    const adStatus = await AdStatusFactory.merge({ id: 2, label: 'Published' }).create()
+    const adStatus = await AdStatusFactory.merge({ id: 1, label: 'Published' }).create()
     const cardCondition = await CardConditionFactory.merge({ id: 2 }).create()
 
     await AdFactory.merge({
