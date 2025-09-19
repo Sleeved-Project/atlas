@@ -10,6 +10,7 @@ import { CardConditionFactory, CardConditionBasicFactory } from '#database/facto
 import AdService from '#services/ad_service'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
+import { TEST_AUTH_USER_ID } from '#tests/mocks/auth_service_mock'
 
 test.group('AdService', (group) => {
   let adService: AdService
@@ -38,7 +39,7 @@ test.group('AdService', (group) => {
       .with('seller')
       .createMany(15)
 
-    const result = await adService.listAds({ page: 1, limit: 10 })
+    const result = await adService.listAds({ page: 1, limit: 10 }, TEST_AUTH_USER_ID)
 
     assert.properties(result, ['data', 'meta'])
     assert.isArray(result.data)
@@ -85,8 +86,8 @@ test.group('AdService', (group) => {
       .with('seller')
       .createMany(25)
 
-    const page1 = await adService.listAds({ page: 1, limit: 10 })
-    const page2 = await adService.listAds({ page: 2, limit: 10 })
+    const page1 = await adService.listAds({ page: 1, limit: 10 }, TEST_AUTH_USER_ID)
+    const page2 = await adService.listAds({ page: 2, limit: 10 }, TEST_AUTH_USER_ID)
 
     assert.equal(page1.data.length, 10)
     assert.equal(page2.data.length, 10)

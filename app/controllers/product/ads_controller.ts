@@ -82,10 +82,10 @@ export default class AdsController {
     }
   }
 
-  async index({ request, response }: HttpContext) {
+  async index({ request, response, authUser }: HttpContext) {
     try {
       const filters = await listAdsValidator.validate(request.qs())
-      const ads = await this.adService.listAds(filters)
+      const ads = await this.adService.listAds(filters, authUser.id)
       return response.ok(ads)
     } catch (error) {
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
