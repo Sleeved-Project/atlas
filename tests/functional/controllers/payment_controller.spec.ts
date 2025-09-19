@@ -21,6 +21,9 @@ import AdService from '#services/ad_service'
 import PaymentIntentService from '#services/payment_intent_service'
 import { PaymentIntentFactory } from '#database/factories/payment_intent'
 import PaymentIntentDuplicateException from '#exceptions/payment_intent_duplicate_exception'
+import { AddressFactory } from '#database/factories/address'
+import { OrderStatusFactory } from '#database/factories/order_status'
+import { UserAddressFactory } from '#database/factories/user_address'
 
 test.group('Payment controller', (group) => {
   let wardenApiClientStub: sinon.SinonStub
@@ -333,6 +336,13 @@ test.group('Payment controller', (group) => {
     await CardConditionFactory.merge({ id: 1 }).create()
     await CardFinishFactory.merge({ id: 1 }).create()
     const user = await UserFactory.merge({ id: 'user_67890', stripeId: 'acct_12345' }).create()
+    const address = await AddressFactory.create()
+    await OrderStatusFactory.apply('pending').create()
+    await UserAddressFactory.merge({
+      userId: user.id,
+      addressId: address.id,
+      isMain: true,
+    }).create()
     const ad = await AdFactory.merge({
       id: 'ad_12345',
       cardId: 'card_12345',
