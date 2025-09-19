@@ -11,13 +11,18 @@ import MeService from '#services/me_service'
 import { updateUserValidator } from '#validators/me_validator'
 import UserAddressService from '#services/user_address_service'
 import UserAddressMapper from '#mappers/user_address_mapper'
+import OrderService from '#services/order_service'
+import { getOrdersFiltersValidator } from '#validators/order_validator'
+import OrderProcessor from '#processors/order_processor'
 
 @inject()
 export default class MeController {
   constructor(
     private folioService: FolioService,
     private meService: MeService,
-    private userAddressService: UserAddressService
+    private userAddressService: UserAddressService,
+    private orderService: OrderService,
+    private orderProcessor: OrderProcessor
   ) {}
 
   async store({ response, authUser }: HttpContext) {
@@ -102,6 +107,26 @@ export default class MeController {
       const address = UserAddressMapper.toAddressOuputDTO(mainUserAddress)
       return response.ok({ address })
     } catch (error) {
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async orders({ response, request, authUser }: HttpContext) {
+    try {
+      const filters = await getOrdersFiltersValidator.validate(request.qs())
+      const paginatedOrders = await this.orderService.getPaginatedOrdersByUserId(
+        authUser.id,
+        filters
+      )
+      const orderListOutputDTO = await this.orderProcessor.processOrdersList(paginatedOrders)
+      return response.ok(orderListOutputDTO)
+    } catch (error) {
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)
       }

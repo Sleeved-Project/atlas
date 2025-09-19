@@ -13,13 +13,13 @@ export default class PaymentIntent extends BaseModel {
   @column({ isPrimary: true })
   declare id: string
 
-  @column({ columnName: 'from_id' })
+  @column({ columnName: 'from_id', serializeAs: null })
   declare fromId: string
 
-  @column({ columnName: 'to_id' })
+  @column({ columnName: 'to_id', serializeAs: null })
   declare toId: string
 
-  @column({ columnName: 'ad_id' })
+  @column({ columnName: 'ad_id', serializeAs: null })
   declare adId: string
 
   @column()
