@@ -124,6 +124,7 @@ export default class MeController {
       const orderListOutputDTO = await this.orderProcessor.processOrdersList(paginatedOrders)
       return response.ok(orderListOutputDTO)
     } catch (error) {
+      console.error(error)
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {
         throw new ValidationException(error)
       }
