@@ -14,6 +14,7 @@ import UserAddressMapper from '#mappers/user_address_mapper'
 import OrderService from '#services/order_service'
 import { getOrdersFiltersValidator } from '#validators/order_validator'
 import OrderProcessor from '#processors/order_processor'
+import StripeApiClient from '#clients/stripe_api_client'
 
 @inject()
 export default class MeController {
@@ -22,8 +23,11 @@ export default class MeController {
     private meService: MeService,
     private userAddressService: UserAddressService,
     private orderService: OrderService,
-    private orderProcessor: OrderProcessor
-  ) {}
+    private orderProcessor: OrderProcessor,
+    private stripeApiClient: StripeApiClient
+  ) {
+    this.stripeApiClient = new StripeApiClient()
+  }
 
   async store({ response, authUser }: HttpContext) {
     try {
@@ -79,8 +83,20 @@ export default class MeController {
   async hasStripeAccount({ response, authUser }: HttpContext) {
     try {
       const user = await this.meService.getUserById(authUser.id)
-      const hasAccount = user.stripeId ? true : false
-      return response.ok({ hasStripeAccount: hasAccount })
+      if (!user.stripeId) {
+        return response.ok({ hasStripeAccount: false })
+      }
+      const stripeAccountTOSAcceptance = await this.stripeApiClient.retrieveStripeAccount(
+        user.stripeId
+      )
+
+      // If this is true then the user has successfully completed the Stripe onboarding
+      // If not we redirect him to complete it from the front end
+      if (stripeAccountTOSAcceptance && stripeAccountTOSAcceptance.date !== null) {
+        return response.ok({ hasStripeAccount: true })
+      } else {
+        return response.ok({ hasStripeAccount: false })
+      }
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
         throw new NotFoundException(error)

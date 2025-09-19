@@ -21,8 +21,12 @@ export default class PaymentService {
   async createAccount(): Promise<CreateAccountResponse> {
     const accountId = await this.stripeApiClient.createStripeAccount()
     const accountLink = await this.linkAccount(accountId)
-
     return { linkingUrl: accountLink, accountId }
+  }
+
+  async finishAccountOnboarding(accountId: string): Promise<string> {
+    const accountLink = await this.linkAccount(accountId)
+    return accountLink
   }
 
   protected async linkAccount(accountId: string): Promise<string> {

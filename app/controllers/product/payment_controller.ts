@@ -31,11 +31,20 @@ export default class PaymentController {
 
   async createAccount({ authUser, response }: HttpContext) {
     try {
-      const { linkingUrl, accountId } = await this.paymentService.createAccount()
-      await this.userService.updateUser(authUser.id, { stripeId: accountId })
+      let redirectLinkUrl = ''
+      // Check if user already has a Stripe account and get the link to finish onboarding
+      const user = await this.userService.getUserById(authUser.id)
+      if (user.stripeId) {
+        const link = await this.paymentService.finishAccountOnboarding(user.stripeId)
+        redirectLinkUrl = link
+      } else {
+        const { linkingUrl, accountId } = await this.paymentService.createAccount()
+        redirectLinkUrl = linkingUrl
+        await this.userService.updateUser(authUser.id, { stripeId: accountId })
+      }
 
       response.json({
-        linkingUrl,
+        redirectLinkUrl,
       })
     } catch (error) {
       if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
