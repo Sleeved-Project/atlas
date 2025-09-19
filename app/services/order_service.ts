@@ -38,10 +38,12 @@ export default class OrderService {
   ): Promise<ModelPaginatorContract<Order>> {
     return Order.query()
       .select('id', 'created_at', 'status_id', 'payment_intent_id')
+      .whereHas('paymentIntent', (query) => {
+        query.where('from_id', userId) // On garde uniquement le filtre sur l'acheteur
+      })
       .preload('paymentIntent', (paymentIntentQuery) =>
         paymentIntentQuery
-          .select('ad_id', 'to_id')
-          .where('from_id', userId)
+          .select('id', 'ad_id', 'to_id')
           .preload('ad', (adQuery) =>
             adQuery
               .select(
