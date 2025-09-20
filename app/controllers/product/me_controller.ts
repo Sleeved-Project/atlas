@@ -18,6 +18,7 @@ import { getAdBaseParamsValidator } from '#validators/ad_validator'
 import PaymentIntentService from '#services/payment_intent_service'
 import PaymentIntentMapper from '#mappers/payment_intent_mapper'
 import PaymentService from '#services/payment_service'
+import OrderMapper from '#mappers/order_mapper'
 
 @inject()
 export default class MeController {
@@ -156,13 +157,31 @@ export default class MeController {
   async adBuyer({ response, request, authUser }: HttpContext) {
     try {
       const params = await getAdBaseParamsValidator.validate(request.params())
-      console.log(params.id, authUser.id)
       const buyerInfos = await this.paymentIntentService.getPaymentIntentBuyerInfosByAdIdAndUserId(
         authUser.id,
         params.id
       )
       const buyerInfosOutputDTO = PaymentIntentMapper.toPaymentIntentBuyerInfosOutputDTO(buyerInfos)
       return response.ok(buyerInfosOutputDTO)
+    } catch (error) {
+      console.error(error)
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async showOrder({ response, request, authUser }: HttpContext) {
+    try {
+      const params = await getAdBaseParamsValidator.validate(request.params())
+      const order = await this.orderService.getOrdersByIdAndUserId(authUser.id, params.id)
+      const mainAddress = await this.userAddressService.getMainAddress(authUser.id)
+      const orderDetailsOutputDTO = OrderMapper.toOrderDetailsOutputDTO(order, mainAddress)
+      return response.ok(orderDetailsOutputDTO)
     } catch (error) {
       console.error(error)
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {

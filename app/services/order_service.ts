@@ -39,7 +39,7 @@ export default class OrderService {
     return Order.query()
       .select('id', 'created_at', 'status_id', 'payment_intent_id')
       .whereHas('paymentIntent', (query) => {
-        query.where('from_id', userId) // On garde uniquement le filtre sur l'acheteur
+        query.where('from_id', userId)
       })
       .preload('paymentIntent', (paymentIntentQuery) =>
         paymentIntentQuery
@@ -62,5 +62,35 @@ export default class OrderService {
       )
       .preload('status', (statusQuery) => statusQuery.select('id', 'label'))
       .paginate(filters.page, filters.limit)
+  }
+
+  public async getOrdersByIdAndUserId(userId: string, orderId: string): Promise<Order> {
+    return Order.query()
+      .select('id', 'created_at', 'updated_at', 'status_id', 'payment_intent_id', 'total_costs')
+      .where('id', orderId)
+      .whereHas('paymentIntent', (query) => {
+        query.where('from_id', userId)
+      })
+      .preload('paymentIntent', (paymentIntentQuery) =>
+        paymentIntentQuery
+          .select('id', 'ad_id', 'to_id')
+          .preload('ad', (adQuery) =>
+            adQuery
+              .select(
+                'id',
+                'original_price',
+                'recto_image_url',
+                'conditionId',
+                'finishId',
+                'cardId'
+              )
+              .preload('card', (cardQuery) => cardQuery.select('id', 'name'))
+              .preload('condition', (conditionQuery) => conditionQuery.select('id', 'label'))
+              .preload('finish', (finishQuery) => finishQuery.select('id', 'label'))
+          )
+          .preload('to', (userQuery) => userQuery.select('id', 'username'))
+      )
+      .preload('status', (statusQuery) => statusQuery.select('id', 'label'))
+      .firstOrFail()
   }
 }
