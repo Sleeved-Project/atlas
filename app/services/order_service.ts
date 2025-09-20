@@ -93,4 +93,11 @@ export default class OrderService {
       .preload('status', (statusQuery) => statusQuery.select('id', 'label'))
       .firstOrFail()
   }
+
+  public async getOrdersByPaymentIntent(paymentIntentId: string): Promise<Order> {
+    return Order.query()
+      .select('id', 'delivery_address_id')
+      .where('payment_intent_id', paymentIntentId)
+      .firstOrFail()
+  }
 }

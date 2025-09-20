@@ -34,3 +34,16 @@ export interface AdCheckoutDTO {
     totalCosts: string
   }
 }
+
+export interface ShippingLabelOutputDTO {
+  buyer: {
+    name: string | null
+    phoneNumber: string | null
+  }
+  deliveryAddress: {
+    street: string
+    zipcode: string
+    city: string
+    country: string
+  }
+}

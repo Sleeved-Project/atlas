@@ -34,6 +34,7 @@ router
             router.get('/orders', [MeController, 'orders']).use(middleware.auth())
             router.get('/orders/:id', [MeController, 'showOrder']).use(middleware.auth())
             router.get('/ads/:id/buyer', [MeController, 'adBuyer']).use(middleware.auth())
+            router.get('/ads/:id/shipping', [MeController, 'adShipingLabel']).use(middleware.auth())
             router.post('/init', [MeController, 'store']).use(middleware.auth())
             router.patch('/', [MeController, 'update']).use(middleware.auth())
           })

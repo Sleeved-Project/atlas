@@ -45,6 +45,16 @@ export default class PaymentIntentService {
       .first()
   }
 
+  async getPaymentIntentSuccededByAdId(adId: string): Promise<PaymentIntent> {
+    return await PaymentIntent.query()
+      .select('id', 'from_id', 'to_id')
+      .where('ad_id', adId)
+      .preload('from', (userQuery) => userQuery.select('id', 'username'))
+      .preload('to', (userQuery) => userQuery.select('id', 'username'))
+      .whereIn('status', [PaymentIntentStatus.SUCCEEDED])
+      .firstOrFail()
+  }
+
   async getValidPaymentIntentById(id: string): Promise<PaymentIntent> {
     return await PaymentIntent.query()
       .where('id', id)
