@@ -66,7 +66,7 @@ export default class OrderService {
 
   public async getOrdersByIdAndUserId(userId: string, orderId: string): Promise<Order> {
     return Order.query()
-      .select('id', 'created_at', 'updated_at', 'status_id', 'payment_intent_id')
+      .select('id', 'created_at', 'updated_at', 'status_id', 'payment_intent_id', 'total_costs')
       .where('id', orderId)
       .whereHas('paymentIntent', (query) => {
         query.where('from_id', userId)
