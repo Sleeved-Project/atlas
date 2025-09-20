@@ -126,4 +126,15 @@ export default class StripeApiClient {
       throw new StripeException()
     }
   }
+
+  public async retrieveStripeAccount(
+    accountId: string
+  ): Promise<Stripe.Account.TosAcceptance | null> {
+    try {
+      const account = await this.stripe.accounts.retrieve(accountId)
+      return account.tos_acceptance || null
+    } catch (error) {
+      throw new StripeException()
+    }
+  }
 }
