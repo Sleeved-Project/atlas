@@ -28,4 +28,8 @@ export default class AddressService {
       additionalInfo: addressPayload.additionalInfo || null,
     })
   }
+
+  public async createAddressById(id: string): Promise<Address> {
+    return await Address.findOrFail(id)
+  }
 }

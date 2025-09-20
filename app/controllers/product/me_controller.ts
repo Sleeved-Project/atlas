@@ -19,6 +19,11 @@ import PaymentIntentService from '#services/payment_intent_service'
 import PaymentIntentMapper from '#mappers/payment_intent_mapper'
 import PaymentService from '#services/payment_service'
 import OrderMapper from '#mappers/order_mapper'
+import AddressService from '#services/address_service'
+// import AdMapper from '#mappers/ad_mapper'
+// import UsersService from '#services/users_service'
+import NotAllowedToPerformException from '#exceptions/not_allowed_to_buy_exception'
+import ShippingLabelService from '#services/shipping_service'
 
 @inject()
 export default class MeController {
@@ -29,7 +34,10 @@ export default class MeController {
     private orderService: OrderService,
     private orderProcessor: OrderProcessor,
     private paymentIntentService: PaymentIntentService,
-    private paymentService: PaymentService
+    private paymentService: PaymentService,
+    private addressService: AddressService,
+    // private userService: UsersService,
+    private shippingService: ShippingLabelService
   ) {}
 
   async store({ response, authUser }: HttpContext) {
@@ -163,6 +171,58 @@ export default class MeController {
       )
       const buyerInfosOutputDTO = PaymentIntentMapper.toPaymentIntentBuyerInfosOutputDTO(buyerInfos)
       return response.ok(buyerInfosOutputDTO)
+    } catch (error) {
+      console.error(error)
+      if (error instanceof vineErrors.E_VALIDATION_ERROR) {
+        throw new ValidationException(error)
+      }
+      if (error instanceof lucidErrors.E_ROW_NOT_FOUND) {
+        throw new NotFoundException(error)
+      }
+      throw error
+    }
+  }
+
+  async adShipingLabel({ response, request, authUser }: HttpContext) {
+    try {
+      const params = await getAdBaseParamsValidator.validate(request.params())
+      const paymentIntent = await this.paymentIntentService.getPaymentIntentSuccededByAdId(
+        params.id
+      )
+      if (paymentIntent.toId !== authUser.id) {
+        throw new NotAllowedToPerformException()
+      }
+      // const buyer = await this.userService.getUserById(paymentIntent.fromId)
+      const buyerOrder = await this.orderService.getOrdersByPaymentIntent(paymentIntent.id)
+      const delveryAddress = await this.addressService.createAddressById(
+        buyerOrder.deliveryAddressId
+      )
+
+      // const shippingLabelOutputDTO = AdMapper.toShippingLabelOutputDTO(buyer, delveryAddress)
+      const trackingNumber = `TRACK-${Date.now()}`
+
+      const pdfBuffer = await this.shippingService.generateShippingLabel(
+        {
+          name: paymentIntent.to.username ? paymentIntent.to.username : 'seller',
+          address: delveryAddress.road,
+          city: delveryAddress.city,
+          zipcode: delveryAddress.zipcode,
+          country: delveryAddress.country,
+        },
+        {
+          name: paymentIntent.from.username ? paymentIntent.from.username : 'buyer',
+          address: delveryAddress.road,
+          city: delveryAddress.city,
+          zipcode: delveryAddress.zipcode,
+          country: delveryAddress.country,
+        },
+        trackingNumber,
+        buyerOrder.id
+      )
+
+      response.header('Content-Type', 'application/pdf')
+      response.header('Content-Disposition', 'attachment; filename=shipping-label.pdf')
+      return response.send(pdfBuffer)
     } catch (error) {
       console.error(error)
       if (error instanceof vineErrors.E_VALIDATION_ERROR) {

@@ -1,5 +1,7 @@
 import Ad from '#models/ad'
-import { AdCheckoutDTO } from '#types/ads_type'
+import Address from '#models/address'
+import User from '#models/user'
+import { AdCheckoutDTO, ShippingLabelOutputDTO } from '#types/ads_type'
 import CostUtils from '#utils/cost_utils'
 
 export default class AdMapper {
@@ -52,6 +54,25 @@ export default class AdMapper {
         shippingCosts: CostUtils.SHIPPING_COSTS.toFixed(2),
         serviceCosts: serviceCosts.toFixed(2),
         totalCosts: totalCosts.toFixed(2),
+      },
+    }
+  }
+
+  public static toShippingLabelOutputDTO(
+    buyer: User,
+    delveryAddress: Address
+  ): ShippingLabelOutputDTO {
+    const fullname = buyer.lastname + ' ' + buyer.firstname
+    return {
+      buyer: {
+        name: fullname.trim() === '' ? null : fullname.trim(),
+        phoneNumber: buyer.phone ? buyer.phone : null,
+      },
+      deliveryAddress: {
+        street: delveryAddress.road,
+        zipcode: delveryAddress.zipcode,
+        city: delveryAddress.city,
+        country: delveryAddress.country,
       },
     }
   }
