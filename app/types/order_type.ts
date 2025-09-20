@@ -34,6 +34,7 @@ export interface OrderDetailsOutputDTO {
   }
   prices: { totalCosts: string }
   status: { label: string }
+  id: string
   updatedAt: string
   createdAt: string
 }

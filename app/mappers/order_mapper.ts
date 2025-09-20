@@ -58,6 +58,7 @@ export default class OrderMapper {
       status: {
         label: order.status.label,
       },
+      id: order.id,
       updatedAt: order.updatedAt.toISO() ?? '',
       createdAt: order.updatedAt.toISO() ?? '',
     }
